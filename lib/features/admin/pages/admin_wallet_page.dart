@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../blocs/wallet_bloc/wallet_bloc.dart';
+import '../../../core/screen_util.dart';
+import '../widgets/admin_async_view.dart';
+
+class AdminWalletPage extends StatefulWidget {
+  const AdminWalletPage({super.key});
+
+  @override
+  State<AdminWalletPage> createState() => _AdminWalletPageState();
+}
+
+class _AdminWalletPageState extends State<AdminWalletPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<WalletBloc>().add(GetWalletEvent());
+    context.read<WalletBloc>().add(GetAllTransactionsEvent());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        title: const Text('المحفظة والمعاملات'),
+      ),
+      body: BlocBuilder<WalletBloc, WalletState>(
+        builder: (context, state) {
+          return ListView(
+            padding: EdgeInsets.all(width(16)),
+            children: [
+              Container(
+                padding: EdgeInsets.all(width(20)),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'الرصيد الحالي',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                    ),
+                    SizedBox(height: height(6)),
+                    Text(
+                      state.wallet == null
+                          ? '-'
+                          : state.wallet!.balance.toStringAsFixed(2),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: height(20)),
+              Text(
+                'سجل المعاملات',
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: height(10)),
+              AdminAsyncView(
+                isLoading:
+                    state.getAllTransactionsStatus == GetAllTransactionsStatus.loading,
+                isFailure:
+                    state.getAllTransactionsStatus == GetAllTransactionsStatus.failure,
+                isEmpty:
+                    state.getAllTransactionsStatus == GetAllTransactionsStatus.success &&
+                        state.transactions.isEmpty,
+                errorMessage: state.errorMessage,
+                emptyText: 'لا توجد معاملات بعد',
+                child: Column(
+                  children: state.transactions.map((t) {
+                    final isDeposit = t.transactionType == 'Deposit';
+                    return Container(
+                      margin: EdgeInsets.only(bottom: height(8)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: width(12),
+                        vertical: height(10),
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFD3D3E4)),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isDeposit ? Icons.arrow_downward : Icons.arrow_upward,
+                            color: isDeposit ? Colors.green : Colors.red,
+                          ),
+                          SizedBox(width: width(10)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(isDeposit ? 'إيداع' : 'سحب'),
+                                Text(
+                                  '${t.date.year}-${t.date.month}-${t.date.day}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            t.amount.toStringAsFixed(2),
+                            style: TextStyle(
+                              color: isDeposit ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
