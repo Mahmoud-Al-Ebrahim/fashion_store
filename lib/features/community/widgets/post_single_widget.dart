@@ -1,246 +1,150 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shimmer/shimmer.dart';
-import '../../../app/widgets/button.dart';
+
+import '../../../blocs/post_bloc/post_bloc.dart';
+import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
-import '../../../models/posts_response_model.dart';
-import '../../store/widgets/store_top_side/image_top_side.dart';
+import '../../../core/utils/api_service.dart';
+import '../../../models/post/post_model.dart';
 
-class PostSingleWidget extends StatefulWidget {
-  const PostSingleWidget({super.key, required this.post});
+/// Reaction types the API accepts, with the emoji shown in the picker.
+const Map<String, String> kReactionEmojis = {
+  'Like': '👍',
+  'Love': '❤️',
+  'Haha': '😄',
+  'Wow': '😮',
+  'Sad': '😢',
+  'Angry': '😠',
+};
 
+/// A single community/store post: media carousel, content, reaction summary
+/// and a long-press reaction picker. Tapping toggles a plain "Like".
+class PostSingleWidget extends StatelessWidget {
   final PostModel post;
 
-  @override
-  State<PostSingleWidget> createState() => _PostSingleWidgetState();
-}
+  const PostSingleWidget({super.key, required this.post});
 
-class _PostSingleWidgetState extends State<PostSingleWidget> {
-  bool isFollowed = false;
+  int get _totalReactions =>
+      post.postReactions.fold<int>(0, (sum, r) => sum + r.count);
 
-  final List<String> emojis = ["💖", "🔥", "👍"];
-  final List<int> reactions = [];
-  final List<String> reactionTypes = ["love", "fire", "like"];
+  void _react(BuildContext context, String reactionType) {
+    context.read<PostBloc>().add(
+      TogglePostReactionEvent(
+        postId: post.id,
+        reactionType: reactionType,
+        storeId: post.storeId,
+      ),
+    );
+  }
 
-  late final String storeId;
-
-  String? myReaction;
-
-  @override
-  void initState() {
-    super.initState();
-    storeId = widget.post.store!.id!;
-    isFollowed = widget.post.isFollowed ?? false;
-    myReaction = widget.post.hasReacted;
-    reactions.add(widget.post.reactions?.love ?? 0);
-    reactions.add(widget.post.reactions?.fire ?? 0);
-    reactions.add(widget.post.reactions?.like ?? 0);
+  Future<void> _pickReaction(BuildContext context) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: width(20),
+          vertical: height(24),
+        ),
+        child: Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          children: kReactionEmojis.entries
+              .map(
+                (entry) => IconButton(
+                  iconSize: 34,
+                  onPressed: () => Navigator.of(sheetContext).pop(entry.key),
+                  icon: Text(
+                    entry.value,
+                    style: const TextStyle(fontSize: 30),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+    if (picked != null && context.mounted) _react(context, picked);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              spacing: width(10),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ImageTopSide(
-                  heightWidth: 50,
-                  imageUrl: widget.post.store!.logoUrl!,
+    final media = post.postMedias;
+    final myReaction = post.myReaction;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFD3D3E4)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (media.isNotEmpty)
+            SizedBox(
+              height: height(220),
+              child: PageView.builder(
+                itemCount: media.length,
+                itemBuilder: (context, index) => CachedNetworkImage(
+                  imageUrl: ApiService.resolveUrl(media[index].mediaUrl) ?? '',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  placeholder: (_, __) =>
+                      Container(color: const Color(0xFFEAEAF2)),
+                  errorWidget: (_, __, ___) => Container(
+                    color: const Color(0xFFEAEAF2),
+                    child: const Icon(Icons.broken_image_outlined),
+                  ),
                 ),
-                Text(
-                  widget.post.store!.name.toString(),
-                  style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          Padding(
+            padding: EdgeInsets.all(width(14)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (post.content.isNotEmpty)
+                  Text(
+                    post.content,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                SizedBox(height: height(10)),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => _react(context, myReaction ?? 'Like'),
+                      onLongPress: () => _pickReaction(context),
+                      child: Row(
+                        children: [
+                          Text(
+                            myReaction != null
+                                ? (kReactionEmojis[myReaction] ?? '👍')
+                                : '🤍',
+                            style: const TextStyle(fontSize: 20),
+                          ),
+                          SizedBox(width: width(6)),
+                          Text(
+                            '$_totalReactions ${LK.communityReactions.tr()}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${post.createdAt.year}-${post.createdAt.month.toString().padLeft(2, '0')}-${post.createdAt.day.toString().padLeft(2, '0')}',
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            // BlocSelector<
-            //   CommunityBloc,
-            //   CommunityState,
-            //   BlocStateData<Unit>?
-            // >(
-            //   selector: (state) => state.changeFollowingStatus[storeId],
-            //   builder: (context, followState) {
-            //     final isLoading = followState?.isLoading ?? false;
-            //     final isFailed = followState?.isFailed ?? false;
-            //     if (isLoading) {
-            //       isFollowed = !isFollowed;
-            //     }
-            //     if (isFailed) {
-            //       isFollowed = !isFollowed;
-            //     }
-    GestureDetector(
-                  onTap: () {
-                    // ✅ تحقق من التوكن أولاً
-                    // if (AuthServiceLocator.instance.token == null ||
-                    //     AuthServiceLocator.instance.token!.isEmpty) {
-                    //   showFlushBar(
-                    //     context,
-                    //     "يرجى تسجيل الدخول اولا لتتمكن من المتابعة",
-                    //   );
-                    //   return;
-                    // }
-                    // // ✅ إذا في توكن → نفذ الحدث
-                    // context.read<CommunityBloc>().add(
-                    //   ChangeFollowingStatusEvent(
-                    //     storeId: storeId,
-                    //     onSuccess: () {
-                    //       // context.read<StoreBloc>().add(
-                    //       //   StoreUpperSectionEvent(
-                    //       //     storeId: widget.storeId,
-                    //       //   ),
-                    //       // );
-                    //     },
-                    //   ),
-                    // );
-                  },
-                  child: FollowButton(isFollowing: isFollowed),
-                )
-          ],
-        ),
-        SizedBox(height: height(15)),
-        if (widget.post.text != null) ...{
-          Text(
-            widget.post.text.toString(),
-            style: Theme.of(context).textTheme.bodyMedium,
           ),
-        },
-        SizedBox(height: height(15)),
-        if (widget.post.mediaUrl != null) ...{
-          ClipRRect(
-            borderRadius: BorderRadiusGeometry.circular(20),
-            child: CachedNetworkImage(
-              imageUrl: widget.post.mediaUrl!,
-              height: height(170),
-              width: 1.sw,
-              fit: BoxFit.cover,
-              placeholder:
-                  (context, url) => Shimmer.fromColors(
-                    baseColor: Colors.grey.shade300,
-                    highlightColor: Colors.grey.shade100,
-                    child: Container(
-                      height: height(220),
-                      width: width(140),
-                      color: Colors.white,
-                    ),
-                  ),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-            ),
-          ),
-          SizedBox(height: height(10)),
-        },
-        // BlocListener<CommunityBloc, CommunityState>(
-        //   listenWhen:
-        //       (p, c) =>
-        //           p.reactToPostOrStory[widget.post.id] !=
-        //           c.reactToPostOrStory[widget.post.id],
-        //   listener: (context, state) {
-        //     if (state.reactToPostOrStory[widget.post.id]?.isSuccess ?? false) {
-        //       myReaction = state.reactToPostOrStory[widget.post.id]!.data;
-        //       if (myReaction != null) {
-        //         reactions[reactionTypes.indexWhere(
-        //           (item) => item == myReaction,
-        //         )]++;
-        //       }
-        //     }
-        //   },
-        //   child: BlocSelector<
-        //     CommunityBloc,
-        //     CommunityState,
-        //     BlocStateData<String?>?
-        //   >(
-        //     selector: (state) => state.reactToPostOrStory[widget.post.id],
-        //     builder: (context, state) {
-        //       final isLoading = state?.isLoading ?? false;
-        //
-        //       if (isLoading) {
-        //         return SizedBox(
-        //           width: 70,
-        //           height: 30,
-        //           child: Center(child: MinBaytyLoader()),
-        //         );
-        //       }
-        //
-        //       return
-                Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    spacing: 10,
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      3,
-                      (index) => InkWell(
-                        onTap: () {
-                          if (myReaction != null) {
-                            reactions[reactionTypes.indexWhere(
-                              (item) => item == myReaction,
-                            )]--;
-                          }
-                          // BlocProvider.of<CommunityBloc>(context).add(
-                          //   ReactToPostOrStoryEvent(
-                          //     params: ReactToPostOrStoryParams(
-                          //       id: widget.post.id!,
-                          //       type: reactionTypes[index],
-                          //       isForPosts: true,
-                          //     ),
-                          //     isForRemovePreviousReact:
-                          //         myReaction == reactionTypes[index],
-                          //     onSuccess: () {},
-                          //   ),
-                          // );
-                        },
-                        child: Container(
-                          width: width(60),
-                          height: height(30),
-                          decoration: BoxDecoration(
-                            color:
-                                myReaction == reactionTypes[index]
-                                    ? Color(0xffF27D72)
-                                    : Color(0x1FF27D72),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text("${reactions[index]} ${emojis[index]}"),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // if (widget.post.store?.id ==
-                  //     AuthServiceLocator.instance.storeId)
-                  //   Row(
-                  //     mainAxisSize: MainAxisSize.min,
-                  //     children: [
-                  //       InkWell(
-                  //         onTap: () {
-                  //           BlocProvider.of<CommunityBloc>(context).add(
-                  //             DeletePostOrStoryEvent(
-                  //               params: DeletePostOrStoryParams(
-                  //                 id: widget.post.id!,
-                  //                 isForPost: true,
-                  //               ),
-                  //               onSuccess: () {},
-                  //             ),
-                  //           );
-                  //         },
-                  //         child: Icon(
-                  //           Icons.delete_outline_outlined,
-                  //           size: 20,
-                  //           color: Color(0xffD93F3F),
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                ],
-              )
-      ],
+        ],
+      ),
     );
   }
 }

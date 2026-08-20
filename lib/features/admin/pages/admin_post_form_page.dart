@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,10 +11,11 @@ import '../../../core/helper/helper_functions.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/show_message.dart';
 import '../widgets/option_picker_field.dart';
+import '../../../core/localization/translation_keys.dart';
 
-const _visibilityOptions = [
-  PickerOption('Public', 'عام'),
-  PickerOption('Followers', 'للمتابعين فقط'),
+List<PickerOption> _visibilityOptions() => [
+  PickerOption('Public', LK.communityPublic.tr()),
+  PickerOption('Followers', LK.communityFollowersOnly.tr()),
 ];
 
 class AdminPostFormPage extends StatefulWidget {
@@ -37,7 +39,7 @@ class _AdminPostFormPageState extends State<AdminPostFormPage> {
 
   void _submit() {
     if (_contentController.text.trim().isEmpty) {
-      showMessage('يرجى كتابة محتوى المنشور');
+      showMessage(LK.adminPostContentRequired.tr());
       return;
     }
     context.read<PostBloc>().add(
@@ -64,13 +66,13 @@ class _AdminPostFormPageState extends State<AdminPostFormPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('منشور جديد'),
+        title: Text(LK.adminNewPost.tr()),
       ),
       body: BlocListener<PostBloc, PostState>(
         listenWhen: (p, c) => p.postTransactionStatus != c.postTransactionStatus,
         listener: (context, state) {
           if (state.postTransactionStatus == PostTransactionStatus.success) {
-            showMessage('تم نشر المنشور', hasError: false);
+            showMessage(LK.adminPostPublished.tr(), hasError: false);
             Navigator.of(context).pop();
           } else if (state.postTransactionStatus == PostTransactionStatus.failure) {
             showMessage(state.errorMessage);
@@ -83,14 +85,14 @@ class _AdminPostFormPageState extends State<AdminPostFormPage> {
             children: [
               AuthTextField(
                 controller: _contentController,
-                hintText: 'اكتب شيئاً...',
+                hintText: LK.adminPostContent.tr(),
                 maxLines: 5,
                 validator: (_) => null,
               ),
               SizedBox(height: height(12)),
               OptionPickerField(
-                hintText: 'من يمكنه رؤية المنشور',
-                options: _visibilityOptions,
+                hintText: LK.adminPostVisibility.tr(),
+                options: _visibilityOptions(),
                 selectedValue: _visibility,
                 onSelected: (o) => setState(() => _visibility = o.value),
               ),
@@ -146,7 +148,7 @@ class _AdminPostFormPageState extends State<AdminPostFormPage> {
                   final loading =
                       state.postTransactionStatus == PostTransactionStatus.loading;
                   return AuthButton(
-                    text: loading ? '...جاري النشر' : 'نشر',
+                    text: loading ? LK.adminPublishing.tr() : LK.adminPublish.tr(),
                     onTap: loading ? null : _submit,
                     widthButton: double.infinity,
                     heightButton: height(56),

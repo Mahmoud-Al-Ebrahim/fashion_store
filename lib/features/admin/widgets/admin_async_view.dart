@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/widgets/loading_indicator/fashion_loader.dart';
 import '../../../app/widgets/nodata.dart';
 import '../../../core/screen_util.dart';
+import '../../../core/localization/translation_keys.dart';
 
 /// Generic loading/error/empty/content switcher for a bloc-backed list or
 /// detail view. Callers convert their specific `XStatus` enum into the three
@@ -12,7 +14,9 @@ class AdminAsyncView extends StatelessWidget {
   final bool isFailure;
   final bool isEmpty;
   final String errorMessage;
-  final String emptyText;
+
+  /// Defaults to the localized "no data" message when omitted.
+  final String? emptyText;
   final VoidCallback? onRetry;
   final Widget child;
 
@@ -23,7 +27,7 @@ class AdminAsyncView extends StatelessWidget {
     required this.isEmpty,
     required this.child,
     this.errorMessage = '',
-    this.emptyText = 'لا توجد بيانات',
+    this.emptyText,
     this.onRetry,
   });
 
@@ -46,13 +50,13 @@ class AdminAsyncView extends StatelessWidget {
               ),
               SizedBox(height: height(10)),
               Text(
-                errorMessage.isEmpty ? 'حدث خطأ ما!' : errorMessage,
+                errorMessage.isEmpty ? LK.commonErrorGeneric.tr() : errorMessage,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               if (onRetry != null) ...[
                 SizedBox(height: height(14)),
-                TextButton(onPressed: onRetry, child: const Text('إعادة المحاولة')),
+                TextButton(onPressed: onRetry, child: Text(LK.commonRetry.tr())),
               ],
             ],
           ),
@@ -60,7 +64,10 @@ class AdminAsyncView extends StatelessWidget {
       );
     }
     if (isEmpty) {
-      return NoData(heightt: height(250), text: emptyText);
+      return NoData(
+        heightt: height(250),
+        text: emptyText ?? LK.commonNoData.tr(),
+      );
     }
     return child;
   }

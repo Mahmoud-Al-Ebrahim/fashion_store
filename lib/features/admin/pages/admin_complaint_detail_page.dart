@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -6,6 +7,7 @@ import '../../../core/screen_util.dart';
 import '../../../models/complaint/complaint_model.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/admin_status_badge.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminComplaintDetailPage extends StatefulWidget {
   final StoreComplaintModel complaint;
@@ -45,7 +47,7 @@ class _AdminComplaintDetailPageState extends State<AdminComplaintDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(complaint.customerFullName, style: Theme.of(context).textTheme.titleSmall),
-              AdminStatusBadge(status: complaint.status, labels: kComplaintStatusArabic),
+              AdminStatusBadge(status: complaint.status),
             ],
           ),
           SizedBox(height: height(10)),
@@ -60,7 +62,7 @@ class _AdminComplaintDetailPageState extends State<AdminComplaintDetailPage> {
           ),
           SizedBox(height: height(20)),
           Text(
-            'المحادثة',
+            LK.adminConversation.tr(),
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -77,7 +79,7 @@ class _AdminComplaintDetailPageState extends State<AdminComplaintDetailPage> {
                     state.getComplaintMessagesStatus == GetComplaintMessagesStatus.success &&
                         state.messages.isEmpty,
                 errorMessage: state.errorMessage,
-                emptyText: 'لا توجد رسائل بعد',
+                emptyText: LK.adminNoMessages.tr(),
                 child: Column(
                   children: state.messages.map((m) {
                     return Align(

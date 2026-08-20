@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,6 +14,7 @@ import 'admin_complaints_page.dart';
 import 'admin_store_categories_page.dart';
 import 'admin_store_profile_page.dart';
 import 'admin_wallet_page.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminMorePage extends StatelessWidget {
   const AdminMorePage({super.key});
@@ -24,7 +26,7 @@ class AdminMorePage extends StatelessWidget {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('المزيد'),
+        title: Text(LK.adminMore.tr()),
       ),
       body: ListView(
         padding: EdgeInsets.symmetric(vertical: height(10)),
@@ -64,39 +66,39 @@ class AdminMorePage extends StatelessWidget {
           _tile(
             context,
             icon: Icons.storefront_outlined,
-            title: 'الملف الشخصي للمتجر',
+            title: LK.adminStoreProfile.tr(),
             onTap: () => context.pushPage(const AdminStoreProfilePage()),
           ),
           _tile(
             context,
             icon: Icons.account_balance_wallet_outlined,
-            title: 'المحفظة والمعاملات',
+            title: LK.adminWalletTransactions.tr(),
             onTap: () => context.pushPage(const AdminWalletPage()),
           ),
           _tile(
             context,
             icon: Icons.category_outlined,
-            title: 'تصنيفات المتجر',
+            title: LK.adminStoreCategories.tr(),
             onTap: () => context.pushPage(const AdminStoreCategoriesPage()),
           ),
           _tile(
             context,
             icon: Icons.support_agent_outlined,
-            title: 'الشكاوى',
+            title: LK.adminComplaints.tr(),
             onTap: () => context.pushPage(const AdminComplaintsPage()),
           ),
           const Divider(),
           _tile(
             context,
             icon: Icons.logout,
-            title: 'تسجيل الخروج',
+            title: LK.authLogout.tr(),
             color: Colors.red,
             onTap: () async {
               final confirmed = await confirmDialog(
                 context,
-                title: 'تسجيل الخروج',
-                message: 'هل تريد تسجيل الخروج من حساب المتجر؟',
-                confirmText: 'خروج',
+                title: LK.authLogout.tr(),
+                message: LK.adminLogoutStoreConfirm.tr(),
+                confirmText: LK.authLogout.tr(),
               );
               if (!confirmed || !context.mounted) return;
               context.read<AuthBloc>().add(LogoutEvent());

@@ -1,125 +1,83 @@
-import 'package:fashion_store/models/dummy/store_fake.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/widgets/button.dart';
+import '../../../../blocs/store_follower_bloc/store_follower_bloc.dart';
+import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../core/utils/api_service.dart';
+import '../../../../core/utils/show_message.dart';
+import '../../../../models/store/store_model.dart';
 import 'image_top_side.dart';
 import 'store_name_and_stars_top_side.dart';
 
+/// Store header: logo, name, live follower count, and a follow/unfollow
+/// toggle backed by `StoreFollower/StoreFollow`.
 class StoreTopSide extends StatefulWidget {
-  // final StoreBloc storeBloc;
-  final String storeId;
+  final StoreModel store;
 
-  const StoreTopSide({
-    super.key,
-    // required this.storeBloc,
-    required this.storeId,
-  });
+  const StoreTopSide({super.key, required this.store});
 
   @override
   State<StoreTopSide> createState() => _StoreTopSideState();
 }
 
 class _StoreTopSideState extends State<StoreTopSide> {
-  @override
-  void initState() {
-    // widget.storeBloc.add(
-    //   StoreUpperSectionEvent(storeId: widget.storeId),
-    // );
-    super.initState();
-  }
+  /// The follow endpoint is a toggle and there's no "am I following?" query,
+  /// so this mirrors whatever the last toggle returned for this store.
+  bool _isFollowing = false;
 
   @override
   Widget build(BuildContext context) {
-    // return BlocSelector<
-    //   StoreBloc,
-    //   StoreState,
-    //   BlocStateData<StoreUpperModel>
-    // >(
-    //   selector: (state) => state.storeUpperState,
-    //   builder: (context, state) {
-    //     return BlocStateDataBuilder(
-    //       data: state,
-    //       onFailed: TopSideShimmer(),
-    //       onLoading: TopSideShimmer(),
-    //       onSuccess: (state) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: width(13)),
-      child: Row(
-        children: [
-          ImageTopSide(
-            heightWidth: 55,
-            imageUrl: fakeStoreHeader.profileImage!,
-            // state!.profileImage ?? '',
-          ),
-          SizedBox(width: width(10)),
-          StoreNameAndStarsTopSide(
-            storeName: fakeStoreHeader.name!,
-            //'Adidas', //state.name ?? "___",
-            followingNumber: fakeStoreHeader.followersCount!,
-            //state.followersCount ?? 0,
-            isFollowing: false,
-            // state.isFollowed ?? false,
-            rating: 3.7, // state.rating ?? 0,
-          ),
-          Spacer(),
-          //AuthServiceLocator.instance.role == TypeUser.user
-          if (true) ...{
-            // BlocSelector<
-            //     StoreBloc,
-            //     StoreState,
-            //     BlocStateData<FollowStoreModel>?
-            // >(
-            //   selector:
-            //       (state) => state.followStoreStates[widget.storeId],
-            //   builder: (context, followState) {
-            //     final isLoading = followState?.isLoading ?? false;
-            //     final isCurrentlyFollowing = followState?.data?.isFollowing ?? state.isFollowed ?? false;
-            //
-            //     if (isLoading) {
-            //       return SizedBox(
-            //         width: 70,
-            //         height: 30,
-            //         child: Center(
-            //           child: CircularProgressIndicator(strokeWidth: 2),
-            //         ),
-            //       );
-            //     }
-            //
-            //     return
-            GestureDetector(
-              onTap: () {
-                // ✅ تحقق من التوكن أولاً
-                // if (AuthServiceLocator.instance.token == null ||
-                //     AuthServiceLocator.instance.token!.isEmpty) {
-                //   showFlushBar(
-                //     context,
-                //     "يرجى تسجيل الدخول اولا لتتمكن من المتابعة",
-                //   );
-                //   return;
-                // }
-
-                // ✅ إذا في توكن → نفذ الحدث
-                // context.read<StoreBloc>().add(
-                //   FollowStoreEvent(
-                //     storeId: widget.storeId,
-                //     onSuccess: () {
-                //       // context.read<StoreBloc>().add(
-                //       //   StoreUpperSectionEvent(
-                //       //     storeId: widget.storeId,
-                //       //   ),
-                //       // );
-                //     }, currentFollowStatus: isCurrentlyFollowing,
-                //   ),
-                // );
-              },
-              child: FollowButton(
-                isFollowing: false, //isCurrentlyFollowing ,
+      child: BlocConsumer<StoreFollowerBloc, StoreFollowerState>(
+        listenWhen: (p, c) => p.storeFollow != c.storeFollow,
+        listener: (context, state) {
+          final follow = state.storeFollow;
+          if (follow != null && follow.storeId == widget.store.id) {
+            setState(() => _isFollowing = follow.isFollow);
+            showMessage(
+              follow.isFollow ? LK.storeFollow.tr() : LK.storeUnfollow.tr(),
+              hasError: false,
+            );
+          }
+        },
+        builder: (context, state) {
+          final busy = state.toggleStoreFollowStatus ==
+              ToggleStoreFollowStatus.loading;
+          return Row(
+            children: [
+              ImageTopSide(
+                heightWidth: 55,
+                imageUrl: ApiService.resolveUrl(widget.store.logo) ?? '',
               ),
-            ),
-          },
-        ],
+              SizedBox(width: width(10)),
+              Flexible(
+                child: StoreNameAndStarsTopSide(
+                  storeName: widget.store.storeName,
+                  followingNumber: state.followersCount,
+                ),
+              ),
+              const Spacer(),
+              busy
+                  ? SizedBox(
+                      width: width(70),
+                      height: height(30),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () => context.read<StoreFollowerBloc>().add(
+                        ToggleStoreFollowEvent(storeId: widget.store.id),
+                      ),
+                      child: FollowButton(isFollowing: _isFollowing),
+                    ),
+            ],
+          );
+        },
       ),
     );
   }

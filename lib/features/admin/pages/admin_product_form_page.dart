@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,9 +12,10 @@ import '../../../core/helper/helper_functions.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/admin/product_dashboard_model.dart';
-import '../admin_enums.dart';
+import '../../../core/constants/product_enums.dart';
 import '../widgets/image_pick_box.dart';
 import '../widgets/option_picker_field.dart';
+import '../../../core/localization/translation_keys.dart';
 
 /// Add/Edit product form. Pass [existingProduct] to edit - per the API, only
 /// price/category/discount/image are editable on an existing product, so
@@ -99,21 +101,21 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_categoryId == null) {
-      showMessage('يرجى اختيار التصنيف');
+      showMessage(LK.adminCategoryRequired.tr());
       return;
     }
     if (!_isEdit) {
       if (_gender == null || _season == null || _type == null) {
-        showMessage('يرجى إكمال كل الحقول');
+        showMessage(LK.adminCompleteFields.tr());
         return;
       }
       if (_image == null) {
-        showMessage('يرجى إضافة صورة للمنتج');
+        showMessage(LK.adminImageRequired.tr());
         return;
       }
     }
     if (_hasDiscount && (_discountStart == null || _discountEnd == null)) {
-      showMessage('يرجى تحديد تاريخ بداية ونهاية الخصم');
+      showMessage(LK.adminDiscountDatesRequired.tr());
       return;
     }
 
@@ -160,13 +162,13 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: Text(_isEdit ? 'تعديل المنتج' : 'إضافة منتج'),
+        title: Text(_isEdit ? LK.adminEditProduct.tr() : LK.adminAddProduct.tr()),
       ),
       body: BlocListener<ProductBloc, ProductState>(
         listenWhen: (p, c) => p.productTransactionStatus != c.productTransactionStatus,
         listener: (context, state) {
           if (state.productTransactionStatus == ProductTransactionStatus.success) {
-            showMessage(_isEdit ? 'تم تحديث المنتج' : 'تمت إضافة المنتج', hasError: false);
+            showMessage(_isEdit ? LK.adminProductUpdated.tr() : LK.adminProductAdded.tr(), hasError: false);
             Navigator.of(context).pop(true);
           } else if (state.productTransactionStatus == ProductTransactionStatus.failure) {
             showMessage(state.errorMessage);
@@ -182,41 +184,41 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                 ImagePickBox(
                   pickedFile: _image,
                   existingImageUrl: widget.existingProduct?.image,
-                  label: 'إضافة صورة المنتج',
+                  label: LK.adminProductImage.tr(),
                   onTap: _pickImage,
                   boxHeight: height(180),
                 ),
                 SizedBox(height: height(16)),
                 AuthTextField(
                   controller: _nameController,
-                  hintText: 'اسم المنتج',
+                  hintText: LK.adminProductName.tr(),
                   enabled: !_isEdit,
                   validator: (v) {
                     if (_isEdit) return null;
-                    if (v == null || v.trim().isEmpty) return 'الاسم مطلوب';
+                    if (v == null || v.trim().isEmpty) return LK.commonRequiredField.tr();
                     return null;
                   },
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _descriptionController,
-                  hintText: 'الوصف',
+                  hintText: LK.adminProductDescription.tr(),
                   maxLines: 4,
                   enabled: !_isEdit,
                   validator: (v) {
                     if (_isEdit) return null;
-                    if (v == null || v.trim().isEmpty) return 'الوصف مطلوب';
+                    if (v == null || v.trim().isEmpty) return LK.commonRequiredField.tr();
                     return null;
                   },
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _priceController,
-                  hintText: 'السعر',
+                  hintText: LK.adminProductPrice.tr(),
                   formatters: const [],
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'السعر مطلوب';
-                    if (double.tryParse(v) == null) return 'قيمة غير صالحة';
+                    if (v == null || v.isEmpty) return LK.commonRequiredField.tr();
+                    if (double.tryParse(v) == null) return LK.commonInvalidValue.tr();
                     return null;
                   },
                 ),
@@ -231,58 +233,58 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                         .map((o) => o.label)
                         .firstOrNull;
                     return OptionPickerField(
-                      hintText: 'التصنيف',
+                      hintText: LK.adminCategory.tr(),
                       options: options,
                       selectedValue: _categoryId?.toString(),
                       onSelected: (o) => setState(() {
                         _categoryId = int.parse(o.value);
                         _categoryLabel = o.label;
                       }),
-                      validator: (_) => _categoryId == null ? 'التصنيف مطلوب' : null,
+                      validator: (_) => _categoryId == null ? LK.adminCategoryRequired.tr() : null,
                     );
                   },
                 ),
                 if (!_isEdit) ...[
                   SizedBox(height: height(10)),
                   OptionPickerField(
-                    hintText: 'الجنس المستهدف',
-                    options: kGenderOptions,
+                    hintText: LK.adminGenderTarget.tr(),
+                    options: genderOptions(),
                     selectedValue: _gender,
                     onSelected: (o) => setState(() => _gender = o.value),
-                    validator: (_) => _gender == null ? 'الحقل مطلوب' : null,
+                    validator: (_) => _gender == null ? LK.commonRequiredField.tr() : null,
                   ),
                   SizedBox(height: height(10)),
                   OptionPickerField(
-                    hintText: 'الموسم',
-                    options: kSeasonOptions,
+                    hintText: LK.adminSeason.tr(),
+                    options: seasonOptions(),
                     selectedValue: _season,
                     onSelected: (o) => setState(() => _season = o.value),
-                    validator: (_) => _season == null ? 'الحقل مطلوب' : null,
+                    validator: (_) => _season == null ? LK.commonRequiredField.tr() : null,
                   ),
                   SizedBox(height: height(10)),
                   OptionPickerField(
-                    hintText: 'نوع القطعة',
-                    options: kTypeOptions,
+                    hintText: LK.adminClothingType.tr(),
+                    options: typeOptions(),
                     selectedValue: _type,
                     onSelected: (o) => setState(() => _type = o.value),
-                    validator: (_) => _type == null ? 'الحقل مطلوب' : null,
+                    validator: (_) => _type == null ? LK.commonRequiredField.tr() : null,
                   ),
                 ],
                 SizedBox(height: height(10)),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('تفعيل خصم على المنتج'),
+                  title: Text(LK.adminEnableDiscount.tr()),
                   value: _hasDiscount,
                   onChanged: (v) => setState(() => _hasDiscount = v),
                 ),
                 if (_hasDiscount) ...[
                   AuthTextField(
                     controller: _discountController,
-                    hintText: 'نسبة الخصم %',
+                    hintText: LK.adminDiscountPercentage.tr(),
                     validator: (v) {
                       if (!_hasDiscount) return null;
-                      if (v == null || v.isEmpty) return 'نسبة الخصم مطلوبة';
-                      if (double.tryParse(v) == null) return 'قيمة غير صالحة';
+                      if (v == null || v.isEmpty) return LK.commonRequiredField.tr();
+                      if (double.tryParse(v) == null) return LK.commonInvalidValue.tr();
                       return null;
                     },
                   ),
@@ -294,7 +296,7 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                           onPressed: () => _pickDate(true),
                           child: Text(
                             _discountStart == null
-                                ? 'تاريخ البداية'
+                                ? LK.adminStartDate.tr()
                                 : '${_discountStart!.year}-${_discountStart!.month}-${_discountStart!.day}',
                           ),
                         ),
@@ -305,7 +307,7 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                           onPressed: () => _pickDate(false),
                           child: Text(
                             _discountEnd == null
-                                ? 'تاريخ النهاية'
+                                ? LK.adminEndDate.tr()
                                 : '${_discountEnd!.year}-${_discountEnd!.month}-${_discountEnd!.day}',
                           ),
                         ),
@@ -319,7 +321,7 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                     final loading =
                         state.productTransactionStatus == ProductTransactionStatus.loading;
                     return AuthButton(
-                      text: loading ? '...جاري الحفظ' : 'حفظ',
+                      text: loading ? LK.commonSaving.tr() : LK.commonSave.tr(),
                       onTap: loading ? null : _submit,
                       widthButton: double.infinity,
                       heightButton: height(56),

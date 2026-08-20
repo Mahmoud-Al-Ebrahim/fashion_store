@@ -1,22 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
-
-const Map<String, String> kOrderStatusArabic = {
-  'Processing': 'قيد التجهيز',
-  'Delivered': 'تم التوصيل',
-  'Cancelled': 'ملغي',
-};
-
-const Map<String, String> kStoreStatusArabic = {
-  'Pending': 'قيد المراجعة',
-  'Approved': 'مقبول',
-  'Rejected': 'مرفوض',
-  'Deleted': 'محذوف',
-  'Cancelled': 'ملغي',
-};
-
-const Map<String, String> kComplaintStatusArabic = {'Pending': 'قيد المراجعة'};
 
 Color _statusColor(String status) {
   switch (status) {
@@ -36,20 +22,24 @@ Color _statusColor(String status) {
   }
 }
 
+/// Coloured pill showing an API status (`Processing`, `Paid`, `Pending`, ...)
+/// translated into the current language.
 class AdminStatusBadge extends StatelessWidget {
   final String status;
-  final Map<String, String>? labels;
 
-  const AdminStatusBadge({super.key, required this.status, this.labels});
+  const AdminStatusBadge({super.key, required this.status});
 
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(status);
-    final label = labels?[status] ?? status;
+    final key = LK.statusKey(status);
+    final translated = key.tr();
+    // easy_localization returns the key itself when it has no entry.
+    final label = translated == key ? status : translated;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: width(10), vertical: height(4)),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

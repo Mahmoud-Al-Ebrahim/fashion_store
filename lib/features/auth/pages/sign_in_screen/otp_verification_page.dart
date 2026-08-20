@@ -1,12 +1,24 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:ui' as ui;
 
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
+
+import '../../../../app/widgets/loading_indicator/fashion_loader.dart';
+import '../../../../blocs/auth_bloc/auth_bloc.dart';
+import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/show_message.dart';
+import 'reset_password_page.dart';
+import 'sign_in_screen.dart';
 
+/// Email OTP screen, used by two flows:
+///  - after registration ([cameFromRegisterPage] true) it confirms the email
+///    via `Auth/ConfirmEmail`, then returns the user to sign-in.
+///  - from "forgot password" it collects the reset code and hands it to
+///    [ResetPasswordPage] (the code is only validated by `Auth/ResetPassword`).
 class OTPVerificationPage extends StatefulWidget {
   final bool cameFromRegisterPage;
   final String email;
@@ -18,251 +30,192 @@ class OTPVerificationPage extends StatefulWidget {
   });
 
   @override
-  _OTPVerificationPageState createState() => _OTPVerificationPageState();
+  State<OTPVerificationPage> createState() => _OTPVerificationPageState();
 }
 
 class _OTPVerificationPageState extends State<OTPVerificationPage> {
+  final TextEditingController code = TextEditingController();
+
   @override
-  void initState() {
-    super.initState();
-    // BlocProvider.of<AuthBloc>(context).add(SendOtpEvent(email: widget.email));
+  void dispose() {
+    code.dispose();
+    super.dispose();
   }
 
-  final TextEditingController code = TextEditingController();
+  void _submit() {
+    if (code.text.length < 4) {
+      showMessage(LK.authOtpIncomplete.tr());
+      return;
+    }
+    if (widget.cameFromRegisterPage) {
+      context.read<AuthBloc>().add(
+        ConfirmEmailEvent(email: widget.email, code: code.text),
+      );
+    } else {
+      // Password reset verifies the code together with the new password.
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ResetPasswordPage(
+            email: widget.email,
+            code: code.text,
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'تأكيد الحساب',
-          style: TextStyle(
+          LK.authOtpTitle.tr(),
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: SvgPicture.asset('assets/icons/Arrow-left.svg'),
-        ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
-      body: ListView(
-        shrinkWrap: true,
-        padding: EdgeInsets.symmetric(horizontal: 24),
-        physics: BouncingScrollPhysics(),
-        children: [
-          Container(
-            margin: EdgeInsets.only(top: 20, bottom: 8),
-            child: Text(
-              'تأكيد البريد الالكتروني',
-              style: TextStyle(
-                color: AppColor.secondary,
-                fontWeight: FontWeight.w700,
-                fontFamily: 'poppins',
-                fontSize: 20,
-              ),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(bottom: 32),
-            child: Column(
-              children: [
-                Text(
-                  'رمز التحقق تم إرساله إلى البريد الالكتروني',
-                  style: TextStyle(
-                    color: AppColor.secondary.withOpacity(0.7),
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(width: 8),
-                Text(
-                  widget.email,
-                  style: TextStyle(
-                    color: AppColor.primary,
-                    fontSize: 14,
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listenWhen: (p, c) =>
+            p.confirmEmailStatus != c.confirmEmailStatus ||
+            p.resendOtpStatus != c.resendOtpStatus,
+        listener: (context, state) {
+          if (state.confirmEmailStatus == ConfirmEmailStatus.success) {
+            showMessage(LK.authOtpVerified.tr(), hasError: false);
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const SignInScreen()),
+              (_) => false,
+            );
+          } else if (state.confirmEmailStatus == ConfirmEmailStatus.failure) {
+            showMessage(state.errorMessage);
+          }
+          if (state.resendOtpStatus == ResendOtpStatus.success) {
+            showMessage(LK.authOtpSent.tr(), hasError: false);
+          } else if (state.resendOtpStatus == ResendOtpStatus.failure) {
+            showMessage(state.errorMessage);
+          }
+        },
+        builder: (context, state) {
+          final verifying =
+              state.confirmEmailStatus == ConfirmEmailStatus.loading;
+          final resending = state.resendOtpStatus == ResendOtpStatus.loading;
+
+          return ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            physics: const BouncingScrollPhysics(),
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 20, bottom: 8),
+                child: Text(
+                  LK.authOtpTitle.tr(),
+                  style: const TextStyle(
+                    color: AppColor.secondary,
                     fontWeight: FontWeight.w700,
+                    fontSize: 20,
                   ),
                 ),
-              ],
-            ),
-          ),
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: PinCodeTextField(
-              appContext: (context),
-              length: 4,
-              onChanged: (value) {},
-              obscureText: false,
-              controller: code,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              pinTheme: PinTheme(
-                shape: PinCodeFieldShape.box,
-                borderWidth: 1.5,
-                borderRadius: BorderRadius.circular(8),
-                fieldHeight: 70,
-                fieldWidth: 70,
-                activeColor: AppColor.primary,
-                inactiveColor: AppColor.border,
-                inactiveFillColor: AppColor.primarySoft,
               ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (code.text.length < 4) {
-                showMessage("رجاء أدخل كامل الرمز أولاً");
-                return;
-              }
-              // BlocProvider.of<AuthBloc>(context).add(
-              //   VerifyOtpEvent(email: widget.email, code: code.text),
-              // );
-            },
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                horizontal: 36,
-                vertical: 18,
+              Container(
+                margin: const EdgeInsets.only(bottom: 32),
+                child: Column(
+                  children: [
+                    Text(
+                      LK.authOtpSubtitle.tr(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColor.secondary.withValues(alpha: 0.7),
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.email,
+                      style: const TextStyle(
+                        color: AppColor.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              backgroundColor: AppColor.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+              Directionality(
+                textDirection: ui.TextDirection.ltr,
+                child: PinCodeTextField(
+                  appContext: context,
+                  length: 4,
+                  onChanged: (_) {},
+                  obscureText: false,
+                  controller: code,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderWidth: 1.5,
+                    borderRadius: BorderRadius.circular(8),
+                    fieldHeight: 60,
+                    fieldWidth: 60,
+                    activeColor: AppColor.primary,
+                    inactiveColor: AppColor.border,
+                    inactiveFillColor: AppColor.primarySoft,
+                  ),
+                ),
               ),
-              elevation: 0,
-              shadowColor: Colors.transparent,
-            ),
-            child: Text(
-              'تأكيد الرمز',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-                fontFamily: 'poppins',
-              ),
-            ),
-          )
-          // BlocConsumer<AuthBloc, AuthState>(
-          //   listener: (context, state) {
-          //     if (state.verifyOtpStatus == VerifyOtpStatus.success) {
-          //       Navigator.of(context).pushReplacement(
-          //         MaterialPageRoute(builder: (ctx) => UpdatePasswordPage(email: widget.email,)),
-          //       );
-          //       showMessage('تم التحقق بنجاح ✅', hasError: false);
-          //     }
-          //     if (state.verifyOtpStatus == VerifyOtpStatus.failure) {
-          //       showMessage(state.errorMessage ?? "حدث خطأ ما");
-          //     }
-          //   },
-          //   listenWhen: (p,c)=> p.verifyOtpStatus != c.verifyOtpStatus,
-          //   builder: (context, state) {
-          //     return state.verifyOtpStatus == VerifyOtpStatus.loading
-          //         ? FashionLoader()
-          //         : Container(
-          //           margin: EdgeInsets.only(top: 32, bottom: 16),
-          //           child: ElevatedButton(
-          //             onPressed: () {
-          //               if (code.text.length < 4) {
-          //                 showMessage("رجاء أدخل كامل الرمز أولاً");
-          //                 return;
-          //               }
-          //               BlocProvider.of<AuthBloc>(context).add(
-          //                 VerifyOtpEvent(email: widget.email, code: code.text),
-          //               );
-          //             },
-          //             child: Text(
-          //               'تأكيد الرمز',
-          //               style: TextStyle(
-          //                 color: Colors.white,
-          //                 fontWeight: FontWeight.w600,
-          //                 fontSize: 18,
-          //                 fontFamily: 'poppins',
-          //               ),
-          //             ),
-          //             style: ElevatedButton.styleFrom(
-          //               padding: EdgeInsets.symmetric(
-          //                 horizontal: 36,
-          //                 vertical: 18,
-          //               ),
-          //               backgroundColor: AppColor.primary,
-          //               shape: RoundedRectangleBorder(
-          //                 borderRadius: BorderRadius.circular(16),
-          //               ),
-          //               elevation: 0,
-          //               shadowColor: Colors.transparent,
-          //             ),
-          //           ),
-          //         );
-          //   },
-          // ),
-          ,ElevatedButton(
-            onPressed: () {
-              // BlocProvider.of<AuthBloc>(context).add(SendOtpEvent(email: widget.email));
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: AppColor.primary,
-              padding: EdgeInsets.symmetric(
-                horizontal: 36,
-                vertical: 18,
-              ),
-              backgroundColor: AppColor.primarySoft,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-              shadowColor: Colors.transparent,
-            ),
-            child: Text(
-              'إعادة إرسال الرمز',
-              style: TextStyle(
-                color: AppColor.secondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          )
-          // BlocConsumer<AuthBloc, AuthState>(
-          //   listenWhen: (p,c)=> p.sendOtpStatus != c.sendOtpStatus,
-          //   listener: (context , state){
-          //     if(state.sendOtpStatus == SendOtpStatus.failure){
-          //       showMessage(state.errorMessage ?? "حدث خطأ ما");
-          //     }
-          //   },
-          //   builder: (context, state) {
-          //     return state.sendOtpStatus == SendOtpStatus.loading
-          //         ? FashionLoader()
-          //         : ElevatedButton(
-          //           onPressed: () {
-          //             BlocProvider.of<AuthBloc>(context).add(SendOtpEvent(email: widget.email));
-          //           },
-          //           style: ElevatedButton.styleFrom(
-          //             foregroundColor: AppColor.primary,
-          //             padding: EdgeInsets.symmetric(
-          //               horizontal: 36,
-          //               vertical: 18,
-          //             ),
-          //             backgroundColor: AppColor.primarySoft,
-          //             shape: RoundedRectangleBorder(
-          //               borderRadius: BorderRadius.circular(16),
-          //             ),
-          //             elevation: 0,
-          //             shadowColor: Colors.transparent,
-          //           ),
-          //           child: Text(
-          //             'إعادة إرسال الرمز',
-          //             style: TextStyle(
-          //               color: AppColor.secondary,
-          //               fontWeight: FontWeight.w600,
-          //             ),
-          //           ),
-          //         );
-          //   },
-          // ),
-        ],
+              const SizedBox(height: 16),
+              verifying
+                  ? Center(child: FashionLoader())
+                  : ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        backgroundColor: AppColor.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        LK.authOtpVerify.tr(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+              const SizedBox(height: 12),
+              resending
+                  ? Center(child: FashionLoader.spinKitThreeBounce())
+                  : ElevatedButton(
+                      onPressed: () => context.read<AuthBloc>().add(
+                        ResendOtpCodeEvent(email: widget.email),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        backgroundColor: AppColor.primarySoft,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        LK.authOtpResend.tr(),
+                        style: const TextStyle(
+                          color: AppColor.secondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+              const SizedBox(height: 24),
+            ],
+          );
+        },
       ),
     );
   }

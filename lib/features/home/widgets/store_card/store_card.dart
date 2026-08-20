@@ -1,12 +1,15 @@
 import 'package:fashion_store/features/home/widgets/store_card/store_card-founder_photo.dart';
 import 'package:fashion_store/features/home/widgets/store_card/store_card_detail.dart';
-import 'package:fashion_store/models/posts_response_model.dart';
 import 'package:flutter/material.dart';
 
-import '../product_card/layers/add_layer.dart';
-import '../product_card/layers/save_layer.dart';
+import '../../../../core/utils/api_service.dart';
+import '../../../../models/store/store_model.dart';
+
+/// Store tile: the white detail card with the store logo overlapping its
+/// top corner. The old Save/Add overlays were dropped - the backend has no
+/// favourites endpoint and a store isn't something you add to a cart.
 class StoreCard extends StatelessWidget {
-  final Store recommendedStore;
+  final StoreModel recommendedStore;
 
   const StoreCard({super.key, required this.recommendedStore});
 
@@ -18,17 +21,7 @@ class StoreCard extends StatelessWidget {
         children: [
           StoreCardDetail(recommendedStore: recommendedStore),
           StoreCardFounderPhoto(
-            imageUrl: recommendedStore.logoUrl ?? "",
-          ),
-          SaveLayer(
-            id: recommendedStore.id ?? "",
-            isLiked: false , //recommendedStore.i ?? false,
-          ),
-          AddLayer(
-            productId: recommendedStore.id ?? "",
-            price: 0,
-            isShowProductDetail: true,
-            isRest: true,
+            imageUrl: ApiService.resolveUrl(recommendedStore.logo) ?? '',
           ),
         ],
       ),

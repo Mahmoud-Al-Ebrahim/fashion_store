@@ -1,39 +1,55 @@
-import 'package:fashion_store/models/posts_response_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
-import '../../../../models/store/store_products_model.dart';
+import '../../../../models/product/product_ref.dart';
+import '../../../shop/widgets/price_tag.dart';
 import 'one_item_more_detail.dart';
 
+/// Grey info strip under the product name: store name (when known) + price.
 class MoreDetailAboutProduct extends StatelessWidget {
-  final Store store;
-  final Product product;
-  const MoreDetailAboutProduct({super.key, required this.store, required this.product});
+  final ProductRef product;
+
+  const MoreDetailAboutProduct({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: height(57),
       decoration: BoxDecoration(
-        color: Color(0xFF666A7A).withOpacity(0.11),
-
-        // صح، بس تأكد من ترتيب ARGB مش RGB
+        color: const Color(0xFF666A7A).withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           width: 0.05,
-
-          color: Theme.of(context).colorScheme.shadow.withOpacity(0.30),
+          color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.30),
         ),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: width(20)),
         child: Row(
           children: [
-            OneItemMoreDetail(icon: "assets/svg/who_i_follow.svg", title: store!.name??"___"),
-            // SizedBox(width: width(24),),
-            // OneItemMoreDetail(icon: Assets.svgTime, title: productModel.preparationTime??"___"),
-            SizedBox(width: width(24),),
-            OneItemMoreDetail(icon: "assets/svg/Coins.svg", title: "${product.price} \$"),
-
+            if ((product.storeName ?? '').isNotEmpty) ...[
+              Flexible(
+                child: OneItemMoreDetail(
+                  icon: "assets/svg/who_i_follow.svg",
+                  title: product.storeName!,
+                ),
+              ),
+              SizedBox(width: width(24)),
+            ],
+            if (product.rating != null && product.rating! > 0) ...[
+              OneItemMoreDetail(
+                icon: "assets/svg/Coins.svg",
+                title: '${LK.productRating.tr()} ${product.rating!.toStringAsFixed(1)}',
+              ),
+              SizedBox(width: width(24)),
+            ],
+            PriceTag(
+              price: product.price,
+              priceAfterDiscount: product.priceAfterDiscount,
+              hasDiscount: product.hasDiscount,
+              fontSize: 15,
+            ),
           ],
         ),
       ),

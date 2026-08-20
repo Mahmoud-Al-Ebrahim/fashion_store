@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../app/widgets/app_draggable_sheet.dart';
 import '../../../app/widgets/text_field.dart';
+import '../../../core/constants/product_enums.dart';
 import '../../../core/screen_util.dart';
 
-/// A single option shown in an [OptionPickerField]'s bottom sheet. [value] is
-/// what gets sent to the API, [label] is what the user sees.
-class PickerOption {
-  final String value;
-  final String label;
-
-  const PickerOption(this.value, [String? label]) : label = label ?? value;
-}
+export '../../../core/constants/product_enums.dart' show PickerOption;
 
 /// Read-only text field that opens a bottom-sheet list of [options] on tap
 /// (the app has no dropdown widget - this mirrors the existing
@@ -34,11 +28,9 @@ class OptionPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final matches = options.where((o) => o.value == selectedValue);
     final controller = TextEditingController(
-      text: options
-          .where((o) => o.value == selectedValue)
-          .map((o) => o.label)
-          .firstOrNull,
+      text: matches.isEmpty ? '' : matches.first.label,
     );
     return InkWell(
       onTap: () async {
@@ -53,7 +45,7 @@ class OptionPickerField extends StatelessWidget {
                 vertical: height(16),
               ),
               itemCount: options.length,
-              separatorBuilder: (_, __) => Divider(height: height(1)),
+              separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final option = options[index];
                 final selected = option.value == selectedValue;
@@ -83,8 +75,4 @@ class OptionPickerField extends StatelessWidget {
       ),
     );
   }
-}
-
-extension _FirstOrNull<T> on Iterable<T> {
-  T? get firstOrNull => isEmpty ? null : first;
 }

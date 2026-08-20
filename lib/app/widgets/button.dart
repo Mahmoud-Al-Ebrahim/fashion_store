@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/localization/translation_keys.dart';
 import '../../core/screen_util.dart';
 
 class AuthButton extends StatelessWidget {
@@ -85,7 +87,7 @@ class FollowButton extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          isFollowing ? 'الغاء متابعة' : 'متابعة',
+          isFollowing ? LK.storeUnfollow.tr() : LK.storeFollow.tr(),
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w300,

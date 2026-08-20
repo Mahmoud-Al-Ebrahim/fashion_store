@@ -1,20 +1,20 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/widgets/button.dart';
 import '../../../../app/widgets/text_field.dart';
+import '../../../../blocs/auth_bloc/auth_bloc.dart';
+import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../core/utils/validators.dart';
 
+/// Final registration step - password + submit.
 class PasswordStep extends StatelessWidget {
-
   final GlobalKey<FormState> formKey;
-
-  final TextEditingController
-  passwordController;
-
-  final TextEditingController
-  confirmPasswordController;
-
+  final TextEditingController passwordController;
+  final TextEditingController confirmPasswordController;
   final VoidCallback onSubmit;
 
   const PasswordStep({
@@ -27,106 +27,47 @@ class PasswordStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Form(
       key: formKey,
       child: SingleChildScrollView(
         child: Column(
           children: [
-
             SizedBox(height: height(35)),
-
             AuthTextField(
-              controller:
-              passwordController,
-              hintText: "كلمة المرور",
+              controller: passwordController,
+              hintText: LK.authPassword.tr(),
               isPassword: true,
-              validator: (value) {
-
-                if (value == null ||
-                    value.isEmpty) {
-
-                  return "الرجاء إدخال كلمة المرور";
-                }
-
-                if (value.length < 6) {
-
-                  return "كلمة المرور يجب أن تكون 6 محارف على الأقل";
-                }
-
-                final hasLowercase =
-                RegExp(
-                  r'[a-z]',
-                ).hasMatch(value);
-
-                final hasUppercase =
-                RegExp(
-                  r'[A-Z]',
-                ).hasMatch(value);
-
-                final hasNumber =
-                RegExp(
-                  r'[0-9]',
-                ).hasMatch(value);
-
-                if (!hasLowercase ||
-                    !hasUppercase ||
-                    !hasNumber) {
-
-                  return "يجب أن تحتوي كلمة المرور على أحرف صغيرة وكبيرة وأرقام";
-                }
-
-                return null;
-              },
+              validator: validatePassword,
             )
                 .animate()
                 .fadeIn(duration: 400.ms)
-                .slide(
-              begin: const Offset(1, 0),
-              duration: 400.ms,
-            ),
-
+                .slide(begin: const Offset(1, 0), duration: 400.ms),
             SizedBox(height: height(5)),
-
             AuthTextField(
-              controller:
-              confirmPasswordController,
-              hintText:
-              "تأكيد كلمة المرور",
+              controller: confirmPasswordController,
+              hintText: LK.authConfirmPassword.tr(),
               isPassword: true,
-              validator: (value) {
-
-                if (value == null ||
-                    value.isEmpty) {
-
-                  return "الرجاء تأكيد كلمة المرور";
-                }
-
-                if (value !=
-                    passwordController.text) {
-
-                  return "كلمتا المرور غير متطابقتين";
-                }
-
-                return null;
+              validator: validateConfirmPassword(() => passwordController.text),
+            )
+                .animate()
+                .fadeIn(duration: 400.ms, delay: 150.ms)
+                .slide(begin: const Offset(1, 0), duration: 400.ms),
+            SizedBox(height: height(30)),
+            BlocBuilder<AuthBloc, AuthState>(
+              buildWhen: (p, c) => p.registerStatus != c.registerStatus,
+              builder: (context, state) {
+                final loading = state.registerStatus == RegisterStatus.loading;
+                return AuthButton(
+                  text: loading
+                      ? LK.commonLoading.tr()
+                      : LK.authRegister.tr(),
+                  onTap: loading ? null : onSubmit,
+                );
               },
             )
                 .animate()
-                .fadeIn(
-              duration: 400.ms,
-              delay: 250.ms,
-            )
-                .slide(
-              begin: const Offset(1, 0),
-              duration: 400.ms,
-            ),
-
-            SizedBox(height: height(30)),
-
-            AuthButton(
-              text: "انشاء حساب",
-              onTap: onSubmit,
-            ),
+                .fadeIn(duration: 400.ms, delay: 300.ms)
+                .slide(begin: const Offset(1, 0), duration: 400.ms),
           ],
         ),
       ),

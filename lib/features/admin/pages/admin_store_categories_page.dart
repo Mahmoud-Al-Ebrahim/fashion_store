@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,6 +8,7 @@ import '../../../core/utils/show_message.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/option_picker_field.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminStoreCategoriesPage extends StatefulWidget {
   const AdminStoreCategoriesPage({super.key});
@@ -30,7 +32,7 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('تصنيفات المتجر'),
+        title: Text(LK.adminStoreCategories.tr()),
       ),
       body: BlocConsumer<CategoryBloc, CategoryState>(
         listenWhen: (p, c) =>
@@ -54,7 +56,7 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
               children: [
                 if (availableCategories.isNotEmpty)
                   OptionPickerField(
-                    hintText: 'إضافة تصنيف',
+                    hintText: LK.adminAddCategory.tr(),
                     options: availableCategories
                         .map((c) => PickerOption(c.id.toString(), c.name))
                         .toList(),
@@ -75,7 +77,7 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
                             GetAllStoreCategoryStatus.success &&
                         state.storeCategories.isEmpty,
                     errorMessage: state.errorMessage,
-                    emptyText: 'لم يتم إضافة تصنيفات بعد',
+                    emptyText: LK.adminNoCategories.tr(),
                     child: Wrap(
                       spacing: width(10),
                       runSpacing: height(10),
@@ -83,14 +85,14 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
                         final category = state.categories
                             .where((c) => c.id == sc.categoryId);
                         final name =
-                            category.isNotEmpty ? category.first.name : 'تصنيف #${sc.categoryId}';
+                            category.isNotEmpty ? category.first.name : '${LK.adminCategory.tr()} #${sc.categoryId}';
                         return Chip(
                           label: Text(name),
                           onDeleted: () async {
                             final confirmed = await confirmDialog(
                               context,
-                              title: 'حذف التصنيف',
-                              message: 'إزالة "$name" من تصنيفات المتجر؟',
+                              title: LK.commonDelete.tr(),
+                              message: '${LK.adminRemoveCategoryConfirm.tr()}\n$name',
                             );
                             if (!confirmed || !context.mounted) return;
                             context.read<CategoryBloc>().add(

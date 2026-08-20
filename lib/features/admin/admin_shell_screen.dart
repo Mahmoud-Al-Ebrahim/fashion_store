@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,6 +18,7 @@ import 'pages/admin_more_page.dart';
 import 'pages/admin_orders_page.dart';
 import 'pages/admin_posts_page.dart';
 import 'pages/admin_products_page.dart';
+import '../../core/localization/translation_keys.dart';
 
 /// Root shell for the store-owner ("Admin" role) dashboard. Provides every
 /// bloc the admin screens need once, then switches between the five main
@@ -33,13 +35,34 @@ class AdminShellScreen extends StatefulWidget {
 class _AdminShellScreenState extends State<AdminShellScreen> {
   int _currentIndex = 0;
 
-  static const _items = [
-    (icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard, label: 'الرئيسية'),
-    (icon: Icons.inventory_2_outlined, selectedIcon: Icons.inventory_2, label: 'المنتجات'),
-    (icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long, label: 'الطلبات'),
-    (icon: Icons.dynamic_feed_outlined, selectedIcon: Icons.dynamic_feed, label: 'المنشورات'),
-    (icon: Icons.more_horiz, selectedIcon: Icons.more_horiz, label: 'المزيد'),
-  ];
+  /// Built per-frame so the labels follow the active locale.
+  List<({IconData icon, IconData selectedIcon, String label})> get _items => [
+        (
+          icon: Icons.dashboard_outlined,
+          selectedIcon: Icons.dashboard,
+          label: LK.adminDashboard.tr()
+        ),
+        (
+          icon: Icons.inventory_2_outlined,
+          selectedIcon: Icons.inventory_2,
+          label: LK.adminProducts.tr()
+        ),
+        (
+          icon: Icons.receipt_long_outlined,
+          selectedIcon: Icons.receipt_long,
+          label: LK.adminOrders.tr()
+        ),
+        (
+          icon: Icons.dynamic_feed_outlined,
+          selectedIcon: Icons.dynamic_feed,
+          label: LK.adminPosts.tr()
+        ),
+        (
+          icon: Icons.more_horiz,
+          selectedIcon: Icons.more_horiz,
+          label: LK.adminMore.tr()
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {

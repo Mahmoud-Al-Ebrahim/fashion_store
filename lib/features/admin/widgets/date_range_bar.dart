@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/screen_util.dart';
+import '../../../core/localization/translation_keys.dart';
 
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -61,7 +63,7 @@ class DateRangeBar extends StatelessWidget {
         IconButton(
           onPressed: onApply,
           icon: Icon(Icons.filter_alt, color: primary),
-          tooltip: 'تطبيق',
+          tooltip: LK.commonApply.tr(),
         ),
       ],
     );

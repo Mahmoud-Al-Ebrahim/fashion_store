@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../app/widgets/button.dart';
+import '../../core/localization/translation_keys.dart';
 import '../auth/pages/on_boarding_screen.dart';
 
 class _OnboardingPage {
@@ -14,22 +16,10 @@ class _OnboardingPage {
   final String subtitle;
 }
 
-const _pages = [
-  _OnboardingPage(
-    title: 'أنشئ متجرك الخاص للأزياء بسهولة',
-    subtitle:
-    'ابدأ بيع الملابس والمنتجات الخاصة بك خلال دقائق، مع إدارة كاملة للطلبات والعملاء',
-  ),
-  _OnboardingPage(
-    title: 'اكتشف أحدث صيحات الموضة من متاجر متعددة',
-    subtitle:
-    'تصفح آلاف القطع من مختلف المتاجر، وقارن بين الأسعار والتصاميم بكل سهولة',
-  ),
-  _OnboardingPage(
-    title: 'تسوّق بثقة واطلب كل ما يعجبك',
-    subtitle:
-    'أضف المنتجات إلى السلة، تابع طلباتك، واستمتع بتجربة تسوق عصرية وسريعة',
-  ),
+List<_OnboardingPage> _buildPages() => [
+  _OnboardingPage(title: LK.onboardingTitle1, subtitle: LK.onboardingSubtitle1),
+  _OnboardingPage(title: LK.onboardingTitle2, subtitle: LK.onboardingSubtitle2),
+  _OnboardingPage(title: LK.onboardingTitle3, subtitle: LK.onboardingSubtitle3),
 ];
 
 class AppColor {
@@ -48,6 +38,8 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+  late final List<_OnboardingPage> _pages = _buildPages();
+
   final PageController _controller = PageController();
   int _current = 0;
 
@@ -67,8 +59,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final primary = AppColor.primary;
 
+    // Text direction comes from the active locale via MaterialApp, so this
+    // screen no longer forces RTL.
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: Directionality.of(context),
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
@@ -94,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                           /// TITLE
                           Text(
-                            page.title,
+                            page.title.tr(),
                             textAlign: TextAlign.center,
                             style: Theme.of(context)
                                 .textTheme
@@ -110,7 +104,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                           /// SUBTITLE
                           Text(
-                            page.subtitle,
+                            page.subtitle.tr(),
                             textAlign: TextAlign.center,
                             style: Theme.of(context)
                                 .textTheme
@@ -144,8 +138,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: AuthButton(
 
                         text: _current == _pages.length - 1
-                            ? 'ابدأ الآن'
-                            : 'التالي',
+                            ? LK.onboardingStart.tr()
+                            : LK.commonNext.tr(),
                         onTap: _next,
                       ),
                     ),

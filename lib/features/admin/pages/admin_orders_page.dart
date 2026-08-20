@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,6 +8,7 @@ import '../../../core/screen_util.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/admin_status_badge.dart';
 import 'admin_order_detail_page.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminOrdersPage extends StatefulWidget {
   const AdminOrdersPage({super.key});
@@ -31,7 +33,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('الطلبات'),
+        title: Text(LK.adminOrders.tr()),
       ),
       body: RefreshIndicator(
         onRefresh: () async => _load(),
@@ -43,7 +45,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
               isEmpty: state.getAllOrdersStatus == GetAllOrdersStatus.success &&
                   state.orders.isEmpty,
               errorMessage: state.errorMessage,
-              emptyText: 'لا توجد طلبات بعد',
+              emptyText: LK.adminNoOrders.tr(),
               onRetry: _load,
               child: ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -72,7 +74,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'طلب #${order.id}',
+                                  '${LK.ordersOrderNumber.tr()}${order.id}',
                                   style: Theme.of(context).textTheme.titleSmall,
                                 ),
                                 SizedBox(height: height(4)),
@@ -84,7 +86,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                                 ),
                                 SizedBox(height: height(4)),
                                 Text(
-                                  'الإجمالي: ${order.totalPrice.toStringAsFixed(0)}',
+                                  '${LK.ordersTotal.tr()}: ${order.totalPrice.toStringAsFixed(0)}',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ],
@@ -92,7 +94,6 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                           ),
                           AdminStatusBadge(
                             status: order.status,
-                            labels: kOrderStatusArabic,
                           ),
                         ],
                       ),

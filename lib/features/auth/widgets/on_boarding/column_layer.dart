@@ -1,5 +1,7 @@
 import 'package:fashion_store/core/helper/helper_functions.dart';
-import 'package:fashion_store/features/auth/pages/choose_account_kind_screen.dart';
+import 'package:fashion_store/features/auth/pages/sign_up/sign_up_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:fashion_store/core/localization/translation_keys.dart';
 import 'package:fashion_store/features/auth/pages/sign_in_screen/sign_in_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -86,17 +88,17 @@ class ColumnLayer extends StatelessWidget {
                 },
                 heightButton: 52,
                 widthButton: 167,
-                text: 'تسجيل الدخول',
+                text: LK.authLogin.tr(),
               ),
               SizedBox(width: width(10)),
               AuthButton(
                 onTap: (){
-                  HelperFunctions.navigateToPage(context , ChooseAccountKindScreen());
+                  HelperFunctions.navigateToPage(context , const SignUpScreen());
                 },
                 heightButton: 52,
                 widthButton: 167,
                 isWhiteBackground: true,
-                text: 'أنشىء حساب',
+                text: LK.authRegister.tr(),
               ),
             ],
           ),

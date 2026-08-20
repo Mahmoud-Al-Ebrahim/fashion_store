@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,6 +8,7 @@ import '../../../core/screen_util.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/admin_status_badge.dart';
 import 'admin_complaint_detail_page.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminComplaintsPage extends StatefulWidget {
   const AdminComplaintsPage({super.key});
@@ -31,7 +33,7 @@ class _AdminComplaintsPageState extends State<AdminComplaintsPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('الشكاوى'),
+        title: Text(LK.adminComplaints.tr()),
       ),
       body: RefreshIndicator(
         onRefresh: () async => _load(),
@@ -43,7 +45,7 @@ class _AdminComplaintsPageState extends State<AdminComplaintsPage> {
               isEmpty: state.getAllComplaintsStatus == GetAllComplaintsStatus.success &&
                   state.storeComplaints.isEmpty,
               errorMessage: state.errorMessage,
-              emptyText: 'لا توجد شكاوى',
+              emptyText: LK.adminNoComplaints.tr(),
               onRetry: _load,
               child: ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -76,7 +78,6 @@ class _AdminComplaintsPageState extends State<AdminComplaintsPage> {
                       ),
                       trailing: AdminStatusBadge(
                         status: complaint.status,
-                        labels: kComplaintStatusArabic,
                       ),
                     ),
                   );

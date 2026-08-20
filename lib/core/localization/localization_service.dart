@@ -12,8 +12,8 @@ class LocalizationService extends StatelessWidget {
     return EasyLocalization(
       path: "assets/languages",
       saveLocale: true,
-      startLocale: Locale('ar' , 'SY'),
-      fallbackLocale: Locale('ar' , 'SY'),
+      startLocale: defaultLocal,
+      fallbackLocale: defaultLocal,
       supportedLocales: supportedLocal,
       child: child,
     );

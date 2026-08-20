@@ -40,6 +40,15 @@ class GetAllPostsEvent extends PostEvent {
   GetAllPostsEvent({required this.storeId});
 }
 
+/// Builds the community feed. The API exposes posts per store only, so this
+/// fans out to `Post/GetAll/{storeId}` for each of [storeIds] and merges the
+/// results newest-first client side.
+class GetCommunityFeedEvent extends PostEvent {
+  final List<int> storeIds;
+
+  GetCommunityFeedEvent({required this.storeIds});
+}
+
 /// PUT Post/Update/{postId} (multipart/form-data, store owner)
 class UpdatePostEvent extends PostEvent {
   final int postId;

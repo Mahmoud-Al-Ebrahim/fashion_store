@@ -1,36 +1,35 @@
 import 'package:fashion_store/core/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/screen_util.dart';
-import '../../../../models/store/store_products_model.dart';
+import '../../../../core/utils/api_service.dart';
+import '../../../../models/product/product_ref.dart';
 import '../../pages/product_screen.dart';
-import 'layers/add_layer.dart';
-import 'layers/delete_layer.dart';
+import '../../../shop/widgets/price_tag.dart';
 import 'layers/image_layer.dart';
 import 'layers/name_store_name_layer.dart';
 import 'layers/name_store_price_time.dart';
-import 'layers/save_layer.dart';
 
+/// Product tile - the original layered design (rounded-34 image with a
+/// gradient scrim, text block overlaid) now driven by the real API product.
+///
+/// The old Save / Add / Delete overlay layers were removed: the backend has no
+/// favourites endpoint, and adding to the cart needs a `productSizeId` that
+/// only exists once a colour + size are chosen on the details page.
 class ProductCard extends StatelessWidget {
   final bool isWithDetail;
-  final Product product;
-  final bool isShowProductDetail;
+  final ProductRef product;
 
   const ProductCard({
     super.key,
-    required this.isWithDetail,
     required this.product,
-    required this.isShowProductDetail,
+    this.isWithDetail = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () {
-          context.pushPage(
-            ProductScreen(product: product, store: product.store!),
-          );
-        },
+        onTap: () => context.pushPage(ProductScreen(product: product)),
         child: Container(
           height: height(190),
           width: width(170),
@@ -38,26 +37,17 @@ class ProductCard extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              ImageLayer(imageUrl: product.imageUrl!),
-              // BlocBuilder<StoreBloc, StoreState>(
-              //   buildWhen: (p, c) => p.editProductState != c.editProductState,
-              //   builder: (context, state) {
-              //     return state.editProductState.isLoading
-              //         ? Positioned(
-              //             bottom: -8,
-              //             left: -2,
-              //             child: MinBaytyLoader(),
-              //           )
-              //         :
-              AddLayer(
-                productId: product.id ?? "",
-                price: product.price ?? 0,
-                isShowProductDetail: isShowProductDetail,
-                isRest: false,
-                product: product,
+              ImageLayer(
+                imageUrl: ApiService.resolveUrl(product.imageUrl) ?? '',
               ),
-              DeleteLayer(id: product.id!),
-              SaveLayer(id: product.id ?? "", isLiked: product.isLiked ?? false),
+              if (product.hasDiscount)
+                PositionedDirectional(
+                  top: height(10),
+                  end: width(10),
+                  child: DiscountBadge(
+                    percentage: product.discountPercentage!,
+                  ),
+                ),
               isWithDetail
                   ? NameStorePriceTime(product: product)
                   : NameStoreNameLayer(favoriteProduct: product),

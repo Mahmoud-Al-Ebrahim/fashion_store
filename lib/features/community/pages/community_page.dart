@@ -1,11 +1,19 @@
-import 'package:fashion_store/models/dummy/stories_posts_fake_data.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../app/widgets/async_view.dart';
+import '../../../blocs/post_bloc/post_bloc.dart';
+import '../../../blocs/store_bloc/store_bloc.dart';
+import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
-import '../widgets/posts_section.dart';
-import '../widgets/stories_section.dart';
+import '../widgets/post_single_widget.dart';
 
+/// Community feed - posts from every store, newest first.
+///
+/// Stories were removed from the product; this page is now purely the post
+/// feed. Because the backend only serves posts per store, the feed is
+/// assembled from the store list (see `GetCommunityFeedEvent`).
 class CommunityPage extends StatefulWidget {
   const CommunityPage({super.key});
 
@@ -17,67 +25,59 @@ class _CommunityPageState extends State<CommunityPage> {
   @override
   void initState() {
     super.initState();
-    bool isUser = true; //AuthServiceLocator.instance.role == TypeUser.user;
-    // widget.communityBloc.add(GetStoriesEvent(onSuccess: () {}, reset: !isUser));
-    // widget.communityBloc.add(GetPostsEvent(onSuccess: () {}, reset: !isUser));
+    final stores = context.read<StoreBloc>().state.stores;
+    if (stores.isEmpty) {
+      context.read<StoreBloc>().add(GetAllStoresEvent());
+    } else {
+      _loadFeed();
+    }
+  }
+
+  void _loadFeed() {
+    final stores = context.read<StoreBloc>().state.stores;
+    context.read<PostBloc>().add(
+      GetCommunityFeedEvent(storeIds: stores.map((s) => s.id).toList()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // BlocBuilder<CommunityBloc, CommunityState>(
-          //   buildWhen:
-          //       (p, c) =>
-          //           p.storiesPagination.paginationStatus !=
-          //           c.storiesPagination.paginationStatus,
-          //   builder: (context, state) {
-          //     if (!state.storiesPagination.isSuccess &&
-          //         state.storiesPagination.items.isEmpty) {
-          //       return StoriesShimmer();
-          //     }
-          //     if(state.storiesPagination.items.isEmpty){
-          //       return Center(
-          //           child: const NoData(
-          //             heightt: 100,
-          //             imageHeight: 80,
-          //             text: "لايوجد ستوريات",
-          //           ));
-          //     }
-          StoriesSection(stories: storiesFakeData),
-          //     );
-          //   },
-          // ),
-          SizedBox(height: height(30)),
-          Expanded(
-            child:
-                // BlocBuilder<CommunityBloc, CommunityState>(
-                //   buildWhen:
-                //       (p, c) =>
-                //           p.postsPagination.paginationStatus !=
-                //               c.postsPagination.paginationStatus ||
-                //           p.addPostState != c.addPostState ||
-                //           p.deletePostOrStoryState != c.deletePostOrStoryState,
-                //   builder: (context, state) {
-                //     if (!state.postsPagination.isSuccess &&
-                //         state.postsPagination.items.isEmpty) {
-                //       return PostsShimmer();
-                //     }
-                //     if(state.postsPagination.items.isEmpty){
-                //       return Center(
-                //           child: const NoData(
-                //             heightt: 400,
-                //             text: "لايوجد منشورات",
-                //           ));
-                //     }
-                PostsSection(posts: postsFakeData),
-          ),
-          //     },
-          //   ),
-          // ),
-          SizedBox(height: height(20)),
-        ],
+      body: BlocListener<StoreBloc, StoreState>(
+        listenWhen: (p, c) => p.stores != c.stores,
+        listener: (context, state) {
+          if (state.stores.isNotEmpty) _loadFeed();
+        },
+        child: BlocBuilder<PostBloc, PostState>(
+          buildWhen: (p, c) =>
+              p.getCommunityFeedStatus != c.getCommunityFeedStatus ||
+              p.communityFeed != c.communityFeed,
+          builder: (context, state) {
+            return RefreshIndicator(
+              onRefresh: () async => _loadFeed(),
+              child: AsyncView(
+                isLoading:
+                    state.getCommunityFeedStatus == GetCommunityFeedStatus.loading,
+                isFailure:
+                    state.getCommunityFeedStatus == GetCommunityFeedStatus.failure,
+                isEmpty: state.getCommunityFeedStatus ==
+                        GetCommunityFeedStatus.success &&
+                    state.communityFeed.isEmpty,
+                errorMessage: state.errorMessage,
+                emptyText: LK.communityNoPosts.tr(),
+                onRetry: _loadFeed,
+                child: ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(width(16)),
+                  itemCount: state.communityFeed.length,
+                  separatorBuilder: (_, __) => SizedBox(height: height(16)),
+                  itemBuilder: (context, index) =>
+                      PostSingleWidget(post: state.communityFeed[index]),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

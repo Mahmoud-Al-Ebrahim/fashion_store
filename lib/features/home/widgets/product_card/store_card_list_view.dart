@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../../core/screen_util.dart';
-import '../../../../models/store/store_products_model.dart';
+import '../../../../models/product/product_ref.dart';
 import 'product-card.dart';
 
+/// Horizontal product carousel used by the home sections.
 class ProductCardListView extends StatelessWidget {
-  final List<Product> favouriteProducts;
+  final List<ProductRef> favouriteProducts;
 
+  /// Home carousels show the compact overlay; list/grid contexts show the
+  /// fuller one with description and price.
   final bool isHomePage;
 
   const ProductCardListView({
@@ -20,16 +23,15 @@ class ProductCardListView extends StatelessWidget {
       height: height(200),
       child: ListView.builder(
         itemCount: favouriteProducts.length,
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         itemBuilder: (context, index) {
           return Padding(
-            padding: EdgeInsets.only(left: 10),
+            padding: const EdgeInsets.only(left: 10),
             child: ProductCard(
-              isWithDetail: false,
+              isWithDetail: !isHomePage,
               product: favouriteProducts[index],
-              isShowProductDetail: isHomePage,
             ),
           );
         },

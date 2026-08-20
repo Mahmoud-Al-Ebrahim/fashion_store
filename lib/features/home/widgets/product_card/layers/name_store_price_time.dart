@@ -1,56 +1,71 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/screen_util.dart';
-import '../../../../../models/store/store_products_model.dart';
-import '../product_time.dart';
+import '../../../../../models/product/product_ref.dart';
+import '../../../../shop/widgets/price_tag.dart';
 
+/// Text block overlaid on the product card: name, description, store name and
+/// price. Same layout as before - only the model behind it changed.
 class NameStorePriceTime extends StatelessWidget {
-  final Product product;
+  final ProductRef product;
+
   const NameStorePriceTime({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return Positioned(
       top: height(62),
       child: Padding(
-        padding: EdgeInsets.only(right: width(10)),
+        padding: EdgeInsets.only(right: width(10), left: width(10)),
         child: Column(
           spacing: height(5),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              product.name??"_____",
-              style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
             SizedBox(
               width: width(150),
               child: Text(
-               product.description??"_____",
+                product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontWeight: FontWeight.w500,
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: onPrimary,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            Text(
-              product.store?.name??"_____",
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.w500,
+            if ((product.description ?? '').isNotEmpty)
+              SizedBox(
+                width: width(150),
+                child: Text(
+                  product.description!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: onPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            ),
-            Text(
-              " \$ ${product.price??0}",
-              style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
+            if ((product.storeName ?? '').isNotEmpty)
+              SizedBox(
+                width: width(150),
+                child: Text(
+                  product.storeName!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: onPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
+            PriceTag(
+              price: product.price,
+              priceAfterDiscount: product.priceAfterDiscount,
+              hasDiscount: product.hasDiscount,
+              color: onPrimary,
+              fontSize: 15,
             ),
-          // ProductTime(product: product,)
           ],
         ),
       ),

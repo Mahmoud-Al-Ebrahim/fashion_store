@@ -1,9 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/wallet_bloc/wallet_bloc.dart';
 import '../../../core/screen_util.dart';
 import '../widgets/admin_async_view.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminWalletPage extends StatefulWidget {
   const AdminWalletPage({super.key});
@@ -27,7 +29,7 @@ class _AdminWalletPageState extends State<AdminWalletPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('المحفظة والمعاملات'),
+        title: Text(LK.adminWalletTransactions.tr()),
       ),
       body: BlocBuilder<WalletBloc, WalletState>(
         builder: (context, state) {
@@ -44,7 +46,7 @@ class _AdminWalletPageState extends State<AdminWalletPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'الرصيد الحالي',
+                      LK.profileBalance.tr(),
                       style: TextStyle(color: Colors.white.withOpacity(0.8)),
                     ),
                     SizedBox(height: height(6)),
@@ -63,7 +65,7 @@ class _AdminWalletPageState extends State<AdminWalletPage> {
               ),
               SizedBox(height: height(20)),
               Text(
-                'سجل المعاملات',
+                LK.profileTransactions.tr(),
                 style: Theme.of(context).textTheme.titleMedium!.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -78,7 +80,7 @@ class _AdminWalletPageState extends State<AdminWalletPage> {
                     state.getAllTransactionsStatus == GetAllTransactionsStatus.success &&
                         state.transactions.isEmpty,
                 errorMessage: state.errorMessage,
-                emptyText: 'لا توجد معاملات بعد',
+                emptyText: LK.profileNoTransactions.tr(),
                 child: Column(
                   children: state.transactions.map((t) {
                     final isDeposit = t.transactionType == 'Deposit';
@@ -103,7 +105,7 @@ class _AdminWalletPageState extends State<AdminWalletPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(isDeposit ? 'إيداع' : 'سحب'),
+                                Text(isDeposit ? LK.profileDeposit.tr() : LK.profileWithdraw.tr()),
                                 Text(
                                   '${t.date.year}-${t.date.month}-${t.date.day}',
                                   style: Theme.of(context).textTheme.bodySmall,

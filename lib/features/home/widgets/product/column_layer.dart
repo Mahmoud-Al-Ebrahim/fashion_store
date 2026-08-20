@@ -1,53 +1,41 @@
-import 'package:fashion_store/models/posts_response_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/screen_util.dart';
-import '../../../../models/store/store_products_model.dart';
-import 'des_product_scrooll.dart';
-import 'product_name.dart';
-import 'more_detail_about_product.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ProductColumnLayer extends StatefulWidget {
-  final Store store;
-  final Product product;
+import '../../../../blocs/clothing_item_bloc/clothing_item_bloc.dart';
+import '../../../../core/localization/translation_keys.dart';
+import '../../../../core/screen_util.dart';
+import '../../../../models/clothing_item/clothing_item_model.dart';
+import '../../../../models/clothing_item/product_size_model.dart';
+import '../../../../models/product/product_ref.dart';
+import '../../../shop/widgets/color_selector.dart';
+import '../../../shop/widgets/size_selector.dart';
+import 'des_product_scrooll.dart';
+import 'more_detail_about_product.dart';
+import 'product_name.dart';
+
+/// The sliding detail sheet (rounded-44 top corners) - original layout, now
+/// fed by `ClothingItemBloc` instead of hard-coded sizes/colours.
+///
+/// Picking a colour bubbles up through [onColorChanged] so the hero image
+/// behind the sheet swaps to that colour's photo.
+class ProductColumnLayer extends StatelessWidget {
+  final ProductRef product;
+  final List<ClothingItemModel> clothingItems;
+  final ClothingItemModel? selectedColor;
+  final ProductSizeModel? selectedSize;
+  final ValueChanged<ClothingItemModel> onColorChanged;
+  final ValueChanged<ProductSizeModel> onSizeChanged;
 
   const ProductColumnLayer({
     super.key,
-    required this.store,
     required this.product,
+    required this.clothingItems,
+    required this.selectedColor,
+    required this.selectedSize,
+    required this.onColorChanged,
+    required this.onSizeChanged,
   });
-
-  @override
-  State<ProductColumnLayer> createState() => _ProductColumnLayerState();
-}
-
-class _ProductColumnLayerState extends State<ProductColumnLayer> {
-  final ScrollController _scrollController = ScrollController();
-  String? selectedSize;
-  Color? selectedColor;
-
-  // @override
-  // void didUpdateWidget(covariant ProductColumnLayer oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   if (widget.showIngredients && !oldWidget.showIngredients) {
-  //     // بس ينفتح المكونات → اعمل Scroll لتحت
-  //     Future.delayed(const Duration(milliseconds: 200), () {
-  //       if (_scrollController.hasClients) {
-  //         _scrollController.animateTo(
-  //           _scrollController.position.maxScrollExtent,
-  //           duration: const Duration(milliseconds: 500),
-  //           curve: Curves.easeInOut,
-  //         );
-  //       }
-  //     });
-  //   }
-  // }
-
-  @override
-  void initState() {
-    selectedSize = widget.product.sizes.firstOrNull;
-    selectedColor = widget.product.colors.firstOrNull;
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,123 +53,79 @@ class _ProductColumnLayerState extends State<ProductColumnLayer> {
           vertical: height(20),
         ),
         child: SingleChildScrollView(
-          controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: height(20)),
-              ProductName(
-                showIngredients: false,
-                productName: widget.store.name ?? "___",
-              ),
+              ProductName(showIngredients: false, productName: product.name),
               SizedBox(height: height(15)),
-              ContentProductScrollable(
-                title: widget.store.description ?? "___",
-                heightScroll: 95,
-              ),
+              if ((product.description ?? '').isNotEmpty)
+                ContentProductScrollable(
+                  title: product.description!,
+                  heightScroll: 95,
+                ),
               SizedBox(height: height(30)),
-              MoreDetailAboutProduct(
-                product: widget.product,
-                store: widget.store,
-              ),
+              MoreDetailAboutProduct(product: product),
               SizedBox(height: height(30)),
-              _buildSizeSelector(),
 
-              const SizedBox(height: 24),
+              // ----- colours -----
+              BlocBuilder<ClothingItemBloc, ClothingItemState>(
+                builder: (context, state) {
+                  final loading = state.getAllClothingItemsStatus ==
+                      GetAllClothingItemsStatus.loading;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        LK.productColors.tr(),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: height(12)),
+                      if (loading)
+                        const Center(child: CircularProgressIndicator())
+                      else if (clothingItems.isEmpty)
+                        Text(
+                          LK.productNoColors.tr(),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        )
+                      else
+                        ColorSelector(
+                          items: clothingItems,
+                          selectedClothingItemId: selectedColor?.id,
+                          onSelected: onColorChanged,
+                        ),
+                    ],
+                  );
+                },
+              ),
 
-              _buildColorSelector(),
+              SizedBox(height: height(24)),
 
-              const SizedBox(height: 24),
-              // if (!widget.showIngredients) ...[
-              //   Align(
-              //     alignment: Alignment.topRight,
-              //     child: Text(
-              //       "المكونات",
-              //       style: Theme.of(context).textTheme.labelLarge!.copyWith(
-              //         color: Theme.of(context).colorScheme.onSurface,
-              //         fontWeight: FontWeight.w700,
-              //       ),
-              //     ),
-              //   ),
-              //   SizedBox(height: height(15)),
-              //   const IngredientsProduct(),
-              // ],
+              // ----- sizes for the selected colour -----
+              if (clothingItems.isNotEmpty) ...[
+                Text(
+                  LK.productSizes.tr(),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: height(12)),
+                SizeSelector(
+                  sizes: selectedColor?.productSizes ?? const [],
+                  selectedProductSizeId: selectedSize?.productSizeId,
+                  onSelected: onSizeChanged,
+                ),
+              ],
+
+              SizedBox(height: height(120)),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSizeSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Size",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          children: widget.product.sizes.map((size) {
-            final isSelected = selectedSize == size;
-
-            return ChoiceChip(
-              label: Text(size),
-              selected: isSelected,
-              onSelected: (_) {
-                setState(() {
-                  selectedSize = size;
-                });
-              },
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildColorSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Color",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          children: widget.product.colors.map((color) {
-            final isSelected = selectedColor == color;
-
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedColor = color;
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? Colors.black : Colors.grey.shade300,
-                    width: isSelected ? 3 : 1,
-                  ),
-                ),
-                child: isSelected
-                    ? const Icon(Icons.check, color: Colors.white)
-                    : null,
-              ),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 }

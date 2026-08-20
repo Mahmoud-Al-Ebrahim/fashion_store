@@ -1,12 +1,15 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/admin_bloc/admin_bloc.dart';
 import '../../../blocs/store_bloc/store_bloc.dart';
 import '../../../core/screen_util.dart';
+import '../../../core/constants/product_enums.dart';
 import '../widgets/admin_section_header.dart';
 import '../widgets/admin_stat_card.dart';
 import '../widgets/date_range_bar.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -49,7 +52,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         title: BlocBuilder<StoreBloc, StoreState>(
           builder: (context, state) {
             return Text(
-              state.myStore?.storeName ?? 'لوحة تحكم المتجر',
+              state.myStore?.storeName ?? LK.adminDashboard.tr(),
               style: Theme.of(context).textTheme.titleLarge,
             );
           },
@@ -63,7 +66,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AdminSectionHeader(title: 'نظرة عامة'),
+              AdminSectionHeader(title: LK.adminOverview.tr()),
               BlocBuilder<AdminBloc, AdminState>(
                 builder: (context, state) {
                   final summary = state.dashboardSummary;
@@ -76,22 +79,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     childAspectRatio: 1.5,
                     children: [
                       AdminStatCard(
-                        label: 'المنتجات',
+                        label: LK.adminProductsCount.tr(),
                         value: '${summary?.productsCount ?? '-'}',
                         icon: Icons.inventory_2_outlined,
                       ),
                       AdminStatCard(
-                        label: 'المتابعون',
+                        label: LK.adminFollowersCount.tr(),
                         value: '${summary?.followersCount ?? '-'}',
                         icon: Icons.people_outline,
                       ),
                       AdminStatCard(
-                        label: 'المنشورات',
+                        label: LK.adminPostsCount.tr(),
                         value: '${summary?.postsCount ?? '-'}',
                         icon: Icons.dynamic_feed_outlined,
                       ),
                       AdminStatCard(
-                        label: 'التفاعلات',
+                        label: LK.adminReactionsCount.tr(),
                         value: '${summary?.totalReactions ?? '-'}',
                         icon: Icons.favorite_border,
                       ),
@@ -100,7 +103,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 },
               ),
               SizedBox(height: height(20)),
-              const AdminSectionHeader(title: 'الأداء المالي'),
+              AdminSectionHeader(title: LK.adminFinancial.tr()),
               DateRangeBar(
                 startDate: _fromDate,
                 endDate: _toDate,
@@ -118,7 +121,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     children: [
                       Expanded(
                         child: AdminStatCard(
-                          label: 'عدد الطلبات',
+                          label: LK.adminOrdersCount.tr(),
                           value: '${analytics?.ordersCount ?? '-'}',
                           icon: Icons.shopping_bag_outlined,
                           color: Colors.blue,
@@ -127,7 +130,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       SizedBox(width: width(10)),
                       Expanded(
                         child: AdminStatCard(
-                          label: 'إجمالي المبيعات',
+                          label: LK.adminTotalSales.tr(),
                           value: analytics == null
                               ? '-'
                               : analytics.totalSales.toStringAsFixed(0),
@@ -138,7 +141,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       SizedBox(width: width(10)),
                       Expanded(
                         child: AdminStatCard(
-                          label: 'العملاء',
+                          label: LK.adminCustomersCount.tr(),
                           value: '${analytics?.customersCount ?? '-'}',
                           icon: Icons.person_outline,
                           color: Colors.purple,
@@ -149,7 +152,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 },
               ),
               SizedBox(height: height(20)),
-              const AdminSectionHeader(title: 'تنبيهات المخزون المنخفض'),
+              AdminSectionHeader(title: LK.adminInventoryAlerts.tr()),
               BlocBuilder<AdminBloc, AdminState>(
                 builder: (context, state) {
                   if (state.getProductInventoryAlertStatus ==
@@ -163,7 +166,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     return Padding(
                       padding: EdgeInsets.symmetric(vertical: height(16)),
                       child: Text(
-                        'لا توجد تنبيهات مخزون حالياً',
+                        LK.adminNoInventoryAlerts.tr(),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     );
@@ -199,12 +202,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             SizedBox(width: width(10)),
                             Expanded(
                               child: Text(
-                                'منتج #${alert.productId} - ${alert.color} - ${alert.size}',
+                                '${LK.adminProductNumber.tr()}${alert.productId} - ${localizedColorName(alert.color)} - ${sizeLabel(alert.size)}',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),
                             Text(
-                              'الكمية: ${alert.quantity}',
+                              '${LK.adminQuantityLabel.tr()}: ${alert.quantity}',
                               style: Theme.of(context).textTheme.bodySmall!.copyWith(
                                 color: Colors.orange.shade800,
                                 fontWeight: FontWeight.w700,

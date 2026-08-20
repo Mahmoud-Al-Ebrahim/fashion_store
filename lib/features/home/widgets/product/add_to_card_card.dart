@@ -1,32 +1,47 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../app/widgets/button.dart';
+import '../../../../blocs/cart_bloc/cart_bloc.dart';
+import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
+import '../../../shop/widgets/price_tag.dart';
 
-class AddToCardCard extends StatelessWidget {
-  final double productPrice;
-  final String productId;
-  // final HomeAndProductBloc homeAndProductBloc;
+/// Bottom "add to cart" bar - original design, now driven by the real cart
+/// bloc. Quantity is local until the item is added; the button is disabled
+/// until a size has been chosen (the API keys cart items by `productSizeId`).
+class AddToCardCard extends StatefulWidget {
+  final double unitPrice;
+  final int? selectedProductSizeId;
 
   const AddToCardCard({
     super.key,
-    required this.productPrice,
-    required this.productId,
-    // required this.homeAndProductBloc,
+    required this.unitPrice,
+    required this.selectedProductSizeId,
   });
 
   @override
+  State<AddToCardCard> createState() => _AddToCardCardState();
+}
+
+class _AddToCardCardState extends State<AddToCardCard> {
+  int _quantity = 1;
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final canAdd = widget.selectedProductSizeId != null;
+
     return Container(
-      height: height(160),
-      width: width(400),
+      height: height(170),
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onPrimary,
+        color: theme.colorScheme.onPrimary,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.20),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.20),
             blurRadius: 22,
             offset: const Offset(0, -2),
             spreadRadius: 1,
@@ -35,7 +50,7 @@ class AddToCardCard extends StatelessWidget {
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
-          vertical: height(25),
+          vertical: height(20),
           horizontal: width(20),
         ),
         child: Column(
@@ -44,82 +59,74 @@ class AddToCardCard extends StatelessWidget {
               spacing: 10,
               children: [
                 GestureDetector(
-                  // onTap: () => bloc.add(IncreaseQuantity()),
-                  child: SvgPicture.asset("assets/svg/add-circle.svg",color: Theme.of(context).colorScheme.primary,),
+                  onTap: () => setState(() => _quantity++),
+                  child: SvgPicture.asset(
+                    "assets/svg/add-circle.svg",
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
                 Text(
-                  "${1}",
-                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  '$_quantity',
+                  style: theme.textTheme.labelLarge!.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 GestureDetector(
-                  // onTap: () => bloc.add(DecreaseQuantity()),
-                  child: SvgPicture.asset("assets/svg/minus-cirlce.svg",color: Theme.of(context).colorScheme.primary,),
+                  onTap: () {
+                    if (_quantity > 1) setState(() => _quantity--);
+                  },
+                  child: SvgPicture.asset(
+                    "assets/svg/minus-cirlce.svg",
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
                 const Spacer(),
                 Text(
-                  "${150.toStringAsFixed(2)} \$",
-                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  '${formatPrice(widget.unitPrice * _quantity)} ${LK.commonCurrency.tr()}',
+                  style: theme.textTheme.labelLarge!.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(width: width(10)),
               ],
             ),
-            // SizedBox(height: height(10)),
-            //
-            // BlocBuilder<HomeAndProductBloc, HomeAndProductState>(
-            //   builder: (context, state) {
-            //     return state.addToCartState.isLoading
-            //         ? LinearProgressIndicator(
-            //       minHeight: 2.5,
-            //       backgroundColor: Theme.of(context)
-            //           .colorScheme
-            //           .surfaceTint
-            //           .withOpacity(0.2),
-            //     )
-            //         : const SizedBox();
-            //   },
-            // ),
+            BlocBuilder<CartBloc, CartState>(
+              builder: (context, state) {
+                return state.addToCartStatus == AddToCartStatus.loading
+                    ? LinearProgressIndicator(
+                        minHeight: 2.5,
+                        backgroundColor:
+                            theme.colorScheme.primary.withValues(alpha: 0.2),
+                      )
+                    : const SizedBox(height: 2.5);
+              },
+            ),
             SizedBox(height: height(10)),
-
-            Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 0),
-                child: AuthButton(
-                  onTap: () {
-                    // ✅ تحقق من التوكن
-                    // if (AuthServiceLocator.instance.token == null ||
-                    //     AuthServiceLocator.instance.token!.isEmpty) {
-                    //   showFlushBar(context, "يرجى تسجيل الدخول لتتمكن من إضافة المنتجات إلى السلة");
-                    //   return;
-                    // }
-                    //
-                    // // ✅ إذا في توكن → نفذ الحدث
-                    // homeAndProductBloc.add(
-                    //   AddToCartEvent(
-                    //     params: AddToCartParams(
-                    //       productId: productId,
-                    //       quantity: state.quantity,
-                    //     ),
-                    //     onSuccess: () {
-                    //       GoRouterHelper(context).pushNamed(ConfirmOrderPage.name);
-                    //     }, onFailed: () {
-                    //     GoRouterHelper(context).pushNamed(ConfirmOrderPage.name);
-                    //
-                    //   },
-                    //   ),
-                    // );
-                  },
-
-                  text: "اضف للسلة",
-                  widthButton: 350,
-                ),
-              ),
+            AuthButton(
+              onTap: !canAdd
+                  ? null
+                  : () {
+                      context.read<CartBloc>().add(
+                        AddToCartEvent(
+                          productSizeId: widget.selectedProductSizeId!,
+                          quantity: _quantity,
+                        ),
+                      );
+                    },
+              color: canAdd ? null : Colors.grey,
+              text: canAdd
+                  ? LK.productAddToCart.tr()
+                  : LK.productSelectSizeFirst.tr(),
+              widthButton: double.infinity,
+              heightButton: height(54),
             ),
           ],
         ),

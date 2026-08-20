@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,10 +15,11 @@ import '../../../core/screen_util.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/admin/product_dashboard_model.dart';
 import '../../../models/clothing_item/clothing_item_model.dart';
-import '../admin_enums.dart';
+import '../../../core/constants/product_enums.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/image_pick_box.dart';
 import 'admin_product_form_page.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminProductDetailPage extends StatefulWidget {
   final ProductDashboardItemModel product;
@@ -96,17 +98,17 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('إضافة لون جديد', style: Theme.of(sheetContext).textTheme.titleMedium),
+                  Text(LK.adminAddColor.tr(), style: Theme.of(sheetContext).textTheme.titleMedium),
                   SizedBox(height: height(14)),
                   Wrap(
                     spacing: width(10),
                     runSpacing: height(10),
                     children: kColorSwatches.map((swatch) {
-                      final selected = selectedName == swatch.$1;
+                      final selected = selectedName == swatch.apiName;
                       return GestureDetector(
                         onTap: () => setSheetState(() {
-                          selectedName = swatch.$1;
-                          selectedHex = swatch.$2;
+                          selectedName = swatch.apiName;
+                          selectedHex = swatch.hex;
                         }),
                         child: Column(
                           children: [
@@ -114,7 +116,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                               width: 34,
                               height: 34,
                               decoration: BoxDecoration(
-                                color: _parseHex(swatch.$2),
+                                color: _parseHex(swatch.hex),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: selected
@@ -125,7 +127,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                               ),
                             ),
                             SizedBox(height: 4),
-                            Text(swatch.$1, style: const TextStyle(fontSize: 10)),
+                            Text(swatch.label, style: const TextStyle(fontSize: 10)),
                           ],
                         ),
                       );
@@ -134,7 +136,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                   SizedBox(height: height(16)),
                   ImagePickBox(
                     pickedFile: image,
-                    label: 'صورة اللون',
+                    label: LK.adminColorImage.tr(),
                     boxHeight: height(120),
                     onTap: () async {
                       final file = await HelperFunctions.pickImage();
@@ -143,16 +145,16 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                   ),
                   SizedBox(height: height(18)),
                   AuthButton(
-                    text: 'إضافة',
+                    text: LK.commonAdd.tr(),
                     widthButton: double.infinity,
                     heightButton: height(50),
                     onTap: () {
                       if (selectedName == null || selectedHex == null) {
-                        showMessage('يرجى اختيار لون');
+                        showMessage(LK.adminSelectColorFirst.tr());
                         return;
                       }
                       if (image == null) {
-                        showMessage('يرجى إضافة صورة');
+                        showMessage(LK.adminImageRequired.tr());
                         return;
                       }
                       Navigator.of(sheetContext).pop();
@@ -195,11 +197,11 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: height(16)),
-                      Text('إضافة مقاسات', style: Theme.of(sheetContext).textTheme.titleMedium),
+                      Text(LK.adminAddSizes.tr(), style: Theme.of(sheetContext).textTheme.titleMedium),
                       Expanded(
                         child: ListView(
                           controller: scrollController,
-                          children: kAllSizeOptions.map((option) {
+                          children: allSizeOptions().map((option) {
                             final checked = selected.contains(option.value);
                             controllers.putIfAbsent(
                               option.value,
@@ -223,7 +225,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                                     child: TextField(
                                       controller: controllers[option.value],
                                       keyboardType: TextInputType.number,
-                                      decoration: const InputDecoration(hintText: 'الكمية'),
+                                      decoration: InputDecoration(hintText: LK.adminQuantityLabel.tr()),
                                     ),
                                   ),
                               ],
@@ -232,12 +234,12 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                         ),
                       ),
                       AuthButton(
-                        text: 'حفظ المقاسات',
+                        text: LK.adminSaveSizes.tr(),
                         widthButton: double.infinity,
                         heightButton: height(50),
                         onTap: () {
                           if (selected.isEmpty) {
-                            showMessage('يرجى اختيار مقاس واحد على الأقل');
+                            showMessage(LK.adminSizeRequired.tr());
                             return;
                           }
                           final sizes = selected.map((size) {
@@ -270,20 +272,20 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('تعديل الكمية'),
+        title: Text(LK.adminEditQuantity.tr()),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(hintText: 'الكمية'),
+          decoration: InputDecoration(hintText: LK.adminQuantityLabel.tr()),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('إلغاء'),
+            child: Text(LK.commonCancel.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('حفظ'),
+            child: Text(LK.commonSave.tr()),
           ),
         ],
       ),
@@ -323,8 +325,8 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
               onPressed: () async {
                 final confirmed = await confirmDialog(
                   context,
-                  title: 'حذف المنتج',
-                  message: 'سيتم حذف "${_product.name}" نهائياً',
+                  title: LK.commonDelete.tr(),
+                  message: '${LK.adminDeleteProductConfirm.tr()}\n${_product.name}',
                 );
                 if (!confirmed || !context.mounted) return;
                 context.read<ProductBloc>().add(
@@ -340,7 +342,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
               listenWhen: (p, c) => p.productTransactionStatus != c.productTransactionStatus,
               listener: (context, state) {
                 if (state.productTransactionStatus == ProductTransactionStatus.success) {
-                  showMessage('تم حذف المنتج', hasError: false);
+                  showMessage(LK.adminProductDeleted.tr(), hasError: false);
                   Navigator.of(context).pop(true);
                 } else if (state.productTransactionStatus == ProductTransactionStatus.failure) {
                   showMessage(state.errorMessage);
@@ -353,7 +355,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
               listener: (context, state) {
                 if (state.clothingItemTransactionStatus ==
                     ClothingItemTransactionStatus.success) {
-                  showMessage('تم الحفظ بنجاح', hasError: false);
+                  showMessage(LK.adminSavedSuccessfully.tr(), hasError: false);
                   _refreshAll();
                 } else if (state.clothingItemTransactionStatus ==
                     ClothingItemTransactionStatus.failure) {
@@ -391,10 +393,10 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                 spacing: width(10),
                 runSpacing: height(10),
                 children: [
-                  _infoChip('السعر', _product.priceAfterDiscount.toStringAsFixed(0)),
-                  _infoChip('المخزون الكلي', '${_product.totalStock}'),
-                  _infoChip('عدد المبيعات', '${_product.soldCount}'),
-                  _infoChip('التقييم', _product.ratingValue.toStringAsFixed(1)),
+                  _infoChip(LK.productPrice.tr(), _product.priceAfterDiscount.toStringAsFixed(0)),
+                  _infoChip(LK.adminTotalStock.tr(), '${_product.totalStock}'),
+                  _infoChip(LK.adminSalesCount.tr(), '${_product.soldCount}'),
+                  _infoChip(LK.productRating.tr(), _product.ratingValue.toStringAsFixed(1)),
                 ],
               ),
               SizedBox(height: height(20)),
@@ -402,7 +404,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'الألوان والمقاسات',
+                    LK.adminColorsSizes.tr(),
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -410,7 +412,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                   TextButton.icon(
                     onPressed: _addColor,
                     icon: const Icon(Icons.add),
-                    label: const Text('لون جديد'),
+                    label: Text(LK.adminNewColor.tr()),
                   ),
                 ],
               ),
@@ -426,7 +428,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                   if (state.clothingItems.isEmpty) {
                     return Padding(
                       padding: EdgeInsets.symmetric(vertical: height(16)),
-                      child: const Text('لا توجد ألوان مضافة بعد'),
+                      child: Text(LK.adminNoColorsYet.tr()),
                     );
                   }
                   return Column(
@@ -523,8 +525,8 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                 onPressed: () async {
                   final confirmed = await confirmDialog(
                     context,
-                    title: 'حذف اللون',
-                    message: 'سيتم حذف اللون "${item.color}" وكل مقاساته',
+                    title: LK.adminDeleteColor.tr(),
+                    message: '${LK.adminDeleteColorConfirm.tr()}\n${localizedColorName(item.color)}',
                   );
                   if (!confirmed || !context.mounted) return;
                   context.read<ClothingItemBloc>().add(
@@ -547,8 +549,8 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                   onLongPress: () async {
                     final confirmed = await confirmDialog(
                       context,
-                      title: 'حذف المقاس',
-                      message: 'حذف مقاس ${size.size}؟',
+                      title: LK.adminDeleteSize.tr(),
+                      message: '${LK.adminDeleteSize.tr()}: ${sizeLabel(size.size)}',
                     );
                     if (!confirmed || !context.mounted) return;
                     context.read<ClothingItemBloc>().add(
@@ -573,7 +575,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
               }),
               ActionChip(
                 avatar: const Icon(Icons.add, size: 14),
-                label: const Text('مقاس', style: TextStyle(fontSize: 12)),
+                label: Text(LK.exploreSize.tr(), style: TextStyle(fontSize: 12)),
                 onPressed: () => _addSizes(item.id),
               ),
             ],

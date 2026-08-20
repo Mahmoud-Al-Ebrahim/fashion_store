@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,6 +12,7 @@ import '../../../core/utils/show_message.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/confirm_dialog.dart';
 import 'admin_post_form_page.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminPostsPage extends StatefulWidget {
   const AdminPostsPage({super.key});
@@ -46,7 +48,7 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
           scrolledUnderElevation: 0,
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
-          title: const Text('المنشورات'),
+          title: Text(LK.adminPosts.tr()),
         ),
         floatingActionButton: BlocBuilder<StoreBloc, StoreState>(
           builder: (context, storeState) {
@@ -59,7 +61,7 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                       );
                     },
               icon: const Icon(Icons.add),
-              label: const Text('منشور جديد'),
+              label: Text(LK.adminNewPost.tr()),
             );
           },
         ),
@@ -82,7 +84,7 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                 isEmpty: state.getAllPostsStatus == GetAllPostsStatus.success &&
                     state.posts.isEmpty,
                 errorMessage: state.errorMessage,
-                emptyText: 'لا توجد منشورات بعد',
+                emptyText: LK.adminNoPosts.tr(),
                 onRetry: () => _storeId != null ? _load(_storeId!) : null,
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -127,8 +129,8 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                                     children: [
                                       Text(
                                         post.visibility == 'Public'
-                                            ? 'عام'
-                                            : 'للمتابعين فقط',
+                                            ? LK.communityPublic.tr()
+                                            : LK.communityFollowersOnly.tr(),
                                         style: Theme.of(context).textTheme.bodySmall,
                                       ),
                                       const Spacer(),
@@ -144,7 +146,7 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                                         onPressed: () async {
                                           final confirmed = await confirmDialog(
                                             context,
-                                            title: 'حذف المنشور',
+                                            title: LK.adminDeletePost.tr(),
                                           );
                                           if (!confirmed || !context.mounted) return;
                                           context.read<PostBloc>().add(

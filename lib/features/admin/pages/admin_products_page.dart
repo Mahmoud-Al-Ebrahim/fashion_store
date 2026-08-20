@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,6 +12,7 @@ import '../widgets/admin_async_view.dart';
 import '../widgets/confirm_dialog.dart';
 import 'admin_product_detail_page.dart';
 import 'admin_product_form_page.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminProductsPage extends StatefulWidget {
   const AdminProductsPage({super.key});
@@ -39,7 +41,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('المنتجات'),
+        title: Text(LK.adminProducts.tr()),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -47,7 +49,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
           if (added == true) _load();
         },
         icon: const Icon(Icons.add),
-        label: const Text('إضافة منتج'),
+        label: Text(LK.adminAddProduct.tr()),
       ),
       body: MultiBlocListener(
         listeners: [
@@ -55,7 +57,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
             listenWhen: (p, c) => p.productTransactionStatus != c.productTransactionStatus,
             listener: (context, state) {
               if (state.productTransactionStatus == ProductTransactionStatus.success) {
-                showMessage('تم حذف المنتج', hasError: false);
+                showMessage(LK.adminProductDeleted.tr(), hasError: false);
                 _load();
               } else if (state.productTransactionStatus == ProductTransactionStatus.failure) {
                 showMessage(state.errorMessage);
@@ -77,7 +79,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                     state.getProductDashboardStatus == GetProductDashboardStatus.success &&
                         products.isEmpty,
                 errorMessage: state.errorMessage,
-                emptyText: 'لا توجد منتجات بعد، أضف أول منتج لمتجرك',
+                emptyText: LK.adminNoProducts.tr(),
                 onRetry: _load,
                 child: ListView.separated(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -120,7 +122,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         subtitle: Text(
-                          'السعر: ${product.priceAfterDiscount.toStringAsFixed(0)}  •  المخزون: ${product.totalStock}  •  مباع: ${product.soldCount}',
+                          '${LK.productPrice.tr()}: ${product.priceAfterDiscount.toStringAsFixed(0)}  •  ${LK.adminStock.tr()}: ${product.totalStock}  •  ${LK.adminSold.tr()}: ${product.soldCount}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         trailing: IconButton(
@@ -128,8 +130,8 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                           onPressed: () async {
                             final confirmed = await confirmDialog(
                               context,
-                              title: 'حذف المنتج',
-                              message: 'هل أنت متأكد من حذف "${product.name}"؟',
+                              title: LK.commonDelete.tr(),
+                              message: '${LK.adminDeleteProductConfirm.tr()}\n${product.name}',
                             );
                             if (!confirmed || !context.mounted) return;
                             context.read<ProductBloc>().add(

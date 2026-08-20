@@ -1,21 +1,22 @@
 import 'package:fashion_store/core/extensions/build_context.dart';
-import 'package:fashion_store/models/posts_response_model.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../models/store/store_model.dart';
 import '../../../store/pages/store_screen.dart';
 
+/// White rounded store card body - original design, bound to [StoreModel].
+///
+/// The API has no per-store rating endpoint, so the star row was replaced by
+/// the store's working hours, which the store list does return.
 class StoreCardDetail extends StatelessWidget {
-  final Store recommendedStore;
+  final StoreModel recommendedStore;
+
   const StoreCardDetail({super.key, required this.recommendedStore});
 
   @override
   Widget build(BuildContext context) {
-    return  GestureDetector(
-      onTap: (){
-        context.pushPage(StoreScreen(storeId: recommendedStore.id.toString(),),
-          );
-
-      },
+    return GestureDetector(
+      onTap: () => context.pushPage(StoreScreen(store: recommendedStore)),
       child: Container(
         height: height(197),
         width: width(165),
@@ -24,7 +25,7 @@ class StoreCardDetail extends StatelessWidget {
           borderRadius: BorderRadius.circular(35),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withOpacity(0.11),
+              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.11),
               blurRadius: 1,
               offset: const Offset(0.5, 0.5),
             ),
@@ -37,25 +38,36 @@ class StoreCardDetail extends StatelessWidget {
             children: [
               SizedBox(height: height(60)),
               Text(
-                recommendedStore.name??"________",
+                recommendedStore.storeName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-              SizedBox(height: height(2)),
-
+              SizedBox(height: height(4)),
               Row(
-                children: List.generate(5, (index) {
-                  return Icon(
-                    Icons.star,
+                children: [
+                  Icon(
+                    Icons.schedule,
                     size: width(12),
-                    color: index < (recommendedStore.averageRating ?? 0)
-                        ? Colors.orange
-                        : Colors.grey.withOpacity(0.4),
-                  );
-                }),
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  SizedBox(width: width(4)),
+                  Expanded(
+                    child: Text(
+                      '${recommendedStore.workingHoursStart} - ${recommendedStore.workingHoursEnd}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        fontSize: 10,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: height(9)),
               Text(
-                recommendedStore.description??"__________",
+                recommendedStore.description,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(

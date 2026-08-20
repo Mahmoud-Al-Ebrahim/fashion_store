@@ -1,12 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../app/widgets/button.dart';
 import '../../../blocs/order_bloc/order_bloc.dart';
+import '../../../core/constants/product_enums.dart';
+import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/show_message.dart';
-import '../admin_enums.dart';
 import '../widgets/admin_status_badge.dart';
 import '../widgets/option_picker_field.dart';
 
@@ -36,13 +38,13 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: Text('طلب #${widget.orderId}'),
+        title: Text('${LK.ordersOrderNumber.tr()}${widget.orderId}'),
       ),
       body: BlocConsumer<OrderBloc, OrderState>(
         listenWhen: (p, c) => p.updateOrderStatusStatus != c.updateOrderStatusStatus,
         listener: (context, state) {
           if (state.updateOrderStatusStatus == UpdateOrderStatusStatus.success) {
-            showMessage('تم تحديث حالة الطلب', hasError: false);
+            showMessage(LK.ordersStatusUpdated.tr(), hasError: false);
           } else if (state.updateOrderStatusStatus == UpdateOrderStatusStatus.failure) {
             showMessage(state.errorMessage);
           }
@@ -67,9 +69,9 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('الدفع', style: Theme.of(context).textTheme.titleSmall),
+                          Text(LK.ordersPayment.tr(), style: Theme.of(context).textTheme.titleSmall),
                           Text(
-                            'المبلغ: ${state.payment!.amount.toStringAsFixed(0)}',
+                            '${LK.ordersPaymentAmount.tr()}: ${state.payment!.amount.toStringAsFixed(0)}',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -81,19 +83,19 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                 SizedBox(height: height(16)),
               ],
               Text(
-                'تحديث حالة الطلب',
+                LK.ordersUpdateStatus.tr(),
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               SizedBox(height: height(8)),
               OptionPickerField(
-                hintText: 'الحالة',
-                options: kOrderStatusOptions,
+                hintText: LK.ordersStatus.tr(),
+                options: orderStatusOptions(),
                 selectedValue: _selectedStatus,
                 onSelected: (o) => setState(() => _selectedStatus = o.value),
               ),
               SizedBox(height: height(10)),
               AuthButton(
-                text: 'حفظ الحالة',
+                text: LK.commonSave.tr(),
                 widthButton: double.infinity,
                 heightButton: height(50),
                 onTap: _selectedStatus == null
@@ -109,7 +111,7 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
               ),
               SizedBox(height: height(20)),
               Text(
-                'المنتجات (${state.orderItems.length})',
+                '${LK.ordersItems.tr()} (${state.orderItems.length})',
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               SizedBox(height: height(8)),
@@ -137,9 +139,9 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('منتج #${item.productId}'),
+                            Text('${LK.adminProductNumber.tr()}${item.productId}'),
                             Text(
-                              '${item.color} - ${item.size} × ${item.quantity}',
+                              '${localizedColorName(item.color)} - ${sizeLabel(item.size)} × ${item.quantity}',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],

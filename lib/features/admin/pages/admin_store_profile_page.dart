@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,6 +13,7 @@ import '../../../core/utils/api_service.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/store/store_detail_model.dart';
 import '../widgets/image_pick_box.dart';
+import '../../../core/localization/translation_keys.dart';
 
 class AdminStoreProfilePage extends StatefulWidget {
   const AdminStoreProfilePage({super.key});
@@ -80,7 +82,7 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
 
   void _saveImages() {
     if (_newLogo == null && _newFeaturedImage == null) {
-      showMessage('يرجى اختيار صورة جديدة أولاً');
+      showMessage(LK.adminPickImageFirst.tr());
       return;
     }
     context.read<StoreBloc>().add(
@@ -104,13 +106,13 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('الملف الشخصي للمتجر'),
+        title: Text(LK.adminStoreProfile.tr()),
       ),
       body: BlocConsumer<StoreBloc, StoreState>(
         listenWhen: (p, c) => p.storeTransactionStatus != c.storeTransactionStatus,
         listener: (context, state) {
           if (state.storeTransactionStatus == StoreTransactionStatus.success) {
-            showMessage('تم الحفظ بنجاح', hasError: false);
+            showMessage(LK.adminSavedSuccessfully.tr(), hasError: false);
             setState(() {
               _newLogo = null;
               _newFeaturedImage = null;
@@ -138,7 +140,7 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                       child: ImagePickBox(
                         pickedFile: _newLogo,
                         existingImageUrl: ApiService.resolveUrl(store.logo),
-                        label: 'الشعار',
+                        label: LK.sellerLogo.tr(),
                         boxHeight: height(110),
                         onTap: () async {
                           final file = await HelperFunctions.pickImage();
@@ -151,7 +153,7 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                       child: ImagePickBox(
                         pickedFile: _newFeaturedImage,
                         existingImageUrl: ApiService.resolveUrl(store.featuredImage),
-                        label: 'الصورة الرئيسية',
+                        label: LK.sellerFeaturedImage.tr(),
                         boxHeight: height(110),
                         onTap: () async {
                           final file = await HelperFunctions.pickImage();
@@ -165,7 +167,7 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                 ),
                 SizedBox(height: height(10)),
                 AuthButton(
-                  text: 'حفظ الصور',
+                  text: LK.adminSaveImages.tr(),
                   onTap: loading ? null : _saveImages,
                   widthButton: double.infinity,
                   heightButton: height(46),
@@ -173,26 +175,26 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                 SizedBox(height: height(20)),
                 AuthTextField(
                   controller: _nameController,
-                  hintText: 'اسم المتجر',
+                  hintText: LK.sellerStoreName.tr(),
                   validator: (_) => null,
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _descriptionController,
-                  hintText: 'الوصف',
+                  hintText: LK.sellerDescription.tr(),
                   maxLines: 3,
                   validator: (_) => null,
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _addressController,
-                  hintText: 'العنوان',
+                  hintText: LK.sellerAddress.tr(),
                   validator: (_) => null,
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _phoneController,
-                  hintText: 'رقم الهاتف',
+                  hintText: LK.sellerPhone.tr(),
                   validator: (_) => null,
                 ),
                 SizedBox(height: height(10)),
@@ -201,21 +203,21 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => _pickTime(true),
-                        child: Text(_start == null ? 'وقت الفتح' : _start!.format(context)),
+                        child: Text(_start == null ? LK.sellerWorkingHoursStart.tr() : _start!.format(context)),
                       ),
                     ),
                     SizedBox(width: width(10)),
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => _pickTime(false),
-                        child: Text(_end == null ? 'وقت الإغلاق' : _end!.format(context)),
+                        child: Text(_end == null ? LK.sellerWorkingHoursEnd.tr() : _end!.format(context)),
                       ),
                     ),
                   ],
                 ),
                 SizedBox(height: height(20)),
                 AuthButton(
-                  text: loading ? '...جاري الحفظ' : 'حفظ بيانات المتجر',
+                  text: loading ? LK.commonSaving.tr() : LK.adminSaveStoreInfo.tr(),
                   onTap: loading ? null : () => _saveInfo(store.id),
                   widthButton: double.infinity,
                   heightButton: height(54),

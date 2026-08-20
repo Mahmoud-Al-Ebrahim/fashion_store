@@ -22,8 +22,66 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<AddPostEvent>(_onAddPostEvent);
     on<DeletePostEvent>(_onDeletePostEvent);
     on<GetAllPostsEvent>(_onGetAllPostsEvent);
+    on<GetCommunityFeedEvent>(_onGetCommunityFeedEvent);
     on<UpdatePostEvent>(_onUpdatePostEvent);
     on<TogglePostReactionEvent>(_onTogglePostReactionEvent);
+  }
+
+  FutureOr<void> _onGetCommunityFeedEvent(
+    GetCommunityFeedEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    emit(
+      state.copyWith(getCommunityFeedStatus: GetCommunityFeedStatus.loading),
+    );
+    if (event.storeIds.isEmpty) {
+      emit(
+        state.copyWith(
+          getCommunityFeedStatus: GetCommunityFeedStatus.success,
+          communityFeed: const [],
+        ),
+      );
+      return;
+    }
+    try {
+      final responses = await Future.wait(
+        event.storeIds.map(
+          (id) => ApiService.getMethod(endPoint: 'Post/GetAll/$id')
+              // One unreachable store shouldn't blank the whole feed.
+              .catchError((_) => Response(
+                    requestOptions: RequestOptions(path: 'Post/GetAll/$id'),
+                    data: {'data': []},
+                  )),
+        ),
+      );
+      final merged = <PostModel>[];
+      for (final response in responses) {
+        try {
+          final apiResponse = ApiResponseModel<List<PostModel>>.fromJson(
+            response.data,
+            (json) => postListFromJson(json),
+          );
+          merged.addAll(apiResponse.data ?? []);
+        } catch (_) {
+          // skip malformed store payloads
+        }
+      }
+      merged.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      emit(
+        state.copyWith(
+          getCommunityFeedStatus: GetCommunityFeedStatus.success,
+          communityFeed: merged,
+        ),
+      );
+    } catch (error) {
+      log(error.toString());
+      emit(
+        state.copyWith(
+          getCommunityFeedStatus: GetCommunityFeedStatus.failure,
+          errorMessage: apiErrorMessage(error),
+        ),
+      );
+    }
   }
 
   Future<MultipartFile> _toMultipartFile(File file) async {
@@ -216,7 +274,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       body: {"postId": event.postId, "reactionType": event.reactionType},
     ).then((response) {
       log(response.data.toString());
-      add(GetAllPostsEvent(storeId: event.storeId));
+      // Refresh whichever list the post came from so the new reaction shows.
+      if (state.communityFeed.isNotEmpty) {
+        add(
+          GetCommunityFeedEvent(
+            storeIds: state.communityFeed.map((p) => p.storeId).toSet().toList(),
+          ),
+        );
+      }
+      if (state.posts.isNotEmpty) {
+        add(GetAllPostsEvent(storeId: event.storeId));
+      }
       emit(state.copyWith(postReactionStatus: PostReactionStatus.success));
     }).catchError((error) {
       log(error.toString());
