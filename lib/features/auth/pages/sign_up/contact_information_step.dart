@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../app/widgets/text_field.dart';
@@ -42,6 +43,9 @@ class ContactInformationStep extends StatelessWidget {
             AuthTextField(
               controller: phoneController,
               hintText: LK.authPhone.tr(),
+              formatters: [
+                FilteringTextInputFormatter.digitsOnly
+              ],
               validator: (value) => (value == null || value.trim().isEmpty)
                   ? LK.commonRequiredField.tr()
                   : null,

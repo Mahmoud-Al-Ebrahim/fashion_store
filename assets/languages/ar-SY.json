@@ -192,7 +192,7 @@
     "no_transactions": "لا توجد معاملات بعد",
     "deposit": "إيداع",
     "withdraw": "سحب",
-    "complaints": "شكاواي",
+    "complaints": "شكاوي",
     "new_complaint": "شكوى جديدة",
     "complaint_title": "عنوان الشكوى",
     "complaint_description": "تفاصيل الشكوى",
@@ -321,8 +321,8 @@
   },
   "enums": {
     "gender": {
-      "Male": "رجالي",
-      "Female": "نسائي"
+      "Male": "ذكر",
+      "Female": "أنثى"
     },
     "season": {
       "Summer": "صيفي",

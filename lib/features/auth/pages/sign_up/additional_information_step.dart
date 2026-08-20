@@ -36,7 +36,8 @@ class _AdditionalInformationStepState extends State<AdditionalInformationStep> {
     final picked = await showDatePicker(
       context: context,
       initialDate: selectedDate ?? DateTime(now.year - 18),
-      firstDate: DateTime(1900),
+
+      firstDate: DateTime(now.year - 18),
       lastDate: now,
     );
     if (picked != null) {

@@ -14,8 +14,16 @@ import '../../../core/utils/show_message.dart';
 
 /// User profile from `User/GetUserProfile`, with avatar replacement via
 /// `User/UpdateProfilePhoto`.
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+
+
 
   Future<void> _changePhoto(BuildContext context) async {
     final file = await HelperFunctions.pickImage();
@@ -24,7 +32,11 @@ class ProfilePage extends StatelessWidget {
       UpdateProfilePhotoEvent(image: File(file.path)),
     );
   }
-
+  @override
+  void initState() {
+    BlocProvider.of<UserBloc>(context).add(GetUserProfileEvent());
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
