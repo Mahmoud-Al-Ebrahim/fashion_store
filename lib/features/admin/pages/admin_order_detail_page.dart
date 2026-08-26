@@ -9,6 +9,7 @@ import '../../../core/constants/product_enums.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/show_message.dart';
+import '../../shop/pages/product_by_id_page.dart';
 import '../widgets/admin_status_badge.dart';
 import '../widgets/option_picker_field.dart';
 
@@ -41,11 +42,14 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
         title: Text('${LK.ordersOrderNumber.tr()}${widget.orderId}'),
       ),
       body: BlocConsumer<OrderBloc, OrderState>(
-        listenWhen: (p, c) => p.updateOrderStatusStatus != c.updateOrderStatusStatus,
+        listenWhen: (p, c) =>
+            p.updateOrderStatusStatus != c.updateOrderStatusStatus,
         listener: (context, state) {
-          if (state.updateOrderStatusStatus == UpdateOrderStatusStatus.success) {
+          if (state.updateOrderStatusStatus ==
+              UpdateOrderStatusStatus.success) {
             showMessage(LK.ordersStatusUpdated.tr(), hasError: false);
-          } else if (state.updateOrderStatusStatus == UpdateOrderStatusStatus.failure) {
+          } else if (state.updateOrderStatusStatus ==
+              UpdateOrderStatusStatus.failure) {
             showMessage(state.errorMessage);
           }
         },
@@ -69,7 +73,10 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(LK.ordersPayment.tr(), style: Theme.of(context).textTheme.titleSmall),
+                          Text(
+                            LK.ordersPayment.tr(),
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
                           Text(
                             '${LK.ordersPaymentAmount.tr()}: ${state.payment!.amount.toStringAsFixed(0)}',
                             style: Theme.of(context).textTheme.bodySmall,
@@ -116,39 +123,54 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
               ),
               SizedBox(height: height(8)),
               ...state.orderItems.map((item) {
-                return Container(
-                  margin: EdgeInsets.only(bottom: height(10)),
-                  padding: EdgeInsets.all(width(10)),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFD3D3E4)),
-                  ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: CachedNetworkImage(
-                          imageUrl: item.image,
-                          width: width(56),
-                          height: width(56),
-                          fit: BoxFit.cover,
+                return InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  // Reached by the store owner and by the super admin from
+                  // the platform order history - both land on the same
+                  // product screen a customer would see.
+                  onTap: () => openProductById(context, item.productId),
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: height(10)),
+                    padding: EdgeInsets.all(width(10)),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFD3D3E4)),
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: CachedNetworkImage(
+                            imageUrl: item.image,
+                            width: width(56),
+                            height: width(56),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: width(10)),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${LK.adminProductNumber.tr()}${item.productId}'),
-                            Text(
-                              '${localizedColorName(item.color)} - ${sizeLabel(item.size)} × ${item.quantity}',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
+                        SizedBox(width: width(10)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${LK.adminProductNumber.tr()}${item.productId}',
+                              ),
+                              Text(
+                                '${localizedColorName(item.color)} - ${sizeLabel(item.size)} × ${item.quantity}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(item.price.toStringAsFixed(0)),
-                    ],
+                        Text(item.price.toStringAsFixed(0)),
+                        SizedBox(width: width(4)),
+                        const Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }),

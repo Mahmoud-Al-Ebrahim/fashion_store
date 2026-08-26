@@ -540,6 +540,23 @@ class LK {
   static const adminSizeDeleted = 'admin.size_deleted';
   static const adminManageSizes = 'admin.manage_sizes';
 
+  // ---------- product lookup / order rules / age ----------
+  static const productUnavailable = 'product.unavailable';
+  static const ordersCannotCancel = 'orders.cannot_cancel';
+  static const authMinAge = 'auth.min_age';
+
+  static const adminNameNotEditable = 'admin.name_not_editable';
+
+  // ---------- chat message actions ----------
+  static const chatEditMessage = 'chat.edit_message';
+  static const chatDeleteMessage = 'chat.delete_message';
+  static const chatDeleteConfirm = 'chat.delete_confirm';
+  static const chatEdited = 'chat.edited';
+  static const chatEditFailed = 'chat.edit_failed';
+  static const chatDeleteFailed = 'chat.delete_failed';
+  static const chatMessageDeleted = 'chat.message_deleted';
+  static const chatMessageEdited = 'chat.message_edited';
+
   // ---------- enums ----------
   static String genderKey(String value) => 'enums.gender.$value';
 

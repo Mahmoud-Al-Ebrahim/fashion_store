@@ -88,3 +88,16 @@ class FilterProductsEvent extends ProductEvent {
     this.size,
   });
 }
+
+/// Resolves one product by id, for screens that only hold a `productId`.
+///
+/// Cart lines, order items and the sales breakdown all reference a product
+/// by id alone - the API exposes no "get product by id", so this reads the
+/// unfiltered `Product/GetFilter` list and picks the match. It writes to its
+/// own state slot rather than `filterResults`, so opening a product from an
+/// order never disturbs whatever the explore screen was showing.
+class LookupProductEvent extends ProductEvent {
+  final int productId;
+
+  LookupProductEvent({required this.productId});
+}

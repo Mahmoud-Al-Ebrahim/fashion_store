@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Response model for `GET Admin/GetDashboardSummary` -> `data`.
 class AdminDashboardSummaryModel {
   final int productsCount;
@@ -54,6 +56,11 @@ class AdminOrderDetailStatModel {
   final String color;
   final String colorHexCode;
 
+  /// Product image. The endpoint does not send one yet - the backend is
+  /// adding it - so several plausible key names are accepted and the UI
+  /// falls back to a placeholder while it is still absent.
+  final String image;
+
   AdminOrderDetailStatModel({
     required this.productId,
     required this.numberOfSales,
@@ -62,17 +69,21 @@ class AdminOrderDetailStatModel {
     required this.size,
     required this.color,
     required this.colorHexCode,
+    this.image = '',
   });
 
   factory AdminOrderDetailStatModel.fromJson(Map<String, dynamic> json) {
     return AdminOrderDetailStatModel(
-      productId: json['productId'] as int,
-      numberOfSales: json['numberOfSales'] as int,
-      price: (json['price'] as num).toDouble(),
-      remainingQuantity: json['remainingQuantity'] as int,
-      size: json['size']?.toString() ?? '',
-      color: json['color']?.toString() ?? '',
-      colorHexCode: json['colorHexCode']?.toString() ?? '',
+      productId: asInt(json['productId']),
+      numberOfSales: asInt(json['numberOfSales']),
+      price: asDouble(json['price']),
+      remainingQuantity: asInt(json['remainingQuantity']),
+      size: asString(json['size']),
+      color: asString(json['color']),
+      colorHexCode: asString(json['colorHexCode']),
+      image: asString(
+        json['image'] ?? json['productImage'] ?? json['imageUrl'],
+      ),
     );
   }
 }

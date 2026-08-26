@@ -16,6 +16,9 @@ import '../../../core/localization/translation_keys.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/admin/product_dashboard_model.dart';
 import 'admin_product_detail_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/utils/api_service.dart';
+import '../../shop/pages/product_by_id_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -352,57 +355,91 @@ class _SalesBreakdownRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final out = row.remainingQuantity <= 0;
-    return Container(
-      margin: EdgeInsets.only(bottom: height(8)),
-      padding: EdgeInsets.symmetric(
-        horizontal: width(12),
-        vertical: height(10),
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFD3D3E4)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: _hex(row.colorHexCode),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black12),
+    final image = ApiService.resolveUrl(row.image) ?? '';
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => openProductById(context, row.productId),
+      child: Container(
+        margin: EdgeInsets.only(bottom: height(8)),
+        padding: EdgeInsets.symmetric(
+          horizontal: width(12),
+          vertical: height(10),
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFD3D3E4)),
+        ),
+        child: Row(
+          children: [
+            // The endpoint has no image yet; show the colour swatch until it
+            // does, then the photo takes over with no further change here.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: image.isEmpty
+                  ? Container(
+                      width: width(40),
+                      height: width(40),
+                      alignment: Alignment.center,
+                      color: Colors.grey.shade100,
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: _hex(row.colorHexCode),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12),
+                        ),
+                      ),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: image,
+                      width: width(40),
+                      height: width(40),
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => Container(
+                        width: width(40),
+                        height: width(40),
+                        color: Colors.grey.shade200,
+                        child: const Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 16,
+                        ),
+                      ),
+                    ),
             ),
-          ),
-          SizedBox(width: width(10)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${LK.adminProductNumber.tr()}${row.productId} - '
-                  '${localizedColorName(row.color)} - '
-                  '${sizeLabel(row.size)}',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                SizedBox(height: height(2)),
-                Text(
-                  '${LK.adminUnitsSold.tr()}: ${row.numberOfSales}   '
-                  '${LK.adminRemaining.tr()}: ${row.remainingQuantity}',
-                  style: theme.textTheme.bodySmall!.copyWith(
-                    color: out ? Colors.red : Colors.grey,
+            SizedBox(width: width(10)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${LK.adminProductNumber.tr()}${row.productId} - '
+                    '${localizedColorName(row.color)} - '
+                    '${sizeLabel(row.size)}',
+                    style: theme.textTheme.bodyMedium,
                   ),
-                ),
-              ],
+                  SizedBox(height: height(2)),
+                  Text(
+                    '${LK.adminUnitsSold.tr()}: ${row.numberOfSales}   '
+                    '${LK.adminRemaining.tr()}: ${row.remainingQuantity}',
+                    style: theme.textTheme.bodySmall!.copyWith(
+                      color: out ? Colors.red : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Text(
-            '${formatPrice(row.price)} ${LK.commonCurrency.tr()}',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.primary,
+            Text(
+              '${formatPrice(row.price)} ${LK.commonCurrency.tr()}',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.primary,
+              ),
             ),
-          ),
-        ],
+            SizedBox(width: width(4)),
+            const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }

@@ -74,17 +74,17 @@ class SuperAdminMorePage extends StatelessWidget {
             title: LK.storeStatusBrowseAsCustomer.tr(),
             onTap: () => context.pushPage(const UserNavBar()),
           ),
-          _tile(
-            context,
-            icon: Icons.account_balance_wallet_outlined,
-            title: LK.superadminWalletTopup.tr(),
-            onTap: () => context.pushPage(
-              BlocProvider(
-                create: (_) => WalletBloc(),
-                child: const WalletTopUpPage(),
-              ),
-            ),
-          ),
+          // _tile(
+          //   context,
+          //   icon: Icons.account_balance_wallet_outlined,
+          //   title: LK.superadminWalletTopup.tr(),
+          //   onTap: () => context.pushPage(
+          //     BlocProvider(
+          //       create: (_) => WalletBloc(),
+          //       child: const WalletTopUpPage(),
+          //     ),
+          //   ),
+          // ),
           _tile(
             context,
             icon: Icons.language,

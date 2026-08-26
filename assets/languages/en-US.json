@@ -80,7 +80,8 @@
     "login_now": "Sign in now",
     "forgot_title": "Password Recovery",
     "forgot_subtitle": "Enter your email and we will send you a recovery code",
-    "forgot_send": "Send Code"
+    "forgot_send": "Send Code",
+    "min_age": "You must be at least 12 years old"
   },
   "nav": {
     "home": "Home",
@@ -138,7 +139,8 @@
     "no_comments": "No comments yet, be the first to comment",
     "suggested": "Similar Products",
     "discount": "OFF",
-    "price": "Price"
+    "price": "Price",
+    "unavailable": "This product is no longer available"
   },
   "store": {
     "title": "Store",
@@ -196,7 +198,8 @@
     "update_status": "Update Order Status",
     "status_updated": "Order status updated",
     "guest_title": "You are browsing as a guest",
-    "guest_body": "Sign in to see your orders"
+    "guest_body": "Sign in to see your orders",
+    "cannot_cancel": "This order can no longer be cancelled"
   },
   "profile": {
     "title": "My Profile",
@@ -355,7 +358,8 @@
     "no_discounts": "No discounted products",
     "delete_size_confirm": "Remove this size from the colour?",
     "size_deleted": "Size removed",
-    "manage_sizes": "Manage sizes"
+    "manage_sizes": "Manage sizes",
+    "name_not_editable": "Name and description are fixed after creation"
   },
   "enums": {
     "gender": {
@@ -534,7 +538,15 @@
     "offline_note": "New messages appear as soon as the connection returns",
     "with_store": "Chat with the store",
     "with_customer": "Chat with the customer",
-    "open_chat": "Open chat"
+    "open_chat": "Open chat",
+    "edit_message": "Edit message",
+    "delete_message": "Delete message",
+    "delete_confirm": "Delete this message for everyone?",
+    "edited": "edited",
+    "edit_failed": "Could not edit the message",
+    "delete_failed": "Could not delete the message",
+    "message_deleted": "Message deleted",
+    "message_edited": "Message edited"
   },
   "wallet": {
     "id_label": "Wallet ID",
@@ -547,7 +559,7 @@
     "contact_agent_message": "Hello, I would like to top up my wallet. My wallet ID is: {}"
   },
   "suggestions": {
-    "title": "Similar Products",
+    "title": "Suggested Products",
     "see_all": "See all",
     "none": "No suggestions for this product"
   },

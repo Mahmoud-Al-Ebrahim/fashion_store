@@ -12,6 +12,7 @@ import '../../../core/services/chat_hub_service.dart';
 import '../../../core/utils/session.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/complaint/message_model.dart';
+import '../../admin/widgets/confirm_dialog.dart';
 
 /// Text conversation attached to a complaint, shared by the customer and the
 /// store owner.
@@ -45,6 +46,8 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
 
   StreamSubscription<HubMessage>? _messageSub;
   StreamSubscription<ChatConnectionState>? _stateSub;
+  StreamSubscription<int>? _deleteSub;
+  StreamSubscription<HubMessage>? _editSub;
 
   /// Set once the thread has been marked read, so leaving the page can
   /// refresh the list that shows the unread badge.
@@ -91,6 +94,22 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
       _scrollToEnd();
     });
 
+    // A peer edit or delete rewrites history, so re-read it rather than
+    // trying to patch the local copy.
+    _deleteSub = _hub.deletions.listen((messageId) {
+      if (!mounted) return;
+      setState(() => _live.removeWhere((m) => m.id == messageId));
+      context.read<ComplaintBloc>().add(
+        GetComplaintMessagesEvent(complaintId: widget.complaintId),
+      );
+    });
+    _editSub = _hub.edits.listen((_) {
+      if (!mounted) return;
+      context.read<ComplaintBloc>().add(
+        GetComplaintMessagesEvent(complaintId: widget.complaintId),
+      );
+    });
+
     try {
       await _hub.connect();
       await _hub.joinComplaint(widget.complaintId);
@@ -115,6 +134,112 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
       );
     });
   }
+
+  /// Offers edit/delete on a message the signed-in user sent.
+  ///
+  /// The hub authorises this server-side too - it refuses to touch somebody
+  /// else's message - so this menu is a convenience, not the control.
+  Future<void> _messageActions(MessageModel message) async {
+    if (!Session.owns(message.senderId)) return;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: Text(LK.chatEditMessage.tr()),
+              onTap: () => Navigator.of(sheetContext).pop('edit'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: Text(
+                LK.chatDeleteMessage.tr(),
+                style: const TextStyle(color: Colors.red),
+              ),
+              onTap: () => Navigator.of(sheetContext).pop('delete'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !mounted) return;
+    if (action == 'edit') {
+      await _editMessage(message);
+    } else {
+      await _deleteMessage(message);
+    }
+  }
+
+  Future<void> _editMessage(MessageModel message) async {
+    final controller = TextEditingController(text: message.text);
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(LK.chatEditMessage.tr()),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 4,
+          minLines: 1,
+          decoration: InputDecoration(hintText: LK.chatHint.tr()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(LK.commonCancel.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(LK.commonSave.tr()),
+          ),
+        ],
+      ),
+    );
+    final text = controller.text.trim();
+    if (saved != true || text.isEmpty || text == message.text) return;
+
+    final ok = await _hub.editMessage(
+      complaintId: widget.complaintId,
+      messageId: message.id,
+      text: text,
+    );
+    if (!mounted) return;
+    showMessage(
+      ok ? LK.chatMessageEdited.tr() : LK.chatEditFailed.tr(),
+      hasError: !ok,
+    );
+    if (ok) _reloadHistory();
+  }
+
+  Future<void> _deleteMessage(MessageModel message) async {
+    final confirmed = await confirmDialog(
+      context,
+      title: LK.chatDeleteMessage.tr(),
+      message: LK.chatDeleteConfirm.tr(),
+      confirmText: LK.commonDelete.tr(),
+    );
+    if (!confirmed || !mounted) return;
+
+    final ok = await _hub.deleteMessage(
+      complaintId: widget.complaintId,
+      messageId: message.id,
+    );
+    if (!mounted) return;
+    showMessage(
+      ok ? LK.chatMessageDeleted.tr() : LK.chatDeleteFailed.tr(),
+      hasError: !ok,
+    );
+    if (ok) {
+      setState(() => _live.removeWhere((m) => m.id == message.id));
+      _reloadHistory();
+    }
+  }
+
+  void _reloadHistory() => context.read<ComplaintBloc>().add(
+    GetComplaintMessagesEvent(complaintId: widget.complaintId),
+  );
 
   Future<void> _send() async {
     final text = _controller.text.trim();
@@ -145,6 +270,8 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
   void dispose() {
     _messageSub?.cancel();
     _stateSub?.cancel();
+    _deleteSub?.cancel();
+    _editSub?.cancel();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -245,8 +372,10 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
                       controller: _scrollController,
                       padding: EdgeInsets.all(width(16)),
                       itemCount: merged.length,
-                      itemBuilder: (context, index) =>
-                          _Bubble(message: merged[index]),
+                      itemBuilder: (context, index) => _Bubble(
+                        message: merged[index],
+                        onLongPress: () => _messageActions(merged[index]),
+                      ),
                     ),
                   );
                 },
@@ -280,8 +409,9 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
 
 class _Bubble extends StatelessWidget {
   final MessageModel message;
+  final VoidCallback onLongPress;
 
-  const _Bubble({required this.message});
+  const _Bubble({required this.message, required this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -291,49 +421,69 @@ class _Bubble extends StatelessWidget {
       alignment: mine
           ? AlignmentDirectional.centerEnd
           : AlignmentDirectional.centerStart,
-      child: Container(
-        constraints: BoxConstraints(maxWidth: width(260)),
-        margin: EdgeInsets.only(bottom: height(10)),
-        padding: EdgeInsets.symmetric(
-          horizontal: width(14),
-          vertical: height(10),
-        ),
-        decoration: BoxDecoration(
-          color: mine ? primary : const Color(0xFFEAEAF2),
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(mine ? 16 : 4),
-            bottomRight: Radius.circular(mine ? 4 : 16),
+      child: GestureDetector(
+        // Only your own messages can be edited or removed.
+        onLongPress: mine ? onLongPress : null,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: width(260)),
+          margin: EdgeInsets.only(bottom: height(10)),
+          padding: EdgeInsets.symmetric(
+            horizontal: width(14),
+            vertical: height(10),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!mine && (message.senderName ?? '').isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(bottom: height(2)),
-                child: Text(
-                  message.senderName!,
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.primary,
+          decoration: BoxDecoration(
+            color: mine ? primary : const Color(0xFFEAEAF2),
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomLeft: Radius.circular(mine ? 16 : 4),
+              bottomRight: Radius.circular(mine ? 4 : 16),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!mine && (message.senderName ?? '').isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(bottom: height(2)),
+                  child: Text(
+                    message.senderName!,
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
+              Text(
+                message.text,
+                style: TextStyle(color: mine ? Colors.white : Colors.black87),
               ),
-            Text(
-              message.text,
-              style: TextStyle(color: mine ? Colors.white : Colors.black87),
-            ),
-            SizedBox(height: height(3)),
-            Text(
-              '${message.createdAt.hour.toString().padLeft(2, '0')}:${message.createdAt.minute.toString().padLeft(2, '0')}',
-              style: TextStyle(
-                fontSize: 9,
-                color: mine ? Colors.white70 : Colors.grey,
+              SizedBox(height: height(3)),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${message.createdAt.hour.toString().padLeft(2, '0')}:${message.createdAt.minute.toString().padLeft(2, '0')}',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: mine ? Colors.white70 : Colors.grey,
+                    ),
+                  ),
+                  if (message.isEdited) ...[
+                    SizedBox(width: width(4)),
+                    Text(
+                      LK.chatEdited.tr(),
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontStyle: FontStyle.italic,
+                        color: mine ? Colors.white70 : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

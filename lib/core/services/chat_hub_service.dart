@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:signalr_netcore/signalr_client.dart';
 
 import '../utils/api_service.dart';
+import 'utf8_signalr_http_client.dart';
 import '../utils/my_shared_pref.dart';
 
 /// A message as it arrives over the hub. Field names are read leniently
@@ -27,7 +28,9 @@ class HubMessage {
 
   /// Tolerates the common casing/naming variants a .NET hub might emit.
   factory HubMessage.fromDynamic(dynamic raw) {
-    final map = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    final map = raw is Map
+        ? Map<String, dynamic>.from(raw)
+        : <String, dynamic>{};
 
     T? pick<T>(List<String> keys) {
       for (final k in keys) {
@@ -38,14 +41,24 @@ class HubMessage {
       return null;
     }
 
-    final createdRaw = pick<String>(['createdAt', 'sentAt', 'date', 'timeStamp']);
+    final createdRaw = pick<String>([
+      'createdAt',
+      'sentAt',
+      'date',
+      'timeStamp',
+    ]);
     return HubMessage(
       id: pick<int>(['id', 'messageId']),
       complaintId: pick<int>(['complaintId']) ?? 0,
       senderId: pick<String>(['senderId', 'userId', 'fromUserId']) ?? '',
       senderName: pick<String>(['senderName', 'userFullName', 'fullName']),
-      text: pick<String>(['text', 'content', 'message', 'body']) ?? '',
-      createdAt: DateTime.tryParse(createdRaw ?? '')?.toLocal() ?? DateTime.now(),
+      // `messageText` is what the hub actually sends; without it every
+      // arriving message rendered blank.
+      text:
+          pick<String>(['messageText', 'text', 'content', 'message', 'body']) ??
+          '',
+      createdAt:
+          DateTime.tryParse(createdRaw ?? '')?.toLocal() ?? DateTime.now(),
     );
   }
 }
@@ -56,11 +69,21 @@ enum ChatConnectionState { disconnected, connecting, connected, reconnecting }
 /// Thin wrapper over the backend's SignalR `/chatHub`, used for the
 /// customer <-> store conversation attached to a complaint.
 ///
-/// The hub endpoint and its auth were verified against the server
-/// (`POST /chatHub/negotiate` returns a connection token for a bearer
-/// token). The *method names* below are not published in Swagger, so they
-/// are declared here as constants and the send path tries the documented
-/// name first, then known fallbacks, rather than failing outright.
+/// Every name and payload below is taken from the hub source and confirmed
+/// against the running server by driving the protocol by hand.
+///
+/// ## Why LongPolling is forced
+///
+/// `negotiate` advertises WebSockets, ServerSentEvents and LongPolling, and
+/// signalr_netcore documents that "if transport is null and the server
+/// supports all transport protocols than HttpTransportType.WebSockets is
+/// used". But the host does not actually proxy the upgrade: a WebSocket
+/// handshake against `/chatHub` answers `200 OK` with
+/// `Content-Type: application/octet-stream` instead of
+/// `101 Switching Protocols`. The socket therefore never opens and the UI
+/// sat on "disconnected" forever. LongPolling completes the handshake and
+/// carries invocations and pushes normally, so it is selected explicitly.
+/// Drop this back to the default once the host supports upgrades.
 class ChatHubService {
   ChatHubService._();
 
@@ -68,20 +91,38 @@ class ChatHubService {
 
   static const String hubPath = '/chatHub';
 
-  /// Server methods this client may invoke to send a message.
-  /// The first that the hub accepts is remembered for the session.
-  static const List<String> sendMethodCandidates = [
-    'SendMessage',
-    'SendMessageToComplaint',
-    'SendComplaintMessage',
-  ];
+  // ----- methods this client invokes on the hub -----
 
-  /// Client callbacks the server may push new messages on.
-  static const List<String> receiveMethodCandidates = [
-    'ReceiveMessage',
-    'ReceiveComplaintMessage',
-    'NewMessage',
-  ];
+  /// `SendMessageAsync(RequestAddMessageDto)` - one object argument,
+  /// `{ complaintId, messageText }`. The previous code called
+  /// `SendMessage(complaintId, text)`: wrong name, and two positional
+  /// arguments where the hub expects a single DTO.
+  static const String sendMethod = 'SendMessageAsync';
+
+  /// `JoinComplaintGroup(int complaintId)` - positional, not a DTO.
+  static const String joinMethod = 'JoinComplaintGroup';
+
+  /// `MarkMessagesAsRead(RequestUpdateReadMessageDto)` - note there is no
+  /// `Async` suffix on this one, unlike its neighbours.
+  static const String markReadMethod = 'MarkMessagesAsRead';
+
+  /// `DeleteMessageAsync(RequestRemoveMessageDto)` -
+  /// `{ complaintId, messageId }`.
+  static const String deleteMethod = 'DeleteMessageAsync';
+
+  /// `EditMessageAsync(RequestUpdateMessageDto)` -
+  /// `{ complaintId, messageId, messageText }`.
+  static const String editMethod = 'EditMessageAsync';
+
+  // ----- callbacks the hub pushes to this client -----
+
+  /// New message. Payload is `ResponseGetMessageDto` - note it carries no
+  /// `complaintId`, so the listener treats it as belonging to whichever
+  /// thread is open.
+  static const String receiveMessageEvent = 'ReceiveMessage';
+
+  /// An existing message was edited. Payload is the updated message.
+  static const String messageEditedEvent = 'MessageEdited';
 
   /// Broadcast when the peer opens the thread and their unread messages are
   /// cleared. Payload: `{ complaintId, readBy }`.
@@ -91,13 +132,12 @@ class ChatHubService {
   static const String messageDeletedEvent = 'MessageDeleted';
 
   HubConnection? _connection;
-  String? _resolvedSendMethod;
-  String? _resolvedMarkReadMethod;
 
   final _messages = StreamController<HubMessage>.broadcast();
   final _state = StreamController<ChatConnectionState>.broadcast();
   final _readReceipts = StreamController<int>.broadcast();
   final _deletions = StreamController<int>.broadcast();
+  final _edits = StreamController<HubMessage>.broadcast();
 
   /// Messages pushed by the server.
   Stream<HubMessage> get messages => _messages.stream;
@@ -111,8 +151,10 @@ class ChatHubService {
   /// Ids of messages the hub reported as deleted.
   Stream<int> get deletions => _deletions.stream;
 
-  bool get isConnected =>
-      _connection?.state == HubConnectionState.Connected;
+  /// Messages the hub reported as edited.
+  Stream<HubMessage> get edits => _edits.stream;
+
+  bool get isConnected => _connection?.state == HubConnectionState.Connected;
 
   /// Opens the hub connection if it isn't already open.
   Future<void> connect() async {
@@ -130,6 +172,15 @@ class ChatHubService {
             '${ApiService.baseUrl}$hubPath',
             options: HttpConnectionOptions(
               accessTokenFactory: () async => MySharedPref.getToken() ?? '',
+              // The hub's long-polling responses declare no charset, so the
+              // default client decodes them as latin1 and mangles Arabic.
+              httpClient: Utf8SignalRHttpClient(),
+              // See the class doc: the host refuses the WebSocket upgrade.
+              transport: HttpTransportType.LongPolling,
+              // The default is 2s, which this server routinely exceeds on a
+              // cold call. Polls use the transport's own 100s budget, so
+              // this only bounds invocations.
+              requestTimeout: 30000,
             ),
           )
           .withAutomaticReconnect()
@@ -146,14 +197,16 @@ class ChatHubService {
         _state.add(ChatConnectionState.connected);
       });
 
-      // Listen on every plausible callback name; whichever the server uses
-      // ends up on the same stream.
-      for (final method in receiveMethodCandidates) {
-        connection.on(method, (args) {
-          if (args == null || args.isEmpty) return;
-          _messages.add(HubMessage.fromDynamic(args.first));
-        });
-      }
+      connection.on(receiveMessageEvent, (args) {
+        if (args == null || args.isEmpty) return;
+        _messages.add(HubMessage.fromDynamic(args.first));
+      });
+
+      // An edit re-emits the message; the page replaces it by id.
+      connection.on(messageEditedEvent, (args) {
+        if (args == null || args.isEmpty) return;
+        _edits.add(HubMessage.fromDynamic(args.first));
+      });
 
       connection.on(messagesMarkedAsReadEvent, (args) {
         if (args == null || args.isEmpty) return;
@@ -195,49 +248,33 @@ class ChatHubService {
   Future<void> joinComplaint(int complaintId) async {
     if (!isConnected) await connect();
     try {
-      await _connection?.invoke('JoinComplaintGroup', args: [complaintId]);
+      await _connection?.invoke(joinMethod, args: [complaintId]);
     } catch (error) {
-      // The hub throws HubException for an unknown/unauthorised complaint.
-      log('chatHub JoinComplaintGroup failed: $error');
+      // The hub throws HubException for an unknown or unauthorised
+      // complaint - the caller stays on the history it already loaded.
+      log('chatHub $joinMethod failed: $error');
     }
   }
 
   /// Marks every message of [complaintId] as read.
   ///
-  /// The hub takes a `RequestUpdateReadMessageDto` (`{ complaintId }`) and
-  /// broadcasts `MessagesMarkedAsRead` to the group on success. The exact
-  /// method name was cut off in the excerpt we were given, so the known
-  /// naming convention is tried in order and the winner cached.
-  static const List<String> markReadMethodCandidates = [
-    'MarkMessagesAsReadAsync',
-    'MarkMessagesAsRead',
-    'UpdateReadMessageAsync',
-    'UpdateReadMessage',
-  ];
-
+  /// The hub answers by broadcasting `MessagesMarkedAsRead` to the group,
+  /// so the peer's unread badge clears too.
   Future<bool> markAsRead(int complaintId) async {
     if (!isConnected) await connect();
     if (_connection == null) return false;
-
-    final candidates = _resolvedMarkReadMethod != null
-        ? [_resolvedMarkReadMethod!]
-        : markReadMethodCandidates;
-
-    for (final method in candidates) {
-      try {
-        await _connection!.invoke(
-          method,
-          args: [
-            {'complaintId': complaintId},
-          ],
-        );
-        _resolvedMarkReadMethod = method;
-        return true;
-      } catch (error) {
-        log('chatHub $method failed: $error');
-      }
+    try {
+      await _connection!.invoke(
+        markReadMethod,
+        args: [
+          {'complaintId': complaintId},
+        ],
+      );
+      return true;
+    } catch (error) {
+      log('chatHub $markReadMethod failed: $error');
+      return false;
     }
-    return false;
   }
 
   /// Deletes one of the caller's own messages.
@@ -253,40 +290,66 @@ class ChatHubService {
     if (_connection == null) return false;
     try {
       await _connection!.invoke(
-        'DeleteMessageAsync',
+        deleteMethod,
         args: [
           {'complaintId': complaintId, 'messageId': messageId},
         ],
       );
       return true;
     } catch (error) {
-      log('chatHub DeleteMessageAsync failed: $error');
+      log('chatHub $deleteMethod failed: $error');
       return false;
     }
   }
 
   /// Sends [text] on [complaintId]. Returns true when the hub accepted it.
+  ///
+  /// The hub echoes the saved message back over `ReceiveMessage`, so the
+  /// caller does not append anything locally - it just waits for the push.
   Future<bool> sendMessage({
     required int complaintId,
     required String text,
   }) async {
     if (!isConnected) await connect();
     if (_connection == null) return false;
-
-    final candidates = _resolvedSendMethod != null
-        ? [_resolvedSendMethod!]
-        : sendMethodCandidates;
-
-    for (final method in candidates) {
-      try {
-        await _connection!.invoke(method, args: [complaintId, text]);
-        _resolvedSendMethod = method;
-        return true;
-      } catch (error) {
-        log('chatHub $method failed: $error');
-      }
+    try {
+      await _connection!.invoke(
+        sendMethod,
+        args: [
+          {'complaintId': complaintId, 'messageText': text},
+        ],
+      );
+      return true;
+    } catch (error) {
+      log('chatHub $sendMethod failed: $error');
+      return false;
     }
-    return false;
+  }
+
+  /// Edits one of the caller's own messages.
+  Future<bool> editMessage({
+    required int complaintId,
+    required int messageId,
+    required String text,
+  }) async {
+    if (!isConnected) await connect();
+    if (_connection == null) return false;
+    try {
+      await _connection!.invoke(
+        editMethod,
+        args: [
+          {
+            'complaintId': complaintId,
+            'messageId': messageId,
+            'messageText': text,
+          },
+        ],
+      );
+      return true;
+    } catch (error) {
+      log('chatHub $editMethod failed: $error');
+      return false;
+    }
   }
 
   Future<void> disconnect() async {

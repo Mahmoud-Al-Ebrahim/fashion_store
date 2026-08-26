@@ -2,6 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 
 import '../localization/translation_keys.dart';
 
+/// Youngest age allowed to open an account.
+const int kMinimumSignUpAge = 12;
+
 const String _emailPattern =
     r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
     r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
@@ -20,8 +23,7 @@ final RegExp _nameRegex = RegExp(r"^[\p{L}\s'’-]+$", unicode: true);
 /// Syrian mobile numbers. Accepts the local form `09XXXXXXXX` and the
 /// international forms `+9639XXXXXXXX` / `009639XXXXXXXX`. The operator digit
 /// after the leading 9 must be 3-9 (Syriatel/MTN ranges).
-final RegExp _syrianPhoneRegex =
-    RegExp(r'^(?:(?:\+|00)963|0)9[1-9]\d{7}$');
+final RegExp _syrianPhoneRegex = RegExp(r'^(?:(?:\+|00)963|0)9[1-9]\d{7}$');
 
 /// Shared form validators so every screen reports the same messages.
 
@@ -83,8 +85,8 @@ String? Function(String?) validateConfirmPassword(String Function() original) {
 
 String? validateRequired(String? value) =>
     (value == null || value.trim().isEmpty)
-        ? LK.commonRequiredField.tr()
-        : null;
+    ? LK.commonRequiredField.tr()
+    : null;
 
 /// Canonical UUID form, used for wallet identifiers.
 final RegExp _uuidRegex = RegExp(
@@ -110,5 +112,25 @@ String? validatePositiveAmount(String? value) {
     return LK.paymentAmountInvalid.tr();
   }
   if (parsed <= 0) return LK.paymentAmountMustBePositive.tr();
+  return null;
+}
+
+/// Rejects a birth date that would make the account holder younger than
+/// [kMinimumSignUpAge]. Accepts the `yyyy-MM-dd` the sign-up form writes.
+String? validateBirthDate(String? value) {
+  if (value == null || value.trim().isEmpty) {
+    return LK.commonRequiredField.tr();
+  }
+  final parsed = DateTime.tryParse(value.trim());
+  if (parsed == null) return LK.commonInvalidValue.tr();
+
+  final now = DateTime.now();
+  var age = now.year - parsed.year;
+  // Not had this year's birthday yet.
+  if (now.month < parsed.month ||
+      (now.month == parsed.month && now.day < parsed.day)) {
+    age--;
+  }
+  if (age < kMinimumSignUpAge) return LK.authMinAge.tr();
   return null;
 }

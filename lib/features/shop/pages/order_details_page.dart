@@ -9,6 +9,7 @@ import '../../../core/constants/product_enums.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
+import 'product_by_id_page.dart';
 import '../../../core/utils/color_utils.dart';
 import '../../../core/utils/show_message.dart';
 import '../../admin/widgets/admin_status_badge.dart';
@@ -19,7 +20,16 @@ import '../widgets/price_tag.dart';
 class OrderDetailsPage extends StatefulWidget {
   final int orderId;
 
-  const OrderDetailsPage({super.key, required this.orderId});
+  /// Order status from the list that opened this screen - `Processing`,
+  /// `Delivered` or `Cancelled`.
+  ///
+  /// The detail endpoints return the order's *items* and its *payment*, and
+  /// the payment reads `Paid` for every order including cancelled ones, so
+  /// it cannot say whether cancelling is still allowed. The status travels
+  /// from the list instead, which is the only place the API exposes it.
+  final String? orderStatus;
+
+  const OrderDetailsPage({super.key, required this.orderId, this.orderStatus});
 
   @override
   State<OrderDetailsPage> createState() => _OrderDetailsPageState();
@@ -57,7 +67,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             return const Center(child: CircularProgressIndicator());
           }
           final payment = state.payment;
-          final cancellable = payment?.status != 'Cancelled';
+
+          // A customer may only withdraw an order that is still being
+          // processed. Once it is delivered - or already cancelled - the
+          // button is gone rather than shown and rejected by the server.
+          final status = widget.orderStatus;
+          final cancellable = status == null
+              ? payment?.status != 'Cancelled'
+              : status == 'Processing';
 
           return ListView(
             padding: EdgeInsets.all(width(16)),
@@ -98,67 +115,98 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               ),
               SizedBox(height: height(10)),
               ...state.orderItems.map(
-                (item) => Container(
-                  margin: EdgeInsets.only(bottom: height(10)),
-                  padding: EdgeInsets.all(width(10)),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFD3D3E4)),
-                  ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: CachedNetworkImage(
-                          imageUrl: ApiService.resolveUrl(item.image) ?? '',
-                          width: width(60),
-                          height: width(60),
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => Container(
-                            color: const Color(0xFFEAEAF2),
-                            child: const Icon(Icons.checkroom),
+                (item) => InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  // Order lines carry a product id only; resolve it.
+                  onTap: () => openProductById(context, item.productId),
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: height(10)),
+                    padding: EdgeInsets.all(width(10)),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFD3D3E4)),
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: ApiService.resolveUrl(item.image) ?? '',
+                            width: width(60),
+                            height: width(60),
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => Container(
+                              color: const Color(0xFFEAEAF2),
+                              child: const Icon(Icons.checkroom),
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: width(12)),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 14,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: parseHexColor(item.colorHex),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.black26),
+                        SizedBox(width: width(12)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: parseHexColor(item.colorHex),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.black26),
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: width(6)),
-                                Text(
-                                  '${localizedColorName(item.color)} • ${sizeLabel(item.size)}',
-                                  style:
-                                      Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: height(4)),
-                            Text('× ${item.quantity}'),
-                          ],
+                                  SizedBox(width: width(6)),
+                                  Text(
+                                    '${localizedColorName(item.color)} • ${sizeLabel(item.size)}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: height(4)),
+                              Text('× ${item.quantity}'),
+                            ],
+                          ),
                         ),
-                      ),
-                      PriceTag(
-                        price: item.price,
-                        priceAfterDiscount: item.price,
-                        hasDiscount: false,
-                      ),
-                    ],
+                        PriceTag(
+                          price: item.price,
+                          priceAfterDiscount: item.price,
+                          hasDiscount: false,
+                        ),
+                        SizedBox(width: width(4)),
+                        const Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               SizedBox(height: height(20)),
+              if (!cancellable && status != null && status != 'Cancelled')
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                    SizedBox(width: width(6)),
+                    Expanded(
+                      child: Text(
+                        LK.ordersCannotCancel.tr(),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall!.copyWith(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
               if (cancellable)
                 AuthButton(
                   text: LK.ordersCancel.tr(),

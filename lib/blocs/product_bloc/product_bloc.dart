@@ -29,6 +29,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<GetAllDiscountProductEvent>(_onGetAllDiscountProductEvent);
     on<SearchProductsEvent>(_onSearchProductsEvent);
     on<FilterProductsEvent>(_onFilterProductsEvent);
+    on<LookupProductEvent>(_onLookupProductEvent);
   }
 
   Future<MultipartFile> _toMultipartFile(File file) async {
@@ -343,6 +344,58 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(
             state.copyWith(
               filterProductsStatus: FilterProductsStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
+  }
+
+  FutureOr<void> _onLookupProductEvent(
+    LookupProductEvent event,
+    Emitter<ProductState> emit,
+  ) async {
+    emit(state.copyWith(lookupProductStatus: LookupProductStatus.loading));
+    await ApiService.getMethod(endPoint: 'Product/GetFilter')
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse =
+              ApiResponseModel<List<ProductCatalogModel>>.fromJson(
+                response.data,
+                (json) => productCatalogListFromJson(json),
+              );
+          ProductCatalogModel? match;
+          for (final product
+              in apiResponse.data ?? const <ProductCatalogModel>[]) {
+            if (product.id == event.productId) {
+              match = product;
+              break;
+            }
+          }
+          emit(
+            state.copyWith(
+              // A product can be deleted while it still sits in somebody's old
+              // order, so "not found" is an ordinary outcome, not an error.
+              lookupProductStatus: match == null
+                  ? LookupProductStatus.notFound
+                  : LookupProductStatus.success,
+              lookupProduct: match,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              lookupProductStatus: LookupProductStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              lookupProductStatus: LookupProductStatus.failure,
               errorMessage: LK.commonErrorGeneric.tr(),
             ),
           );

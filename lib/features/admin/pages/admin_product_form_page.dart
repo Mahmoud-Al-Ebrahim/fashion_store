@@ -212,6 +212,33 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                   },
                 ),
                 SizedBox(height: height(10)),
+                // `Product/UpdateProduct` accepts only Price, CategoryId,
+                // Discount* and Image. Name and Description are silently
+                // discarded by the server - it answers 200 and changes
+                // nothing - so they stay disabled with a reason rather than
+                // pretending an edit was saved.
+                if (_isEdit) ...[
+                  Padding(
+                    padding: EdgeInsets.only(bottom: height(10)),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        SizedBox(width: width(6)),
+                        Expanded(
+                          child: Text(
+                            LK.adminNameNotEditable.tr(),
+                            style: Theme.of(context).textTheme.bodySmall!
+                                .copyWith(color: Colors.grey),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 AuthTextField(
                   controller: _priceController,
                   hintText: LK.adminProductPrice.tr(),

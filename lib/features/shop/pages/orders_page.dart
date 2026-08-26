@@ -65,8 +65,12 @@ class _OrdersPageState extends State<OrdersPage> {
                   final order = state.orders[index];
                   return InkWell(
                     borderRadius: BorderRadius.circular(18),
-                    onTap: () =>
-                        context.pushPage(OrderDetailsPage(orderId: order.id)),
+                    onTap: () => context.pushPage(
+                      OrderDetailsPage(
+                        orderId: order.id,
+                        orderStatus: order.status,
+                      ),
+                    ),
                     child: Container(
                       padding: EdgeInsets.all(width(14)),
                       decoration: BoxDecoration(

@@ -12,6 +12,7 @@ import '../../../core/constants/product_enums.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
+import 'product_by_id_page.dart';
 import '../../../core/utils/color_utils.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/cart/cart_item_model.dart';
@@ -99,105 +100,117 @@ class _CartTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(width(10)),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFD3D3E4)),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: CachedNetworkImage(
-              imageUrl: ApiService.resolveUrl(item.productImage) ?? '',
-              width: width(70),
-              height: width(70),
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: const Color(0xFFEAEAF2)),
-              errorWidget: (_, __, ___) => Container(
-                color: const Color(0xFFEAEAF2),
-                child: const Icon(Icons.checkroom, color: Colors.grey),
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      // The line only knows the product id, so the details screen is
+      // reached through the resolver.
+      onTap: () => openProductById(context, item.productId),
+      child: Container(
+        padding: EdgeInsets.all(width(10)),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFD3D3E4)),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: CachedNetworkImage(
+                imageUrl: ApiService.resolveUrl(item.productImage) ?? '',
+                width: width(70),
+                height: width(70),
+                fit: BoxFit.cover,
+                placeholder: (_, __) =>
+                    Container(color: const Color(0xFFEAEAF2)),
+                errorWidget: (_, __, ___) => Container(
+                  color: const Color(0xFFEAEAF2),
+                  child: const Icon(Icons.checkroom, color: Colors.grey),
+                ),
               ),
             ),
-          ),
-          SizedBox(width: width(12)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: parseHexColor(item.colorHexCode),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.black26),
+            SizedBox(width: width(12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: parseHexColor(item.colorHexCode),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black26),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: width(6)),
-                    Text(
-                      '${localizedColorName(item.color)} • ${sizeLabel(item.size)}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-                SizedBox(height: height(6)),
-                PriceTag(
-                  price: item.price,
-                  priceAfterDiscount: item.priceAfterDiscount,
-                  hasDiscount: item.priceAfterDiscount < item.price,
-                ),
-                SizedBox(height: height(6)),
-                Row(
-                  children: [
-                    _QtyButton(
-                      icon: Icons.remove,
-                      onTap: item.quantity <= 1
-                          ? null
-                          : () => context.read<CartBloc>().add(
+                      SizedBox(width: width(6)),
+                      Text(
+                        '${localizedColorName(item.color)} • ${sizeLabel(item.size)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height(6)),
+                  PriceTag(
+                    price: item.price,
+                    priceAfterDiscount: item.priceAfterDiscount,
+                    hasDiscount: item.priceAfterDiscount < item.price,
+                  ),
+                  SizedBox(height: height(6)),
+                  Row(
+                    children: [
+                      _QtyButton(
+                        icon: Icons.remove,
+                        onTap: item.quantity <= 1
+                            ? null
+                            : () => context.read<CartBloc>().add(
                                 UpdateCartItemEvent(
                                   cartItemId: item.cartItemId,
                                   quantity: item.quantity - 1,
                                 ),
                               ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: width(12)),
-                      child: Text('${item.quantity}'),
-                    ),
-                    _QtyButton(
-                      icon: Icons.add,
-                      onTap: () => context.read<CartBloc>().add(
-                        UpdateCartItemEvent(
-                          cartItemId: item.cartItemId,
-                          quantity: item.quantity + 1,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: width(12)),
+                        child: Text('${item.quantity}'),
+                      ),
+                      _QtyButton(
+                        icon: Icons.add,
+                        onTap: () => context.read<CartBloc>().add(
+                          UpdateCartItemEvent(
+                            cartItemId: item.cartItemId,
+                            quantity: item.quantity + 1,
+                          ),
                         ),
                       ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () async {
-                        final confirmed = await confirmDialog(
-                          context,
-                          title: LK.cartRemoveItem.tr(),
-                          message: LK.cartRemoveConfirm.tr(),
-                        );
-                        if (!confirmed || !context.mounted) return;
-                        context.read<CartBloc>().add(
-                          DeleteCartItemsEvent(cartItemIds: [item.cartItemId]),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
+                        ),
+                        onPressed: () async {
+                          final confirmed = await confirmDialog(
+                            context,
+                            title: LK.cartRemoveItem.tr(),
+                            message: LK.cartRemoveConfirm.tr(),
+                          );
+                          if (!confirmed || !context.mounted) return;
+                          context.read<CartBloc>().add(
+                            DeleteCartItemsEvent(
+                              cartItemIds: [item.cartItemId],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -289,10 +302,7 @@ class _CheckoutBarState extends State<_CheckoutBar> {
           SizedBox(height: height(10)),
           Row(
             children: [
-              Text(
-                '${LK.cartTotal.tr()}: ',
-                style: theme.textTheme.titleSmall,
-              ),
+              Text('${LK.cartTotal.tr()}: ', style: theme.textTheme.titleSmall),
               Text(
                 '${formatPrice(widget.total)} ${LK.commonCurrency.tr()}',
                 style: theme.textTheme.titleMedium!.copyWith(
@@ -307,9 +317,7 @@ class _CheckoutBarState extends State<_CheckoutBar> {
             builder: (context, state) {
               final loading = state.checkoutStatus == CheckoutStatus.loading;
               return AuthButton(
-                text: loading
-                    ? LK.commonLoading.tr()
-                    : LK.cartCheckout.tr(),
+                text: loading ? LK.commonLoading.tr() : LK.cartCheckout.tr(),
                 onTap: loading ? null : _checkout,
                 widthButton: double.infinity,
                 heightButton: height(52),

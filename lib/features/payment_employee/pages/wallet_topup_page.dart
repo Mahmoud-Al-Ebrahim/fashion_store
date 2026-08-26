@@ -25,8 +25,9 @@ class WalletTopUpPage extends StatefulWidget {
   /// When hosted inside a shell that already draws an app bar, render just
   /// the body so the two titles do not stack.
   final bool embedded;
+  final bool isSuperAdmin;
 
-  const WalletTopUpPage({super.key, this.embedded = false});
+  const WalletTopUpPage({super.key, this.embedded = false, this.isSuperAdmin = false});
 
   @override
   State<WalletTopUpPage> createState() => _WalletTopUpPageState();
