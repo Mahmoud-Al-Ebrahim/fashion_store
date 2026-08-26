@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../app/widgets/text_field.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../core/utils/validators.dart';
 
 /// Step 1 - the customer's name. Identity-document capture was removed:
 /// it belongs to the separate "become a seller" request, not registration.
@@ -20,14 +21,6 @@ class OwnerInformationStep extends StatelessWidget {
     required this.lastNameController,
   });
 
-  String? _validateName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return LK.commonRequiredField.tr();
-    }
-    if (value.trim().length < 3) return LK.commonInvalidValue.tr();
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -40,7 +33,7 @@ class OwnerInformationStep extends StatelessWidget {
             AuthTextField(
               controller: firstNameController,
               hintText: LK.authFirstName.tr(),
-              validator: _validateName,
+              validator: validateName,
             )
                 .animate()
                 .fadeIn(duration: 400.ms)
@@ -49,7 +42,7 @@ class OwnerInformationStep extends StatelessWidget {
             AuthTextField(
               controller: lastNameController,
               hintText: LK.authLastName.tr(),
-              validator: _validateName,
+              validator: validateName,
             )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 150.ms)

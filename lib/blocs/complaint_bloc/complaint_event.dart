@@ -9,7 +9,11 @@ class AddComplaintEvent extends ComplaintEvent {
   final String title;
   final String? description;
 
-  AddComplaintEvent({required this.storeId, required this.title, this.description});
+  AddComplaintEvent({
+    required this.storeId,
+    required this.title,
+    this.description,
+  });
 }
 
 /// GET Complaint/GetAllComplaints (store owner - complaints against their store)

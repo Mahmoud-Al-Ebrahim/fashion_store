@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'core/theme/app_color.dart';
 import 'core/utils/my_shared_pref.dart';
-import 'features/admin/admin_shell_screen.dart';
+import 'core/utils/session.dart';
+import 'features/role_router.dart';
 import 'features/auth/pages/sign_in_screen/sign_in_screen.dart';
 import 'features/onboarding/onboarding_screen.dart' hide AppColor;
 
@@ -22,17 +23,18 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(Duration(seconds: 2), () {
-      String? token = MySharedPref.getToken();
-      bool isStoreAdmin = MySharedPref.isStoreAdmin();
-      bool? onBoardingSeen = MySharedPref.getOnBoardingSeen();
-      Navigator.of(context).push(
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      final onBoardingSeen = MySharedPref.getOnBoardingSeen();
+      final token = MySharedPref.getToken();
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => !onBoardingSeen
               ? OnboardingScreen()
+              // Signed in: land on the surface this role owns.
               : token != null
-              ? (isStoreAdmin ? const AdminShellScreen() : UserNavBar())
-              : SignInScreen(),
+                  ? RoleRouter.homeFor(Session.role)
+                  : const SignInScreen(),
         ),
       );
     });

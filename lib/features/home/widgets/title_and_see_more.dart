@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 
+import 'package:easy_localization/easy_localization.dart';
+
+import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 
 class TitleAndSeeMore extends StatelessWidget {
   final String title;
-  const TitleAndSeeMore({super.key, required this.onSeeMore, required this.title});
+  const TitleAndSeeMore({
+    super.key,
+    required this.onSeeMore,
+    required this.title,
+  });
 
   final VoidCallback onSeeMore;
 
@@ -15,7 +22,7 @@ class TitleAndSeeMore extends StatelessWidget {
       child: Row(
         children: [
           Text(
-           title,
+            title,
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -27,11 +34,12 @@ class TitleAndSeeMore extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "المزيد",
+                  LK.homeSeeMore.tr(),
 
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w600),
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Container(
                   width: 30,

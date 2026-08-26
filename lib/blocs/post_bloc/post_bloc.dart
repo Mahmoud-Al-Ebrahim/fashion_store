@@ -8,6 +8,9 @@ import 'package:http_parser/http_parser.dart';
 import 'package:meta/meta.dart';
 import 'package:mime_type/mime_type.dart';
 
+import 'package:easy_localization/easy_localization.dart';
+
+import '../../core/localization/translation_keys.dart';
 import '../../core/utils/api_error_helper.dart';
 import '../../core/utils/api_service.dart';
 import '../../models/common/api_response_model.dart';
@@ -46,12 +49,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     try {
       final responses = await Future.wait(
         event.storeIds.map(
-          (id) => ApiService.getMethod(endPoint: 'Post/GetAll/$id')
+          (id) =>
+              ApiService.getMethod(endPoint: 'Post/GetAll/$id')
               // One unreachable store shouldn't blank the whole feed.
-              .catchError((_) => Response(
-                    requestOptions: RequestOptions(path: 'Post/GetAll/$id'),
-                    data: {'data': []},
-                  )),
+              .catchError(
+                (_) => Response(
+                  requestOptions: RequestOptions(path: 'Post/GetAll/$id'),
+                  data: {'data': []},
+                ),
+              ),
         ),
       );
       final merged = <PostModel>[];
@@ -99,9 +105,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     AddPostEvent event,
     Emitter<PostState> emit,
   ) async {
-    emit(
-      state.copyWith(postTransactionStatus: PostTransactionStatus.loading),
-    );
+    emit(state.copyWith(postTransactionStatus: PostTransactionStatus.loading));
     final Map<String, dynamic> form = {
       "Content": event.content,
       "Visibility": event.visibility,
@@ -115,70 +119,77 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       }
     }
     await ApiService.postMethod(
-      endPoint: 'Post/Add',
-      form: FormData.fromMap(form),
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<PostModel>.fromJson(
-        response.data,
-        (json) => PostModel.fromJson(json),
-      );
-      if (apiResponse.data != null) {
-        add(GetAllPostsEvent(storeId: apiResponse.data!.storeId));
-      }
-      emit(
-        state.copyWith(postTransactionStatus: PostTransactionStatus.success),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postTransactionStatus: PostTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postTransactionStatus: PostTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Post/Add',
+          form: FormData.fromMap(form),
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<PostModel>.fromJson(
+            response.data,
+            (json) => PostModel.fromJson(json),
+          );
+          if (apiResponse.data != null) {
+            add(GetAllPostsEvent(storeId: apiResponse.data!.storeId));
+          }
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onDeletePostEvent(
     DeletePostEvent event,
     Emitter<PostState> emit,
   ) async {
-    emit(
-      state.copyWith(postTransactionStatus: PostTransactionStatus.loading),
-    );
+    emit(state.copyWith(postTransactionStatus: PostTransactionStatus.loading));
     await ApiService.deleteMethod(endPoint: 'Post/Delete/${event.postId}')
         .then((response) {
-      log(response.data.toString());
-      add(GetAllPostsEvent(storeId: event.storeId));
-      emit(
-        state.copyWith(postTransactionStatus: PostTransactionStatus.success),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postTransactionStatus: PostTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postTransactionStatus: PostTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          log(response.data.toString());
+          add(GetAllPostsEvent(storeId: event.storeId));
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetAllPostsEvent(
@@ -188,43 +199,43 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     emit(state.copyWith(getAllPostsStatus: GetAllPostsStatus.loading));
     await ApiService.getMethod(endPoint: 'Post/GetAll/${event.storeId}')
         .then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<PostModel>>.fromJson(
-        response.data,
-        (json) => postListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getAllPostsStatus: GetAllPostsStatus.success,
-          posts: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllPostsStatus: GetAllPostsStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllPostsStatus: GetAllPostsStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<List<PostModel>>.fromJson(
+            response.data,
+            (json) => postListFromJson(json),
+          );
+          emit(
+            state.copyWith(
+              getAllPostsStatus: GetAllPostsStatus.success,
+              posts: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllPostsStatus: GetAllPostsStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllPostsStatus: GetAllPostsStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onUpdatePostEvent(
     UpdatePostEvent event,
     Emitter<PostState> emit,
   ) async {
-    emit(
-      state.copyWith(postTransactionStatus: PostTransactionStatus.loading),
-    );
+    emit(state.copyWith(postTransactionStatus: PostTransactionStatus.loading));
     final Map<String, dynamic> form = {};
     if (event.content != null) form['Content'] = event.content;
     if (event.visibility != null) form['Visibility'] = event.visibility;
@@ -237,31 +248,36 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       form['DeletedMediaIds'] = event.deletedMediaIds;
     }
     await ApiService.putMethod(
-      endPoint: 'Post/Update/${event.postId}',
-      form: FormData.fromMap(form),
-    ).then((response) {
-      log(response.data.toString());
-      add(GetAllPostsEvent(storeId: event.storeId));
-      emit(
-        state.copyWith(postTransactionStatus: PostTransactionStatus.success),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postTransactionStatus: PostTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postTransactionStatus: PostTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Post/Update/${event.postId}',
+          form: FormData.fromMap(form),
+        )
+        .then((response) {
+          log(response.data.toString());
+          add(GetAllPostsEvent(storeId: event.storeId));
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postTransactionStatus: PostTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onTogglePostReactionEvent(
@@ -270,38 +286,44 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   ) async {
     emit(state.copyWith(postReactionStatus: PostReactionStatus.loading));
     await ApiService.postMethod(
-      endPoint: 'PostReaction',
-      body: {"postId": event.postId, "reactionType": event.reactionType},
-    ).then((response) {
-      log(response.data.toString());
-      // Refresh whichever list the post came from so the new reaction shows.
-      if (state.communityFeed.isNotEmpty) {
-        add(
-          GetCommunityFeedEvent(
-            storeIds: state.communityFeed.map((p) => p.storeId).toSet().toList(),
-          ),
-        );
-      }
-      if (state.posts.isNotEmpty) {
-        add(GetAllPostsEvent(storeId: event.storeId));
-      }
-      emit(state.copyWith(postReactionStatus: PostReactionStatus.success));
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postReactionStatus: PostReactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          postReactionStatus: PostReactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'PostReaction',
+          body: {"postId": event.postId, "reactionType": event.reactionType},
+        )
+        .then((response) {
+          log(response.data.toString());
+          // Refresh whichever list the post came from so the new reaction shows.
+          if (state.communityFeed.isNotEmpty) {
+            add(
+              GetCommunityFeedEvent(
+                storeIds: state.communityFeed
+                    .map((p) => p.storeId)
+                    .toSet()
+                    .toList(),
+              ),
+            );
+          }
+          if (state.posts.isNotEmpty) {
+            add(GetAllPostsEvent(storeId: event.storeId));
+          }
+          emit(state.copyWith(postReactionStatus: PostReactionStatus.success));
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postReactionStatus: PostReactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              postReactionStatus: PostReactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 }

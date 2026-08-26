@@ -25,6 +25,7 @@ class MySharedPref {
   static const String _refreshTokenKey = 'refresh_token';
   static const String _rolesKey = 'roles';
   static const String _userIdKey = 'user_id';
+  static const String _wantsStoreKey = 'wants_store';
 
 
 
@@ -107,6 +108,17 @@ class MySharedPref {
 
   /// whether the logged in user has the "SuperAdmin" role
   static bool isSuperAdmin() => getRoles().contains('SuperAdmin');
+
+  /// remember that the user signed up intending to open a store, so the
+  /// post-login router can send them to the store-request form once
+  static Future<void> saveWantsStore(bool value) =>
+      _sharedPreferences.setBool(_wantsStoreKey, value);
+
+  static bool getWantsStore() =>
+      _sharedPreferences.getBool(_wantsStoreKey) ?? false;
+
+  static Future<void> clearWantsStore() =>
+      _sharedPreferences.remove(_wantsStoreKey);
 
   /// clear all auth related data (token, refresh token, roles, user id)
   static Future<void> clearAuthData() async {

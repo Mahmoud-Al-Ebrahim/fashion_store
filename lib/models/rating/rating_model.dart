@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Response model for `POST Rating/AddRating` -> `data`.
 class RatingModel {
   final String userId;
@@ -14,10 +16,10 @@ class RatingModel {
 
   factory RatingModel.fromJson(Map<String, dynamic> json) {
     return RatingModel(
-      userId: json['userId'].toString(),
-      productId: json['productId'] as int,
-      ratingValue: json['ratingValue'] as int,
-      createdAt: DateTime.parse(json['createdAt'].toString()),
+      userId: asString(json['userId']),
+      productId: asInt(json['productId']),
+      ratingValue: asInt(json['ratingValue']),
+      createdAt: asDate(json['createdAt']),
     );
   }
 }

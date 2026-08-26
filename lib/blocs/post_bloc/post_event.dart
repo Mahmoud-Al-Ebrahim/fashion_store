@@ -6,7 +6,11 @@ class PostMediaInput {
   final String mediaType; // enMediaType: Image | Video
   final int? durationSeconds; // required for Video
 
-  PostMediaInput({required this.file, required this.mediaType, this.durationSeconds});
+  PostMediaInput({
+    required this.file,
+    required this.mediaType,
+    this.durationSeconds,
+  });
 }
 
 @immutable

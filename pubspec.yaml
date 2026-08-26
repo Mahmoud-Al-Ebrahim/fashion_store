@@ -58,7 +58,9 @@ dependencies:
   geolocator: ^14.0.1
   free_map: ^2.5.0
   video_player: ^2.9.2
+  url_launcher: ^6.3.1
   chewie: ^1.7.4
+  signalr_netcore: ^1.4.4
 
 
 dev_dependencies:

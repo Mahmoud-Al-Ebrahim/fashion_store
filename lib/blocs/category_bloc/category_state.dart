@@ -23,8 +23,7 @@ class CategoryState {
     this.getAllCategoriesStatus = GetAllCategoriesStatus.init,
     this.categoryTransactionStatus = CategoryTransactionStatus.init,
     this.getAllStoreCategoryStatus = GetAllStoreCategoryStatus.init,
-    this.storeCategoryTransactionStatus =
-        StoreCategoryTransactionStatus.init,
+    this.storeCategoryTransactionStatus = StoreCategoryTransactionStatus.init,
     this.errorMessage = '',
     this.categories = const [],
     this.storeCategories = const [],

@@ -4,7 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../app/widgets/async_view.dart';
 import '../../../blocs/order_bloc/order_bloc.dart';
+import '../../../app/widgets/button.dart';
 import '../../../core/extensions/build_context.dart';
+import '../../../core/helper/helper_functions.dart';
+import '../../../core/utils/session.dart';
+import '../../auth/pages/sign_in_screen/sign_in_screen.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../admin/widgets/admin_status_badge.dart';
@@ -23,13 +27,18 @@ class _OrdersPageState extends State<OrdersPage> {
   @override
   void initState() {
     super.initState();
-    _load();
+    // A guest has no orders to fetch, and the call would 401 anyway.
+    if (!Session.isGuest) _load();
   }
 
   void _load() => context.read<OrderBloc>().add(GetAllOrdersEvent());
 
   @override
   Widget build(BuildContext context) {
+    // Guests browse the catalogue freely, but orders belong to an account -
+    // say so plainly instead of showing an empty list they cannot fill.
+    if (Session.isGuest) return const _GuestOrdersView();
+
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async => _load(),
@@ -41,7 +50,8 @@ class _OrdersPageState extends State<OrdersPage> {
             return AsyncView(
               isLoading: state.getAllOrdersStatus == GetAllOrdersStatus.loading,
               isFailure: state.getAllOrdersStatus == GetAllOrdersStatus.failure,
-              isEmpty: state.getAllOrdersStatus == GetAllOrdersStatus.success &&
+              isEmpty:
+                  state.getAllOrdersStatus == GetAllOrdersStatus.success &&
                   state.orders.isEmpty,
               errorMessage: state.errorMessage,
               emptyText: LK.ordersNoOrders.tr(),
@@ -55,9 +65,8 @@ class _OrdersPageState extends State<OrdersPage> {
                   final order = state.orders[index];
                   return InkWell(
                     borderRadius: BorderRadius.circular(18),
-                    onTap: () => context.pushPage(
-                      OrderDetailsPage(orderId: order.id),
-                    ),
+                    onTap: () =>
+                        context.pushPage(OrderDetailsPage(orderId: order.id)),
                     child: Container(
                       padding: EdgeInsets.all(width(14)),
                       decoration: BoxDecoration(
@@ -89,9 +98,7 @@ class _OrdersPageState extends State<OrdersPage> {
                             children: [
                               Text(
                                 '${order.createdAt.year}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.day.toString().padLeft(2, '0')}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
+                                style: Theme.of(context).textTheme.bodySmall!
                                     .copyWith(color: Colors.grey),
                               ),
                               const Spacer(),
@@ -110,6 +117,58 @@ class _OrdersPageState extends State<OrdersPage> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// What the orders tab shows to a guest: why it is empty, and the way out.
+class _GuestOrdersView extends StatelessWidget {
+  const _GuestOrdersView();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: width(32)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: width(64),
+                color: theme.colorScheme.primary.withValues(alpha: 0.5),
+              ),
+              SizedBox(height: height(16)),
+              Text(
+                LK.ordersGuestTitle.tr(),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium!.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: height(8)),
+              Text(
+                LK.ordersGuestBody.tr(),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium!.copyWith(color: Colors.grey),
+              ),
+              SizedBox(height: height(24)),
+              AuthButton(
+                text: LK.authLoginNow.tr(),
+                widthButton: double.infinity,
+                heightButton: height(50),
+                onTap: () => HelperFunctions.navigateToPageAndPopAll(
+                  context,
+                  const SignInScreen(),
+                  true,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

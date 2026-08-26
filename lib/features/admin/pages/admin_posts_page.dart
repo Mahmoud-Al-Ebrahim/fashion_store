@@ -68,9 +68,11 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
         body: MultiBlocListener(
           listeners: [
             BlocListener<PostBloc, PostState>(
-              listenWhen: (p, c) => p.postTransactionStatus != c.postTransactionStatus,
+              listenWhen: (p, c) =>
+                  p.postTransactionStatus != c.postTransactionStatus,
               listener: (context, state) {
-                if (state.postTransactionStatus == PostTransactionStatus.failure) {
+                if (state.postTransactionStatus ==
+                    PostTransactionStatus.failure) {
                   showMessage(state.errorMessage);
                 }
               },
@@ -81,7 +83,8 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
               return AdminAsyncView(
                 isLoading: state.getAllPostsStatus == GetAllPostsStatus.loading,
                 isFailure: state.getAllPostsStatus == GetAllPostsStatus.failure,
-                isEmpty: state.getAllPostsStatus == GetAllPostsStatus.success &&
+                isEmpty:
+                    state.getAllPostsStatus == GetAllPostsStatus.success &&
                     state.posts.isEmpty,
                 errorMessage: state.errorMessage,
                 emptyText: LK.adminNoPosts.tr(),
@@ -112,7 +115,10 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                                 ),
                                 child: CachedNetworkImage(
                                   imageUrl:
-                                      ApiService.resolveUrl(post.postMedias.first.mediaUrl) ?? '',
+                                      ApiService.resolveUrl(
+                                        post.postMedias.first.mediaUrl,
+                                      ) ??
+                                      '',
                                   height: height(160),
                                   width: double.infinity,
                                   fit: BoxFit.cover,
@@ -131,24 +137,49 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                                         post.visibility == 'Public'
                                             ? LK.communityPublic.tr()
                                             : LK.communityFollowersOnly.tr(),
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
                                       ),
                                       const Spacer(),
-                                      Icon(Icons.favorite, size: 14, color: Colors.red.shade300),
+                                      Icon(
+                                        Icons.favorite,
+                                        size: 14,
+                                        color: Colors.red.shade300,
+                                      ),
                                       SizedBox(width: width(4)),
                                       Text(
                                         '${post.postReactions.fold<int>(0, (sum, r) => sum + r.count)}',
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
                                       ),
                                       SizedBox(width: width(10)),
                                       IconButton(
-                                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                        tooltip: LK.adminEditPost.tr(),
+                                        icon: const Icon(
+                                          Icons.edit_outlined,
+                                          size: 20,
+                                        ),
+                                        onPressed: () => context.pushPage(
+                                          AdminPostFormPage(
+                                            storeId: post.storeId,
+                                            post: post,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.red,
+                                        ),
                                         onPressed: () async {
                                           final confirmed = await confirmDialog(
                                             context,
                                             title: LK.adminDeletePost.tr(),
                                           );
-                                          if (!confirmed || !context.mounted) return;
+                                          if (!confirmed || !context.mounted)
+                                            return;
                                           context.read<PostBloc>().add(
                                             DeletePostEvent(
                                               postId: post.id,

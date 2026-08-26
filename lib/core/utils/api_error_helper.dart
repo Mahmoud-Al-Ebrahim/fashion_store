@@ -1,3 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
+
+import '../localization/translation_keys.dart';
 import 'package:dio/dio.dart';
 
 /// Extracts a user-friendly error message from a failed API call.
@@ -21,5 +24,5 @@ String apiErrorMessage(dynamic error) {
   } catch (_) {
     // fall through to generic message
   }
-  return 'حدث خطأ ما، حاول مرة أخرى';
+  return LK.commonErrorGeneric.tr();
 }

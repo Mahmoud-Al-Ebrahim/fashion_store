@@ -51,6 +51,9 @@ class StoreComplaintModel {
   final DateTime createdAt;
   final String status; // e.g. Pending
 
+  /// Messages in this thread the signed-in side has not opened yet.
+  final int numberOfUnReadMessage;
+
   StoreComplaintModel({
     required this.complaintId,
     required this.customerId,
@@ -60,6 +63,7 @@ class StoreComplaintModel {
     required this.description,
     required this.createdAt,
     required this.status,
+    this.numberOfUnReadMessage = 0,
   });
 
   factory StoreComplaintModel.fromJson(Map<String, dynamic> json) {
@@ -72,6 +76,8 @@ class StoreComplaintModel {
       description: json['description']?.toString() ?? '',
       createdAt: DateTime.parse(json['createdAt'].toString()),
       status: json['status']?.toString() ?? '',
+      numberOfUnReadMessage:
+          (json['numberOfUnReadMessage'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -91,6 +97,9 @@ class UserComplaintModel {
   final String description;
   final DateTime createdAt;
 
+  /// Messages in this thread the signed-in side has not opened yet.
+  final int numberOfUnReadMessage;
+
   UserComplaintModel({
     required this.complaintId,
     required this.storeId,
@@ -99,6 +108,7 @@ class UserComplaintModel {
     required this.title,
     required this.description,
     required this.createdAt,
+    this.numberOfUnReadMessage = 0,
   });
 
   factory UserComplaintModel.fromJson(Map<String, dynamic> json) {
@@ -110,6 +120,8 @@ class UserComplaintModel {
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       createdAt: DateTime.parse(json['createdAt'].toString()),
+      numberOfUnReadMessage:
+          (json['numberOfUnReadMessage'] as num?)?.toInt() ?? 0,
     );
   }
 }

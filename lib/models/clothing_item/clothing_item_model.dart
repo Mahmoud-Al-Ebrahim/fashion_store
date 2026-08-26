@@ -1,3 +1,4 @@
+import '../../core/utils/json_parse.dart';
 import 'product_size_model.dart';
 
 /// Item of `GET ClothingItem/GetAll/{productId}` -> `data` - a product color
@@ -17,9 +18,9 @@ class ClothingItemModel {
 
   factory ClothingItemModel.fromJson(Map<String, dynamic> json) {
     return ClothingItemModel(
-      id: json['id'] as int,
-      color: json['color']?.toString() ?? '',
-      image: json['image']?.toString() ?? '',
+      id: asInt(json['id']),
+      color: asString(json['color']),
+      image: asString(json['image']),
       productSizes: productSizeListFromJson(json['productSizes'] ?? []),
     );
   }
@@ -44,9 +45,9 @@ class ClothingItemBasicModel {
 
   factory ClothingItemBasicModel.fromJson(Map<String, dynamic> json) {
     return ClothingItemBasicModel(
-      id: json['id'] as int,
-      color: json['color']?.toString() ?? '',
-      image: json['image']?.toString() ?? '',
+      id: asInt(json['id']),
+      color: asString(json['color']),
+      image: asString(json['image']),
     );
   }
 }

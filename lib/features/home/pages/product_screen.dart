@@ -101,17 +101,16 @@ class _ProductScreenState extends State<ProductScreen> {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: GestureDetector(
-                    onTap: () => setState(() => isExpanded = !isExpanded),
-                    child: ProductColumnLayer(
+                  child: ProductColumnLayer(
+                    onToggleExpanded: () =>
+                        setState(() => isExpanded = !isExpanded),
                       product: widget.product,
                       clothingItems: state.clothingItems,
                       selectedColor: _selectedColor,
                       selectedSize: _selectedSize,
                       onColorChanged: _onColorChanged,
-                      onSizeChanged: (size) =>
-                          setState(() => _selectedSize = size),
-                    ),
+                    onSizeChanged: (size) =>
+                        setState(() => _selectedSize = size),
                   ),
                 ),
                 Positioned(

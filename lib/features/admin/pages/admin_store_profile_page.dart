@@ -6,7 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../app/widgets/button.dart';
 import '../../../app/widgets/text_field.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../../blocs/store_bloc/store_bloc.dart';
+import '../../../blocs/store_request_bloc/store_request_bloc.dart';
 import '../../../core/helper/helper_functions.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
@@ -23,6 +26,9 @@ class AdminStoreProfilePage extends StatefulWidget {
 }
 
 class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
+  /// Set once the documents have been requested for this store, so the
+  /// fetch is not repeated on every rebuild.
+  int? _filesRequestedFor;
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _addressController = TextEditingController();
@@ -109,7 +115,8 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
         title: Text(LK.adminStoreProfile.tr()),
       ),
       body: BlocConsumer<StoreBloc, StoreState>(
-        listenWhen: (p, c) => p.storeTransactionStatus != c.storeTransactionStatus,
+        listenWhen: (p, c) =>
+            p.storeTransactionStatus != c.storeTransactionStatus,
         listener: (context, state) {
           if (state.storeTransactionStatus == StoreTransactionStatus.success) {
             showMessage(LK.adminSavedSuccessfully.tr(), hasError: false);
@@ -117,7 +124,8 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
               _newLogo = null;
               _newFeaturedImage = null;
             });
-          } else if (state.storeTransactionStatus == StoreTransactionStatus.failure) {
+          } else if (state.storeTransactionStatus ==
+              StoreTransactionStatus.failure) {
             showMessage(state.errorMessage);
           }
         },
@@ -127,7 +135,18 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
             return const Center(child: CircularProgressIndicator());
           }
           _fillFrom(store);
-          final loading = state.storeTransactionStatus == StoreTransactionStatus.loading;
+          // The ID and licence images live on the original store request.
+          if (_filesRequestedFor != store.id) {
+            _filesRequestedFor = store.id;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              context.read<StoreRequestBloc>().add(
+                GetStoreRequestFilesEvent(storeId: store.id),
+              );
+            });
+          }
+          final loading =
+              state.storeTransactionStatus == StoreTransactionStatus.loading;
 
           return SingleChildScrollView(
             padding: EdgeInsets.all(width(16)),
@@ -144,7 +163,8 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                         boxHeight: height(110),
                         onTap: () async {
                           final file = await HelperFunctions.pickImage();
-                          if (file != null) setState(() => _newLogo = File(file.path));
+                          if (file != null)
+                            setState(() => _newLogo = File(file.path));
                         },
                       ),
                     ),
@@ -152,7 +172,9 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                     Expanded(
                       child: ImagePickBox(
                         pickedFile: _newFeaturedImage,
-                        existingImageUrl: ApiService.resolveUrl(store.featuredImage),
+                        existingImageUrl: ApiService.resolveUrl(
+                          store.featuredImage,
+                        ),
                         label: LK.sellerFeaturedImage.tr(),
                         boxHeight: height(110),
                         onTap: () async {
@@ -173,6 +195,33 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                   heightButton: height(46),
                 ),
                 SizedBox(height: height(20)),
+
+                // ----- fixed at creation, not editable here -----
+                _ReadOnlyBlock(store: store),
+                SizedBox(height: height(20)),
+
+                // ----- the documents submitted with the request -----
+                _DocumentsBlock(storeId: store.id),
+                SizedBox(height: height(20)),
+
+                Row(
+                  children: [
+                    Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    SizedBox(width: width(6)),
+                    Text(
+                      LK.storeProfileEditableNote.tr(),
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _nameController,
                   hintText: LK.sellerStoreName.tr(),
@@ -203,21 +252,31 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => _pickTime(true),
-                        child: Text(_start == null ? LK.sellerWorkingHoursStart.tr() : _start!.format(context)),
+                        child: Text(
+                          _start == null
+                              ? LK.sellerWorkingHoursStart.tr()
+                              : _start!.format(context),
+                        ),
                       ),
                     ),
                     SizedBox(width: width(10)),
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => _pickTime(false),
-                        child: Text(_end == null ? LK.sellerWorkingHoursEnd.tr() : _end!.format(context)),
+                        child: Text(
+                          _end == null
+                              ? LK.sellerWorkingHoursEnd.tr()
+                              : _end!.format(context),
+                        ),
                       ),
                     ),
                   ],
                 ),
                 SizedBox(height: height(20)),
                 AuthButton(
-                  text: loading ? LK.commonSaving.tr() : LK.adminSaveStoreInfo.tr(),
+                  text: loading
+                      ? LK.commonSaving.tr()
+                      : LK.adminSaveStoreInfo.tr(),
                   onTap: loading ? null : () => _saveInfo(store.id),
                   widthButton: double.infinity,
                   heightButton: height(54),
@@ -231,3 +290,184 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
     );
   }
 }
+
+/// Store facts that were fixed when the account was created.
+///
+/// The update endpoint does not accept these, so they are shown as plain
+/// text with a note rather than as disabled inputs that look editable.
+class _ReadOnlyBlock extends StatelessWidget {
+  const _ReadOnlyBlock({required this.store});
+
+  final StoreDetailModel store;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: EdgeInsets.all(width(12)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6F6FA),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lock_outline, size: 16, color: Colors.grey.shade600),
+              SizedBox(width: width(6)),
+              Expanded(
+                child: Text(
+                  LK.storeProfileReadonlyNote.tr(),
+                  style: theme.textTheme.bodySmall!.copyWith(
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: height(10)),
+          _Fact(label: LK.authEmail.tr(), value: store.storeEmail),
+          _Fact(label: LK.ordersStatus.tr(), value: store.storeStatus),
+          _Fact(
+            label: LK.superadminSubmittedAt.tr(),
+            value: _day(store.createdAt),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// National ID (both sides) and the trade licence, from
+/// `StoreRequest/GetFilesByStore/{storeId}`. Read-only: replacing them means
+/// filing a new request, so there is nothing to edit here.
+class _DocumentsBlock extends StatelessWidget {
+  const _DocumentsBlock({required this.storeId});
+
+  final int storeId;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          LK.storeProfileDocuments.tr(),
+          style: theme.textTheme.titleSmall!.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: height(10)),
+        BlocBuilder<StoreRequestBloc, StoreRequestState>(
+          buildWhen: (p, c) =>
+              p.storeRequestFiles != c.storeRequestFiles ||
+              p.getStoreRequestFilesStatus != c.getStoreRequestFilesStatus,
+          builder: (context, state) {
+            if (state.getStoreRequestFilesStatus ==
+                GetStoreRequestFilesStatus.loading) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: height(16)),
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+            final files = state.storeRequestFiles;
+            final entries = <String, String?>{
+              LK.sellerNationalIdFront.tr(): files?.nationalIdFrontImage,
+              LK.sellerNationalIdBack.tr(): files?.nationalIdBackImage,
+              LK.sellerLicense.tr(): files?.storeLicenseImage,
+            }..removeWhere((_, url) => (url ?? '').isEmpty);
+
+            if (entries.isEmpty) {
+              return Text(
+                LK.storeProfileNoDocuments.tr(),
+                style: theme.textTheme.bodySmall!.copyWith(color: Colors.grey),
+              );
+            }
+            return Column(
+              children: entries.entries
+                  .map((e) => _Document(label: e.key, url: e.value!))
+                  .toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _Document extends StatelessWidget {
+  const _Document({required this.label, required this.url});
+
+  final String label;
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = ApiService.resolveUrl(url) ?? '';
+    return Padding(
+      padding: EdgeInsets.only(bottom: height(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          SizedBox(height: height(6)),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: resolved,
+              height: height(160),
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorWidget: (_, __, ___) => Container(
+                height: height(160),
+                color: Colors.grey.shade200,
+                child: const Icon(Icons.image_not_supported_outlined),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Fact extends StatelessWidget {
+  const _Fact({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    if (value.trim().isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: height(3)),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall!.copyWith(color: Colors.grey),
+          ),
+          SizedBox(width: width(10)),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _day(DateTime d) =>
+    '${d.year}-${d.month.toString().padLeft(2, '0')}-'
+    '${d.day.toString().padLeft(2, '0')}';

@@ -5,6 +5,10 @@
 /// before/while it's still Pending approval.
 class StoreDetailModel {
   final int id;
+
+  /// Id of the account that owns (or requested) the store. Only the
+  /// SuperAdmin request feed returns it; the public store list does not.
+  final String? ownerId;
   final String storeName;
   final String description;
   final String storePhoneNumber;
@@ -18,13 +22,15 @@ class StoreDetailModel {
   final DateTime? approvedAt;
   final DateTime? rejectedAt;
   final String? note;
-  final String storeStatus; // enStoreStatus: Pending|Approved|Rejected|Deleted|Cancelled
+  final String
+  storeStatus; // enStoreStatus: Pending|Approved|Rejected|Deleted|Cancelled
   final bool isDeleted;
   final DateTime? deletedAt;
   final bool isActive;
 
   StoreDetailModel({
     required this.id,
+    this.ownerId,
     required this.storeName,
     required this.description,
     required this.storePhoneNumber,
@@ -47,11 +53,16 @@ class StoreDetailModel {
   factory StoreDetailModel.fromJson(Map<String, dynamic> json) {
     return StoreDetailModel(
       id: json['id'] as int,
+      ownerId: json['ownerId']?.toString(),
       storeName: json['storeName']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
-      storePhoneNumber: json['storePhoneNumber']?.toString() ?? '',
+      // `Store/GetAllStores` says `storePhoneNumber`, while
+      // `SuperAdmin/GetAllRequestStoreByFilter` says `phoneNumber` for the
+      // same value - accept either so both feeds populate the card.
+      storePhoneNumber:
+          (json['storePhoneNumber'] ?? json['phoneNumber'])?.toString() ?? '',
       address: json['address']?.toString() ?? '',
-      storeEmail: json['storeEmail']?.toString() ?? '',
+      storeEmail: (json['storeEmail'] ?? json['email'])?.toString() ?? '',
       logo: json['logo']?.toString(),
       featuredImage: json['featuredImage']?.toString(),
       workingHoursStart: json['workingHoursStart']?.toString() ?? '',

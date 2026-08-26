@@ -14,6 +14,7 @@ class CategoryModel {
   }
 }
 
-List<CategoryModel> categoryListFromJson(dynamic json) => (json as List<dynamic>)
-    .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
-    .toList();
+List<CategoryModel> categoryListFromJson(dynamic json) =>
+    (json as List<dynamic>)
+        .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+        .toList();

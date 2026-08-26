@@ -10,15 +10,16 @@ import '../../../../core/helper/helper_functions.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../core/utils/my_shared_pref.dart';
 import '../../../../core/utils/show_message.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../admin/admin_shell_screen.dart';
-import '../../../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
-import '../sign_up/sign_up_screen.dart';
+import '../../../role_router.dart';
+import '../choose_account_kind_screen.dart';
+import 'forgot_password_page.dart';
 import 'otp_verification_page.dart';
 
-/// Sign-in. On success the user is routed by role: store owners land on the
-/// admin dashboard, everyone else on the customer shell.
+/// Sign-in. On success the user is routed by role (see [RoleRouter]).
+/// A "continue as guest" option lets people browse the catalog read-only.
 class SignInScreen extends StatefulWidget {
   static String name = "LoginScreen";
   static String route = "/login";
@@ -41,79 +42,45 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  void _forgotPassword() {
-    final email = emailController.text.trim();
-    final error = validateEmail(email);
-    if (error != null) {
-      showMessage(error);
-      return;
-    }
-    context.read<AuthBloc>().add(ForgotPasswordEvent(email: email));
+  Future<void> _continueAsGuest() async {
+    // Guests must not carry a stale session around.
+    await MySharedPref.clearAuthData();
+    if (!mounted) return;
+    RoleRouter.goHome(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<AuthBloc, AuthState>(
-            listenWhen: (p, c) => p.loginStatus != c.loginStatus,
-            listener: (context, state) {
-              if (state.loginStatus == LoginStatus.success) {
-                HelperFunctions.navigateToPageAndPopAll(
-                  context,
-                  state.isStoreAdmin
-                      ? const AdminShellScreen()
-                      : const UserNavBar(),
-                  true,
-                );
-              } else if (state.loginStatus == LoginStatus.failure) {
-                showMessage(state.errorMessage);
-                // An unconfirmed email is recoverable - send them to the OTP
-                // screen instead of leaving them stuck on the form.
-                if (state.errorMessage.contains('مؤكد') ||
-                    state.errorMessage.toLowerCase().contains('confirm')) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => OTPVerificationPage(
-                        email: emailController.text.trim(),
-                        cameFromRegisterPage: true,
-                      ),
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-          BlocListener<AuthBloc, AuthState>(
-            listenWhen: (p, c) =>
-                p.forgotPasswordStatus != c.forgotPasswordStatus,
-            listener: (context, state) {
-              if (state.forgotPasswordStatus ==
-                  ForgotPasswordStatus.success) {
-                showMessage(LK.authResetSent.tr(), hasError: false);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => OTPVerificationPage(
-                      email: emailController.text.trim(),
-                      cameFromRegisterPage: false,
-                    ),
+      body: BlocListener<AuthBloc, AuthState>(
+        listenWhen: (p, c) => p.loginStatus != c.loginStatus,
+        listener: (context, state) {
+          if (state.loginStatus == LoginStatus.success) {
+            RoleRouter.goHome(context);
+          } else if (state.loginStatus == LoginStatus.failure) {
+            showMessage(state.errorMessage);
+            // An unconfirmed email is recoverable - send them to the OTP
+            // screen instead of leaving them stuck on the form.
+            if (state.errorMessage.contains('مؤكد') ||
+                state.errorMessage.toLowerCase().contains('confirm')) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => OTPVerificationPage(
+                    email: emailController.text.trim(),
+                    purpose: OtpPurpose.emailConfirmation,
                   ),
-                );
-              } else if (state.forgotPasswordStatus ==
-                  ForgotPasswordStatus.failure) {
-                showMessage(state.errorMessage);
-              }
-            },
-          ),
-        ],
+                ),
+              );
+            }
+          }
+        },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: width(15)),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: height(100)),
+                SizedBox(height: height(90)),
                 Text(
                   LK.authLogin.tr(),
                   style: Theme.of(context).textTheme.displaySmall,
@@ -147,11 +114,16 @@ class _SignInScreenState extends State<SignInScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: height(10)),
+                SizedBox(height: height(6)),
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
                   child: TextButton(
-                    onPressed: _forgotPassword,
+                    onPressed: () => HelperFunctions.navigateToPage(
+                      context,
+                      ForgotPasswordPage(
+                        initialEmail: emailController.text.trim(),
+                      ),
+                    ),
                     child: Text(
                       LK.authForgotPassword.tr(),
                       style: TextStyle(
@@ -186,6 +158,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       text: loading
                           ? LK.commonLoading.tr()
                           : LK.authLogin.tr(),
+                      widthButton: double.infinity,
                       onTap: loading
                           ? null
                           : () {
@@ -206,10 +179,20 @@ class _SignInScreenState extends State<SignInScreen> {
                     .fadeIn(duration: 400.ms)
                     .slide(begin: const Offset(1, 0), duration: 400.ms),
                 SizedBox(height: height(10)),
+                AuthButton(
+                  text: LK.authContinueAsGuest.tr(),
+                  isWhiteBackground: true,
+                  widthButton: double.infinity,
+                  onTap: _continueAsGuest,
+                )
+                    .animate(delay: 700.ms)
+                    .fadeIn(duration: 400.ms)
+                    .slide(begin: const Offset(1, 0), duration: 400.ms),
+                SizedBox(height: height(6)),
                 TextButton(
                   onPressed: () => HelperFunctions.navigateToPage(
                     context,
-                    const SignUpScreen(),
+                    const ChooseAccountKindScreen(),
                   ),
                   child: Text(LK.authNoAccount.tr()),
                 ),

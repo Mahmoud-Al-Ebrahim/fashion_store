@@ -2,22 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../blocs/admin_bloc/admin_bloc.dart';
-import '../../blocs/category_bloc/category_bloc.dart';
-import '../../blocs/clothing_item_bloc/clothing_item_bloc.dart';
-import '../../blocs/comment_bloc/comment_bloc.dart';
-import '../../blocs/complaint_bloc/complaint_bloc.dart';
-import '../../blocs/order_bloc/order_bloc.dart';
-import '../../blocs/post_bloc/post_bloc.dart';
-import '../../blocs/product_bloc/product_bloc.dart';
-import '../../blocs/rating_bloc/rating_bloc.dart';
 import '../../blocs/store_bloc/store_bloc.dart';
-import '../../blocs/wallet_bloc/wallet_bloc.dart';
 import 'pages/admin_dashboard_page.dart';
 import 'pages/admin_more_page.dart';
 import 'pages/admin_orders_page.dart';
 import 'pages/admin_posts_page.dart';
 import 'pages/admin_products_page.dart';
+import 'pages/store_pending_page.dart';
 import '../../core/localization/translation_keys.dart';
 
 /// Root shell for the store-owner ("Admin" role) dashboard. Provides every
@@ -34,6 +25,13 @@ class AdminShellScreen extends StatefulWidget {
 
 class _AdminShellScreenState extends State<AdminShellScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Blocs come from FashionApp; load the store this dashboard belongs to.
+    context.read<StoreBloc>().add(GetStoreByAdminEvent());
+  }
 
   /// Built per-frame so the labels follow the active locale.
   List<({IconData icon, IconData selectedIcon, String label})> get _items => [
@@ -66,21 +64,33 @@ class _AdminShellScreenState extends State<AdminShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => StoreBloc()..add(GetStoreByAdminEvent())),
-        BlocProvider(create: (_) => AdminBloc()),
-        BlocProvider(create: (_) => ProductBloc()),
-        BlocProvider(create: (_) => ClothingItemBloc()),
-        BlocProvider(create: (_) => OrderBloc()),
-        BlocProvider(create: (_) => PostBloc()),
-        BlocProvider(create: (_) => ComplaintBloc()),
-        BlocProvider(create: (_) => WalletBloc()),
-        BlocProvider(create: (_) => CategoryBloc()),
-        BlocProvider(create: (_) => CommentBloc()),
-        BlocProvider(create: (_) => RatingBloc()),
-      ],
-      child: Scaffold(
+    return BlocBuilder<StoreBloc, StoreState>(
+        buildWhen: (p, c) =>
+            p.getStoreByAdminStatus != c.getStoreByAdminStatus ||
+            p.myStore != c.myStore,
+        builder: (context, storeState) {
+          // Gate the dashboard on an approved store: the role alone isn't
+          // enough, the platform admin must have approved the request.
+          final loading = storeState.getStoreByAdminStatus ==
+                  GetStoreByAdminStatus.init ||
+              storeState.getStoreByAdminStatus ==
+                  GetStoreByAdminStatus.loading;
+          if (loading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final store = storeState.myStore;
+          if (store == null || store.storeStatus != 'Approved') {
+            return const StorePendingPage();
+          }
+          return _buildShell(context);
+        },
+    );
+  }
+
+  Widget _buildShell(BuildContext context) {
+    return Scaffold(
         body: IndexedStack(
           index: _currentIndex,
           children: const [
@@ -104,7 +114,6 @@ class _AdminShellScreenState extends State<AdminShellScreen> {
               )
               .toList(),
         ),
-      ),
     );
   }
 }

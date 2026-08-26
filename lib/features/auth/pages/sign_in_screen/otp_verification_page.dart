@@ -14,20 +14,32 @@ import '../../../../core/utils/show_message.dart';
 import 'reset_password_page.dart';
 import 'sign_in_screen.dart';
 
-/// Email OTP screen, used by two flows:
-///  - after registration ([cameFromRegisterPage] true) it confirms the email
-///    via `Auth/ConfirmEmail`, then returns the user to sign-in.
-///  - from "forgot password" it collects the reset code and hands it to
-///    [ResetPasswordPage] (the code is only validated by `Auth/ResetPassword`).
+/// Which flow the OTP screen is serving.
+enum OtpPurpose {
+  /// Confirm a freshly registered email via `Auth/ConfirmEmail`.
+  emailConfirmation,
+
+  /// Collect the code emailed by `Auth/ForgotPassword`; it is validated
+  /// later, together with the new password, by `Auth/ResetPassword`.
+  passwordReset,
+}
+
+/// Email OTP screen shared by the registration and password-reset flows.
+///
+/// The purpose decides both what "verify" does and which endpoint "resend"
+/// calls - resending a *reset* code must re-trigger `Auth/ForgotPassword`,
+/// not the email-confirmation OTP.
 class OTPVerificationPage extends StatefulWidget {
-  final bool cameFromRegisterPage;
+  final OtpPurpose purpose;
   final String email;
 
   const OTPVerificationPage({
     super.key,
-    this.cameFromRegisterPage = true,
+    this.purpose = OtpPurpose.emailConfirmation,
     required this.email,
   });
+
+  bool get isConfirmation => purpose == OtpPurpose.emailConfirmation;
 
   @override
   State<OTPVerificationPage> createState() => _OTPVerificationPageState();
@@ -43,11 +55,11 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
   }
 
   void _submit() {
-    if (code.text.length < 4) {
+    if (code.text.length < 6) {
       showMessage(LK.authOtpIncomplete.tr());
       return;
     }
-    if (widget.cameFromRegisterPage) {
+    if (widget.isConfirmation) {
       context.read<AuthBloc>().add(
         ConfirmEmailEvent(email: widget.email, code: code.text),
       );
@@ -61,6 +73,15 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
           ),
         ),
       );
+    }
+  }
+
+  void _resend() {
+    final bloc = context.read<AuthBloc>();
+    if (widget.isConfirmation) {
+      bloc.add(ResendOtpCodeEvent(email: widget.email));
+    } else {
+      bloc.add(ForgotPasswordEvent(email: widget.email));
     }
   }
 
@@ -84,7 +105,8 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listenWhen: (p, c) =>
             p.confirmEmailStatus != c.confirmEmailStatus ||
-            p.resendOtpStatus != c.resendOtpStatus,
+            p.resendOtpStatus != c.resendOtpStatus ||
+            p.forgotPasswordStatus != c.forgotPasswordStatus,
         listener: (context, state) {
           if (state.confirmEmailStatus == ConfirmEmailStatus.success) {
             showMessage(LK.authOtpVerified.tr(), hasError: false);
@@ -95,6 +117,10 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
           } else if (state.confirmEmailStatus == ConfirmEmailStatus.failure) {
             showMessage(state.errorMessage);
           }
+          if (state.forgotPasswordStatus == ForgotPasswordStatus.success &&
+              !widget.isConfirmation) {
+            showMessage(LK.authOtpSent.tr(), hasError: false);
+          }
           if (state.resendOtpStatus == ResendOtpStatus.success) {
             showMessage(LK.authOtpSent.tr(), hasError: false);
           } else if (state.resendOtpStatus == ResendOtpStatus.failure) {
@@ -104,7 +130,9 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
         builder: (context, state) {
           final verifying =
               state.confirmEmailStatus == ConfirmEmailStatus.loading;
-          final resending = state.resendOtpStatus == ResendOtpStatus.loading;
+          final resending = widget.isConfirmation
+              ? state.resendOtpStatus == ResendOtpStatus.loading
+              : state.forgotPasswordStatus == ForgotPasswordStatus.loading;
 
           return ListView(
             shrinkWrap: true,
@@ -150,7 +178,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                 textDirection: ui.TextDirection.ltr,
                 child: PinCodeTextField(
                   appContext: context,
-                  length: 4,
+                  length: 6,
                   onChanged: (_) {},
                   obscureText: false,
                   controller: code,
@@ -159,8 +187,8 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                     shape: PinCodeFieldShape.box,
                     borderWidth: 1.5,
                     borderRadius: BorderRadius.circular(8),
-                    fieldHeight: 60,
-                    fieldWidth: 60,
+                    fieldHeight: 50,
+                    fieldWidth: 50,
                     activeColor: AppColor.primary,
                     inactiveColor: AppColor.border,
                     inactiveFillColor: AppColor.primarySoft,
@@ -193,9 +221,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
               resending
                   ? Center(child: FashionLoader.spinKitThreeBounce())
                   : ElevatedButton(
-                      onPressed: () => context.read<AuthBloc>().add(
-                        ResendOtpCodeEvent(email: widget.email),
-                      ),
+                      onPressed: _resend,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         backgroundColor: AppColor.primarySoft,

@@ -9,6 +9,9 @@ import '../../../core/helper/helper_functions.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
 import '../../auth/pages/sign_in_screen/sign_in_screen.dart';
+import '../../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
+import '../../shop/pages/profile_page.dart';
+import '../../../blocs/user_bloc/user_bloc.dart';
 import '../widgets/confirm_dialog.dart';
 import 'admin_complaints_page.dart';
 import 'admin_store_categories_page.dart';
@@ -63,6 +66,24 @@ class AdminMorePage extends StatelessWidget {
             },
           ),
           const Divider(),
+          // The owner's personal account, separate from the store record.
+          _tile(
+            context,
+            icon: Icons.person_outline,
+            title: LK.profileTitle.tr(),
+            onTap: () => context.pushPage(
+              BlocProvider(
+                create: (_) => UserBloc()..add(GetUserProfileEvent()),
+                child: const ProfilePage(),
+              ),
+            ),
+          ),
+          _tile(
+            context,
+            icon: Icons.shopping_bag_outlined,
+            title: LK.storeStatusBrowseAsCustomer.tr(),
+            onTap: () => context.pushPage(const UserNavBar()),
+          ),
           _tile(
             context,
             icon: Icons.storefront_outlined,

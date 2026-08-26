@@ -48,7 +48,8 @@ class PostModel {
   final String visibility; // enPostVisibility: Public | Followers
   final bool isDeleted;
   final List<PostMediaModel> postMedias;
-  final String? myReaction; // enReactionType, or null if the caller hasn't reacted
+  final String?
+  myReaction; // enReactionType, or null if the caller hasn't reacted
   final List<PostReactionSummaryModel> postReactions;
 
   PostModel({

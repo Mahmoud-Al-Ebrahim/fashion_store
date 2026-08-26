@@ -88,9 +88,9 @@ class _ProductFilterSheetState extends State<ProductFilterSheet> {
           children: [
             Text(
               LK.exploreFilters.tr(),
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w700),
             ),
             SizedBox(height: height(16)),
             Text(LK.explorePriceRange.tr()),
@@ -132,26 +132,59 @@ class _ProductFilterSheetState extends State<ProductFilterSheet> {
             Text(LK.exploreColor.tr()),
             SizedBox(height: height(8)),
             Wrap(
-              spacing: width(10),
-              runSpacing: height(10),
-              children: kColorSwatches.map((swatch) {
-                final selected = _color == swatch.apiName;
+              spacing: width(8),
+              runSpacing: height(8),
+              // Main colours only, each labelled with its name - the filter
+              // selects by colour *name*, so the name is what we show.
+              children: mainColorSwatches().map((swatch) {
+                final selected = _color == swatch.key;
+                final primary = Theme.of(context).colorScheme.primary;
                 return GestureDetector(
-                  onTap: () => setState(
-                    () => _color = selected ? null : swatch.apiName,
-                  ),
+                  onTap: () =>
+                      setState(() => _color = selected ? null : swatch.key),
                   child: Container(
-                    width: 34,
-                    height: 34,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: width(10),
+                      vertical: height(7),
+                    ),
                     decoration: BoxDecoration(
-                      color: parseHexColor(swatch.hex),
-                      shape: BoxShape.circle,
+                      color: selected
+                          ? primary.withValues(alpha: 0.10)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: selected
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.black26,
-                        width: selected ? 3 : 1,
+                        color: selected ? primary : Colors.black26,
+                        width: selected ? 2 : 1,
                       ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: parseHexColor(swatch.hex),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.black26),
+                          ),
+                        ),
+                        SizedBox(width: width(6)),
+                        Text(
+                          swatch.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                            color: selected ? primary : null,
+                          ),
+                        ),
+                        if (selected) ...[
+                          SizedBox(width: width(4)),
+                          Icon(Icons.check, size: 14, color: primary),
+                        ],
+                      ],
                     ),
                   ),
                 );
@@ -166,9 +199,8 @@ class _ProductFilterSheetState extends State<ProductFilterSheet> {
                     isWhiteBackground: true,
                     heightButton: height(50),
                     widthButton: double.infinity,
-                    onTap: () => Navigator.of(context).pop(
-                      const ProductFilterValues(),
-                    ),
+                    onTap: () =>
+                        Navigator.of(context).pop(const ProductFilterValues()),
                   ),
                 ),
                 SizedBox(width: width(10)),

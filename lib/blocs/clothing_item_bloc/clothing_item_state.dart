@@ -28,8 +28,7 @@ class ClothingItemState {
     this.clothingItemTransactionStatus = ClothingItemTransactionStatus.init,
     this.getAllClothingItemsStatus = GetAllClothingItemsStatus.init,
     this.getClothingItemStatus = GetClothingItemStatus.init,
-    this.getAllSizesByProductColorStatus =
-        GetAllSizesByProductColorStatus.init,
+    this.getAllSizesByProductColorStatus = GetAllSizesByProductColorStatus.init,
     this.getSuggestedProductsStatus = GetSuggestedProductsStatus.init,
     this.errorMessage = '',
     this.clothingItems = const [],
@@ -55,8 +54,10 @@ class ClothingItemState {
           clothingItemTransactionStatus ?? this.clothingItemTransactionStatus,
       getAllClothingItemsStatus:
           getAllClothingItemsStatus ?? this.getAllClothingItemsStatus,
-      getClothingItemStatus: getClothingItemStatus ?? this.getClothingItemStatus,
-      getAllSizesByProductColorStatus: getAllSizesByProductColorStatus ??
+      getClothingItemStatus:
+          getClothingItemStatus ?? this.getClothingItemStatus,
+      getAllSizesByProductColorStatus:
+          getAllSizesByProductColorStatus ??
           this.getAllSizesByProductColorStatus,
       getSuggestedProductsStatus:
           getSuggestedProductsStatus ?? this.getSuggestedProductsStatus,

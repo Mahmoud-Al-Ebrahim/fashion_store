@@ -25,16 +25,36 @@ class DateRangeBar extends StatelessWidget {
     required this.onApply,
   });
 
+  /// Opens a picker constrained so the range can never invert.
+  ///
+  /// The two chips used to be independent, which let you set a start after
+  /// the end - the API then answered with an empty period and the screen
+  /// looked broken for no visible reason. Bounding each picker by the other
+  /// date makes that unreachable instead of merely discouraged.
   Future<void> _pick(
-    BuildContext context,
-    DateTime initial,
-    ValueChanged<DateTime> onPicked,
-  ) async {
+    BuildContext context, {
+    required DateTime initial,
+    required ValueChanged<DateTime> onPicked,
+    required bool isStart,
+  }) async {
+    final lastSelectable = DateTime.now().add(const Duration(days: 1));
+    final firstDate = isStart ? DateTime(2020) : startDate;
+    final lastDate = isStart
+        // Never past the end of the range - or past today, whichever comes
+        // first.
+        ? (endDate.isBefore(lastSelectable) ? endDate : lastSelectable)
+        : lastSelectable;
+
+    // `initialDate` must sit inside the bounds or showDatePicker asserts.
+    var safeInitial = initial;
+    if (safeInitial.isBefore(firstDate)) safeInitial = firstDate;
+    if (safeInitial.isAfter(lastDate)) safeInitial = lastDate;
+
     final picked = await showDatePicker(
       context: context,
-      initialDate: initial,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 1)),
+      initialDate: safeInitial,
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
     if (picked != null) onPicked(picked);
   }
@@ -47,16 +67,28 @@ class DateRangeBar extends StatelessWidget {
         Expanded(
           child: _DateChip(
             label: _formatDate(startDate),
-            onTap: () => _pick(context, startDate, onStartChanged),
+            onTap: () => _pick(
+              context,
+              initial: startDate,
+              onPicked: onStartChanged,
+              isStart: true,
+            ),
           ),
         ),
         SizedBox(width: width(8)),
-        Icon(Icons.arrow_back, size: 16, color: primary),
+        // `arrow_forward` mirrors automatically under RTL, so "from -> to"
+        // reads correctly in both Arabic and English.
+        Icon(Icons.arrow_forward, size: 16, color: primary),
         SizedBox(width: width(8)),
         Expanded(
           child: _DateChip(
             label: _formatDate(endDate),
-            onTap: () => _pick(context, endDate, onEndChanged),
+            onTap: () => _pick(
+              context,
+              initial: endDate,
+              onPicked: onEndChanged,
+              isStart: false,
+            ),
           ),
         ),
         SizedBox(width: width(8)),
@@ -82,7 +114,10 @@ class _DateChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: width(10), vertical: height(10)),
+        padding: EdgeInsets.symmetric(
+          horizontal: width(10),
+          vertical: height(10),
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: const Color(0xFFD3D3E4)),

@@ -4,6 +4,9 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
+import 'package:easy_localization/easy_localization.dart';
+
+import '../../core/localization/translation_keys.dart';
 import '../../core/utils/api_error_helper.dart';
 import '../../core/utils/api_service.dart';
 import '../../models/common/api_response_model.dart';
@@ -25,38 +28,44 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
   ) async {
     emit(state.copyWith(addRatingStatus: AddRatingStatus.loading));
     await ApiService.postMethod(
-      endPoint: 'Rating/AddRating',
-      body: {"productId": event.productId, "ratingValue": event.ratingValue},
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<RatingModel>.fromJson(
-        response.data,
-        (json) => RatingModel.fromJson(json),
-      );
-      emit(
-        state.copyWith(
-          addRatingStatus: AddRatingStatus.success,
-          rating: apiResponse.data,
-          userRating: apiResponse.data?.ratingValue ?? event.ratingValue,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          addRatingStatus: AddRatingStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          addRatingStatus: AddRatingStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Rating/AddRating',
+          body: {
+            "productId": event.productId,
+            "ratingValue": event.ratingValue,
+          },
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<RatingModel>.fromJson(
+            response.data,
+            (json) => RatingModel.fromJson(json),
+          );
+          emit(
+            state.copyWith(
+              addRatingStatus: AddRatingStatus.success,
+              rating: apiResponse.data,
+              userRating: apiResponse.data?.ratingValue ?? event.ratingValue,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              addRatingStatus: AddRatingStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              addRatingStatus: AddRatingStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetProductRatingByUserEvent(
@@ -69,33 +78,39 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
       ),
     );
     await ApiService.getMethod(
-      endPoint: 'Rating/GetProductRatingByUser',
-      queryParameters: {"productId": event.productId.toString()},
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<int>.fromJson(response.data);
-      emit(
-        state.copyWith(
-          getProductRatingByUserStatus: GetProductRatingByUserStatus.success,
-          userRating: apiResponse.data ?? 0,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getProductRatingByUserStatus: GetProductRatingByUserStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getProductRatingByUserStatus: GetProductRatingByUserStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Rating/GetProductRatingByUser',
+          queryParameters: {"productId": event.productId.toString()},
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<int>.fromJson(response.data);
+          emit(
+            state.copyWith(
+              getProductRatingByUserStatus:
+                  GetProductRatingByUserStatus.success,
+              userRating: apiResponse.data ?? 0,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getProductRatingByUserStatus:
+                  GetProductRatingByUserStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getProductRatingByUserStatus:
+                  GetProductRatingByUserStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 }

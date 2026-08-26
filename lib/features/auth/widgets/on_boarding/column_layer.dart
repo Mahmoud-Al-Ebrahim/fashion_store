@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../../../app/widgets/button.dart';
 import '../../../../core/screen_util.dart';
 import '../../../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
+
 class ColumnLayer extends StatelessWidget {
   const ColumnLayer({super.key});
 
@@ -29,19 +30,19 @@ class ColumnLayer extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
               children: [
-                const TextSpan(text: "مرحبا بك في "),
+                TextSpan(text: LK.onboardingWelcomeTo.tr()),
                 TextSpan(
-                  text: "موضة",
+                  text: LK.onboardingBrand.tr(),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                const TextSpan(text: " _ منصتك لبيع"),
+                TextSpan(text: LK.onboardingTagline1.tr()),
               ],
             ),
           ),
           Text(
-            "وشراء أحدث صيحات الموضة",
+            LK.onboardingTagline2.tr(),
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
               color: Theme.of(context).colorScheme.onPrimary,
             ),
@@ -51,7 +52,7 @@ class ColumnLayer extends StatelessWidget {
             children: [
               SvgPicture.asset("assets/svg/done_on_boarding.svg"),
               Text(
-                " هنا تلتقي الخبرات والأذواق العالمية",
+                LK.onboardingBullet1.tr(),
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                   color: Theme.of(context).colorScheme.onPrimary,
                   fontWeight: FontWeight.w400,
@@ -69,7 +70,7 @@ class ColumnLayer extends StatelessWidget {
               ),
               Flexible(
                 child: Text(
-                  " تصفح أزياءنا، اطلب مايليق بمناسبتك، أو شارك إبداعاتك بكل سهولة وأمان..",
+                  LK.onboardingBullet2.tr(),
                   softWrap: true,
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: Theme.of(context).colorScheme.onPrimary,
@@ -83,8 +84,8 @@ class ColumnLayer extends StatelessWidget {
           Row(
             children: [
               AuthButton(
-                onTap: (){
-                  HelperFunctions.navigateToPage(context , SignInScreen());
+                onTap: () {
+                  HelperFunctions.navigateToPage(context, SignInScreen());
                 },
                 heightButton: 52,
                 widthButton: 167,
@@ -92,8 +93,8 @@ class ColumnLayer extends StatelessWidget {
               ),
               SizedBox(width: width(10)),
               AuthButton(
-                onTap: (){
-                  HelperFunctions.navigateToPage(context , const SignUpScreen());
+                onTap: () {
+                  HelperFunctions.navigateToPage(context, const SignUpScreen());
                 },
                 heightButton: 52,
                 widthButton: 167,
@@ -104,28 +105,35 @@ class ColumnLayer extends StatelessWidget {
           ),
           InkWell(
             onTap: () {
-              HelperFunctions.navigateToPageAndPopAll(context , UserNavBar());
+              HelperFunctions.navigateToPageAndPopAll(context, UserNavBar());
             },
             child: Row(
               spacing: width(10),
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 InkWell(
-                  onTap: () async{
-                    HelperFunctions.navigateToPageAndPopAll(context , UserNavBar());
+                  onTap: () async {
+                    HelperFunctions.navigateToPageAndPopAll(
+                      context,
+                      UserNavBar(),
+                    );
                   },
                   child: Text(
-                    "اكمل التصفح كزائر",
+                    LK.onboardingContinueGuest.tr(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),
                 InkWell(
-                  onTap: (){
-                    HelperFunctions.navigateToPageAndPopAll(context , UserNavBar());
+                  onTap: () {
+                    HelperFunctions.navigateToPageAndPopAll(
+                      context,
+                      UserNavBar(),
+                    );
                   },
-                    child: SvgPicture.asset("assets/svg/next.svg",height: 30,)),
+                  child: SvgPicture.asset("assets/svg/next.svg", height: 30),
+                ),
               ],
             ),
           ),

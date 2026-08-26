@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../app/widgets/button.dart';
@@ -10,7 +11,9 @@ import '../../../blocs/store_request_bloc/store_request_bloc.dart';
 import '../../../core/helper/helper_functions.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
+import '../../../core/utils/validators.dart';
 import '../../../core/utils/show_message.dart';
+import '../../admin/pages/store_pending_page.dart';
 import '../../admin/widgets/image_pick_box.dart';
 
 /// "Open your own store" - submits `StoreRequest/Add` for SuperAdmin review.
@@ -96,7 +99,7 @@ class _SellerRequestPageState extends State<SellerRequestPage> {
         logo: _logo!,
         workingHoursStart: _formatTime(_start!),
         workingHoursEnd: _formatTime(_end!),
-        phoneNumber: _phoneController.text.trim(),
+        phoneNumber: normalizeSyrianPhone(_phoneController.text),
         email: _emailController.text.trim(),
         nationalIdFrontImage: _idFront!,
         nationalIdBackImage: _idBack!,
@@ -124,7 +127,14 @@ class _SellerRequestPageState extends State<SellerRequestPage> {
           if (state.storeRequestTransactionStatus ==
               StoreRequestTransactionStatus.success) {
             showMessage(LK.sellerSubmitted.tr(), hasError: false);
-            Navigator.of(context).pop();
+            // The request now sits with the platform admin - take the user
+            // to the waiting screen rather than dropping them back on the
+            // form they just submitted.
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => const StorePendingPage(),
+              ),
+            );
           } else if (state.storeRequestTransactionStatus ==
               StoreRequestTransactionStatus.failure) {
             showMessage(state.errorMessage);
@@ -184,13 +194,14 @@ class _SellerRequestPageState extends State<SellerRequestPage> {
                   AuthTextField(
                     controller: _phoneController,
                     hintText: LK.sellerPhone.tr(),
-                    validator: _required,
+                    formatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: validateSyrianPhone,
                   ),
                   SizedBox(height: height(10)),
                   AuthTextField(
                     controller: _emailController,
                     hintText: LK.sellerEmail.tr(),
-                    validator: _required,
+                    validator: validateEmail,
                   ),
                   SizedBox(height: height(10)),
                   Row(

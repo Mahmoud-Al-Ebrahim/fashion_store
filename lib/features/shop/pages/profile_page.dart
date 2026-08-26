@@ -10,7 +10,9 @@ import '../../../core/helper/helper_functions.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
+import '../../../core/extensions/build_context.dart';
 import '../../../core/utils/show_message.dart';
+import 'edit_profile_page.dart';
 
 /// User profile from `User/GetUserProfile`, with avatar replacement via
 /// `User/UpdateProfilePhoto`.
@@ -22,9 +24,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
-
-
   Future<void> _changePhoto(BuildContext context) async {
     final file = await HelperFunctions.pickImage();
     if (file == null || !context.mounted) return;
@@ -32,11 +31,13 @@ class _ProfilePageState extends State<ProfilePage> {
       UpdateProfilePhotoEvent(image: File(file.path)),
     );
   }
+
   @override
   void initState() {
     BlocProvider.of<UserBloc>(context).add(GetUserProfileEvent());
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,6 +46,23 @@ class _ProfilePageState extends State<ProfilePage> {
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
         title: Text(LK.profileTitle.tr()),
+        actions: [
+          // Editing the account is role-independent - the endpoint acts on
+          // whoever the token belongs to.
+          BlocBuilder<UserBloc, UserState>(
+            buildWhen: (p, c) => p.userProfile != c.userProfile,
+            builder: (context, state) {
+              final profile = state.userProfile;
+              if (profile == null) return const SizedBox.shrink();
+              return IconButton(
+                tooltip: LK.profileEdit.tr(),
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () =>
+                    context.pushPage(EditProfilePage(profile: profile)),
+              );
+            },
+          ),
+        ],
       ),
       body: BlocConsumer<UserBloc, UserState>(
         listenWhen: (p, c) =>
@@ -74,10 +92,15 @@ class _ProfilePageState extends State<ProfilePage> {
                     CircleAvatar(
                       radius: 52,
                       backgroundColor: const Color(0xFFEAEAF2),
-                      backgroundImage:
-                          photo != null ? CachedNetworkImageProvider(photo) : null,
+                      backgroundImage: photo != null
+                          ? CachedNetworkImageProvider(photo)
+                          : null,
                       child: photo == null
-                          ? const Icon(Icons.person, size: 44, color: Colors.grey)
+                          ? const Icon(
+                              Icons.person,
+                              size: 44,
+                              color: Colors.grey,
+                            )
                           : null,
                     ),
                     PositionedDirectional(
@@ -87,8 +110,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         onTap: () => _changePhoto(context),
                         child: CircleAvatar(
                           radius: 17,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
                           child: const Icon(
                             Icons.camera_alt,
                             size: 16,
@@ -166,9 +190,9 @@ class _ProfileRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: Colors.grey,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall!.copyWith(color: Colors.grey),
                 ),
                 Text(value, style: Theme.of(context).textTheme.bodyMedium),
               ],

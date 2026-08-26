@@ -48,5 +48,12 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Required from Android 11 (API 30) on: without declaring the
+             https VIEW intent, url_launcher cannot see any handler and the
+             WhatsApp buttons silently fail to resolve. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
     </queries>
 </manifest>

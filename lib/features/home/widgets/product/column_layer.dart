@@ -9,6 +9,8 @@ import '../../../../models/clothing_item/clothing_item_model.dart';
 import '../../../../models/clothing_item/product_size_model.dart';
 import '../../../../models/product/product_ref.dart';
 import '../../../shop/widgets/color_selector.dart';
+import '../../../shop/widgets/product_reviews_section.dart';
+import '../../../shop/widgets/suggested_products_section.dart';
 import '../../../shop/widgets/size_selector.dart';
 import 'des_product_scrooll.dart';
 import 'more_detail_about_product.dart';
@@ -27,6 +29,11 @@ class ProductColumnLayer extends StatelessWidget {
   final ValueChanged<ClothingItemModel> onColorChanged;
   final ValueChanged<ProductSizeModel> onSizeChanged;
 
+  /// Expands/collapses the sheet. Bound to the grab handle only - tapping
+  /// anywhere on the sheet would swallow taps meant for the stars, size
+  /// chips and the comment field.
+  final VoidCallback onToggleExpanded;
+
   const ProductColumnLayer({
     super.key,
     required this.product,
@@ -35,6 +42,7 @@ class ProductColumnLayer extends StatelessWidget {
     required this.selectedSize,
     required this.onColorChanged,
     required this.onSizeChanged,
+    required this.onToggleExpanded,
   });
 
   @override
@@ -56,7 +64,22 @@ class ProductColumnLayer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: height(20)),
+              // Grab handle - the only tap target that toggles the sheet.
+              GestureDetector(
+                onTap: onToggleExpanded,
+                behavior: HitTestBehavior.opaque,
+                child: Center(
+                  child: Container(
+                    width: width(48),
+                    height: height(5),
+                    margin: EdgeInsets.only(bottom: height(12)),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
               ProductName(showIngredients: false, productName: product.name),
               SizedBox(height: height(15)),
               if ((product.description ?? '').isNotEmpty)
@@ -121,7 +144,19 @@ class ProductColumnLayer extends StatelessWidget {
                 ),
               ],
 
-              SizedBox(height: height(120)),
+              SizedBox(height: height(30)),
+              const Divider(),
+              SizedBox(height: height(10)),
+
+              // ----- rating + comments (open to every role) -----
+              ProductReviewsSection(productId: product.id),
+
+              SizedBox(height: height(24)),
+
+              // ----- similar products -----
+              SuggestedProductsSection(productId: product.id),
+
+              SizedBox(height: height(140)),
             ],
           ),
         ),

@@ -7,6 +7,9 @@ import '../../../../app/widgets/button.dart';
 import '../../../../blocs/cart_bloc/cart_bloc.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../core/utils/session.dart';
+import '../../../auth/pages/sign_in_screen/sign_in_screen.dart';
+import '../../../../core/helper/helper_functions.dart';
 import '../../../shop/widgets/price_tag.dart';
 
 /// Bottom "add to cart" bar - original design, now driven by the real cart
@@ -113,7 +116,19 @@ class _AddToCardCardState extends State<AddToCardCard> {
             AuthButton(
               onTap: !canAdd
                   ? null
-                  : () {
+                  : () async {
+                      // Guests may browse, but the cart needs an account.
+                      if (!await requireAuth(
+                        context,
+                        onSignIn: () => HelperFunctions.navigateToPageAndPopAll(
+                          context,
+                          const SignInScreen(),
+                          true,
+                        ),
+                      )) {
+                        return;
+                      }
+                      if (!context.mounted) return;
                       context.read<CartBloc>().add(
                         AddToCartEvent(
                           productSizeId: widget.selectedProductSizeId!,

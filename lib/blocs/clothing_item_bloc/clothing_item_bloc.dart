@@ -9,6 +9,9 @@ import 'package:http_parser/http_parser.dart';
 import 'package:meta/meta.dart';
 import 'package:mime_type/mime_type.dart';
 
+import 'package:easy_localization/easy_localization.dart';
+
+import '../../core/localization/translation_keys.dart';
 import '../../core/utils/api_error_helper.dart';
 import '../../core/utils/api_service.dart';
 import '../../models/clothing_item/clothing_item_model.dart';
@@ -55,38 +58,44 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.postMethod(
-      endPoint: 'ClothingItem/AddColorforProduct',
-      queryParameters: {"productId": event.productId.toString()},
-      form: FormData.fromMap({
-        "Color": event.color,
-        "ColorHexCode": event.colorHexCode,
-        "Image": await _toMultipartFile(event.image),
-      }),
-    ).then((response) {
-      log(response.data.toString());
-      add(GetAllClothingItemsEvent(productId: event.productId));
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/AddColorforProduct',
+          queryParameters: {"productId": event.productId.toString()},
+          form: FormData.fromMap({
+            "Color": event.color,
+            "ColorHexCode": event.colorHexCode,
+            "Image": await _toMultipartFile(event.image),
+          }),
+        )
+        .then((response) {
+          log(response.data.toString());
+          add(GetAllClothingItemsEvent(productId: event.productId));
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onAddSizesForProductEvent(
@@ -99,37 +108,43 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.postMethod(
-      endPoint: 'ClothingItem/AddSizesforProduct',
-      queryParameters: {"productColorId": event.productColorId.toString()},
-      bodyAsString: jsonEncode(
-        event.sizes
-            .map((s) => {"size": s.size, "quantity": s.quantity})
-            .toList(),
-      ),
-    ).then((response) {
-      log(response.data.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/AddSizesforProduct',
+          queryParameters: {"productColorId": event.productColorId.toString()},
+          bodyAsString: jsonEncode(
+            event.sizes
+                .map((s) => {"size": s.size, "quantity": s.quantity})
+                .toList(),
+          ),
+        )
+        .then((response) {
+          log(response.data.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onUpdateProductColorDetailsEvent(
@@ -142,39 +157,45 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.putMethod(
-      endPoint: 'ClothingItem/UpdateDetailsforProduct',
-      queryParameters: {
-        "clothingItemId": event.clothingItemId.toString(),
-        "Color": event.color,
-      },
-      form: FormData.fromMap({
-        "Image": await _toMultipartFile(event.image),
-      }),
-    ).then((response) {
-      log(response.data.toString());
-      add(GetClothingItemEvent(clothingItemId: event.clothingItemId));
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/UpdateDetailsforProduct',
+          queryParameters: {
+            "clothingItemId": event.clothingItemId.toString(),
+            "Color": event.color,
+          },
+          form: FormData.fromMap({
+            "Image": await _toMultipartFile(event.image),
+          }),
+        )
+        .then((response) {
+          log(response.data.toString());
+          add(GetClothingItemEvent(clothingItemId: event.clothingItemId));
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetAllClothingItemsEvent(
@@ -187,36 +208,40 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.getMethod(
-      endPoint: 'ClothingItem/GetAll/${event.productId}',
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<ClothingItemModel>>.fromJson(
-        response.data,
-        (json) => clothingItemListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getAllClothingItemsStatus: GetAllClothingItemsStatus.success,
-          clothingItems: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllClothingItemsStatus: GetAllClothingItemsStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllClothingItemsStatus: GetAllClothingItemsStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/GetAll/${event.productId}',
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse =
+              ApiResponseModel<List<ClothingItemModel>>.fromJson(
+                response.data,
+                (json) => clothingItemListFromJson(json),
+              );
+          emit(
+            state.copyWith(
+              getAllClothingItemsStatus: GetAllClothingItemsStatus.success,
+              clothingItems: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllClothingItemsStatus: GetAllClothingItemsStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllClothingItemsStatus: GetAllClothingItemsStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetClothingItemEvent(
@@ -225,36 +250,39 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
   ) async {
     emit(state.copyWith(getClothingItemStatus: GetClothingItemStatus.loading));
     await ApiService.getMethod(
-      endPoint: 'ClothingItem/Get/${event.clothingItemId}',
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<ClothingItemBasicModel>.fromJson(
-        response.data,
-        (json) => ClothingItemBasicModel.fromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getClothingItemStatus: GetClothingItemStatus.success,
-          clothingItem: apiResponse.data,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getClothingItemStatus: GetClothingItemStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getClothingItemStatus: GetClothingItemStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/Get/${event.clothingItemId}',
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<ClothingItemBasicModel>.fromJson(
+            response.data,
+            (json) => ClothingItemBasicModel.fromJson(json),
+          );
+          emit(
+            state.copyWith(
+              getClothingItemStatus: GetClothingItemStatus.success,
+              clothingItem: apiResponse.data,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getClothingItemStatus: GetClothingItemStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getClothingItemStatus: GetClothingItemStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetAllSizesByProductColorEvent(
@@ -268,43 +296,46 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.getMethod(
-      endPoint: 'ClothingItem/GetAllSizeByProductColor',
-      queryParameters: {
-        "productId": event.productId.toString(),
-        "color": event.color,
-      },
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<ProductSizeModel>>.fromJson(
-        response.data,
-        (json) => productSizeListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getAllSizesByProductColorStatus:
-              GetAllSizesByProductColorStatus.success,
-          sizesByColor: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllSizesByProductColorStatus:
-              GetAllSizesByProductColorStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllSizesByProductColorStatus:
-              GetAllSizesByProductColorStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/GetAllSizeByProductColor',
+          queryParameters: {
+            "productId": event.productId.toString(),
+            "color": event.color,
+          },
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<List<ProductSizeModel>>.fromJson(
+            response.data,
+            (json) => productSizeListFromJson(json),
+          );
+          emit(
+            state.copyWith(
+              getAllSizesByProductColorStatus:
+                  GetAllSizesByProductColorStatus.success,
+              sizesByColor: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllSizesByProductColorStatus:
+                  GetAllSizesByProductColorStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllSizesByProductColorStatus:
+                  GetAllSizesByProductColorStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onUpdateProductSizeEvent(
@@ -317,33 +348,39 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.putMethod(
-      endPoint: 'ClothingItem/UpdateSizeforProduct',
-      queryParameters: {"productSizeId": event.productSizeId.toString()},
-      body: {"quantity": event.quantity},
-    ).then((response) {
-      log(response.data.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/UpdateSizeforProduct',
+          queryParameters: {"productSizeId": event.productSizeId.toString()},
+          body: {"quantity": event.quantity},
+        )
+        .then((response) {
+          log(response.data.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetSuggestedProductsEvent(
@@ -356,37 +393,41 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.postMethod(
-      endPoint: 'ClothingItem/GetSuggestByProductId',
-      queryParameters: {"ProductId": event.productId.toString()},
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<SuggestedProductModel>>.fromJson(
-        response.data,
-        (json) => suggestedProductListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getSuggestedProductsStatus: GetSuggestedProductsStatus.success,
-          suggestedProducts: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getSuggestedProductsStatus: GetSuggestedProductsStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getSuggestedProductsStatus: GetSuggestedProductsStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/GetSuggestByProductId',
+          queryParameters: {"ProductId": event.productId.toString()},
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse =
+              ApiResponseModel<List<SuggestedProductModel>>.fromJson(
+                response.data,
+                (json) => suggestedProductListFromJson(json),
+              );
+          emit(
+            state.copyWith(
+              getSuggestedProductsStatus: GetSuggestedProductsStatus.success,
+              suggestedProducts: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getSuggestedProductsStatus: GetSuggestedProductsStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getSuggestedProductsStatus: GetSuggestedProductsStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onDeleteProductColorEvent(
@@ -399,31 +440,37 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.deleteMethod(
-      endPoint: 'ClothingItem/DeleteProductColor/${event.productColorId}',
-    ).then((response) {
-      log(response.data.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/DeleteProductColor/${event.productColorId}',
+        )
+        .then((response) {
+          log(response.data.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onDeleteProductSizeEvent(
@@ -436,30 +483,36 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
       ),
     );
     await ApiService.deleteMethod(
-      endPoint: 'ClothingItem/DeleteProductSize/${event.productSizeId}',
-    ).then((response) {
-      log(response.data.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          clothingItemTransactionStatus: ClothingItemTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'ClothingItem/DeleteProductSize/${event.productSizeId}',
+        )
+        .then((response) {
+          log(response.data.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              clothingItemTransactionStatus:
+                  ClothingItemTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 }

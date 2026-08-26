@@ -72,7 +72,8 @@ class GetAllStoreRequestsByUserEvent extends StoreRequestEvent {}
 
 /// GET StoreRequest/GetFilterRequestStoreByUser
 class GetFilterStoreRequestsByUserEvent extends StoreRequestEvent {
-  final String storeStatus; // enStoreStatus: Pending|Approved|Rejected|Deleted|Cancelled
+  final String
+  storeStatus; // enStoreStatus: Pending|Approved|Rejected|Deleted|Cancelled
 
   GetFilterStoreRequestsByUserEvent({required this.storeStatus});
 }

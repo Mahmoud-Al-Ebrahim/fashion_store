@@ -8,6 +8,9 @@ import 'package:http_parser/http_parser.dart';
 import 'package:meta/meta.dart';
 import 'package:mime_type/mime_type.dart';
 
+import 'package:easy_localization/easy_localization.dart';
+
+import '../../core/localization/translation_keys.dart';
 import '../../core/utils/api_error_helper.dart';
 import '../../core/utils/api_service.dart';
 import '../../models/common/api_response_model.dart';
@@ -33,37 +36,38 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
     Emitter<StoreState> emit,
   ) async {
     emit(state.copyWith(getAllStoresStatus: GetAllStoresStatus.loading));
-    await ApiService.getMethod(endPoint: 'Store/GetAllStores').then((
-      response,
-    ) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<StoreModel>>.fromJson(
-        response.data,
-        (json) => storeListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getAllStoresStatus: GetAllStoresStatus.success,
-          stores: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllStoresStatus: GetAllStoresStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllStoresStatus: GetAllStoresStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+    await ApiService.getMethod(endPoint: 'Store/GetAllStores')
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<List<StoreModel>>.fromJson(
+            response.data,
+            (json) => storeListFromJson(json),
+          );
+          emit(
+            state.copyWith(
+              getAllStoresStatus: GetAllStoresStatus.success,
+              stores: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllStoresStatus: GetAllStoresStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllStoresStatus: GetAllStoresStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetStoreByAdminEvent(
@@ -71,37 +75,38 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
     Emitter<StoreState> emit,
   ) async {
     emit(state.copyWith(getStoreByAdminStatus: GetStoreByAdminStatus.loading));
-    await ApiService.getMethod(endPoint: 'Store/GetStoresByAdmin').then((
-      response,
-    ) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<StoreDetailModel>.fromJson(
-        response.data,
-        (json) => StoreDetailModel.fromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getStoreByAdminStatus: GetStoreByAdminStatus.success,
-          myStore: apiResponse.data,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getStoreByAdminStatus: GetStoreByAdminStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getStoreByAdminStatus: GetStoreByAdminStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+    await ApiService.getMethod(endPoint: 'Store/GetStoresByAdmin')
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<StoreDetailModel>.fromJson(
+            response.data,
+            (json) => StoreDetailModel.fromJson(json),
+          );
+          emit(
+            state.copyWith(
+              getStoreByAdminStatus: GetStoreByAdminStatus.success,
+              myStore: apiResponse.data,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getStoreByAdminStatus: GetStoreByAdminStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getStoreByAdminStatus: GetStoreByAdminStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetAllProductsByStoreEvent(
@@ -114,37 +119,41 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
       ),
     );
     await ApiService.getMethod(
-      endPoint: 'Store/GetAllProductsByStore',
-      queryParameters: {"storeId": event.storeId.toString()},
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<StoreProductModel>>.fromJson(
-        response.data,
-        (json) => storeProductListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getAllProductsByStoreStatus: GetAllProductsByStoreStatus.success,
-          storeProducts: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllProductsByStoreStatus: GetAllProductsByStoreStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllProductsByStoreStatus: GetAllProductsByStoreStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Store/GetAllProductsByStore',
+          queryParameters: {"storeId": event.storeId.toString()},
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse =
+              ApiResponseModel<List<StoreProductModel>>.fromJson(
+                response.data,
+                (json) => storeProductListFromJson(json),
+              );
+          emit(
+            state.copyWith(
+              getAllProductsByStoreStatus: GetAllProductsByStoreStatus.success,
+              storeProducts: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllProductsByStoreStatus: GetAllProductsByStoreStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllProductsByStoreStatus: GetAllProductsByStoreStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onUpdateStoreEvent(
@@ -168,30 +177,32 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
 
     await ApiService.patchMethod(endPoint: 'Store/UpdateStore', body: data)
         .then((response) {
-      log(response.data.toString());
-      add(GetStoreByAdminEvent());
-      emit(
-        state.copyWith(
-          storeTransactionStatus: StoreTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          storeTransactionStatus: StoreTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          storeTransactionStatus: StoreTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          log(response.data.toString());
+          add(GetStoreByAdminEvent());
+          emit(
+            state.copyWith(
+              storeTransactionStatus: StoreTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              storeTransactionStatus: StoreTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              storeTransactionStatus: StoreTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onUpdateStoreImagesEvent(
@@ -209,33 +220,36 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
       form['Logo'] = await _toMultipartFile(event.logo!);
     }
     await ApiService.putMethod(
-      endPoint: 'Store/UpdateStoreImages',
-      form: FormData.fromMap(form),
-    ).then((response) {
-      log(response.data.toString());
-      add(GetStoreByAdminEvent());
-      emit(
-        state.copyWith(
-          storeTransactionStatus: StoreTransactionStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          storeTransactionStatus: StoreTransactionStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          storeTransactionStatus: StoreTransactionStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Store/UpdateStoreImages',
+          form: FormData.fromMap(form),
+        )
+        .then((response) {
+          log(response.data.toString());
+          add(GetStoreByAdminEvent());
+          emit(
+            state.copyWith(
+              storeTransactionStatus: StoreTransactionStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              storeTransactionStatus: StoreTransactionStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              storeTransactionStatus: StoreTransactionStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   Future<MultipartFile> _toMultipartFile(File file) async {

@@ -6,6 +6,7 @@ import '../../../blocs/complaint_bloc/complaint_bloc.dart';
 import '../../../core/extensions/build_context.dart';
 import '../../../core/screen_util.dart';
 import '../widgets/admin_async_view.dart';
+import '../../shop/widgets/unread_badge.dart';
 import '../widgets/admin_status_badge.dart';
 import 'admin_complaint_detail_page.dart';
 import '../../../core/localization/translation_keys.dart';
@@ -76,8 +77,17 @@ class _AdminComplaintsPageState extends State<AdminComplaintsPage> {
                         complaint.customerFullName,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                      trailing: AdminStatusBadge(
-                        status: complaint.status,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Unread messages waiting in this thread.
+                          UnreadBadge(
+                            count: complaint.numberOfUnReadMessage,
+                          ),
+                          if (complaint.numberOfUnReadMessage > 0)
+                            SizedBox(width: width(6)),
+                          AdminStatusBadge(status: complaint.status),
+                        ],
                       ),
                     ),
                   );

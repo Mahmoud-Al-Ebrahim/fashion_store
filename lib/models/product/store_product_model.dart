@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Product card shape returned by `GET Store/GetAllProductsByStore`.
 class StoreProductModel {
   final int id;
@@ -28,21 +30,17 @@ class StoreProductModel {
 
   factory StoreProductModel.fromJson(Map<String, dynamic> json) {
     return StoreProductModel(
-      id: json['id'] as int,
-      name: json['name']?.toString() ?? '',
-      description: json['description']?.toString() ?? '',
-      price: (json['price'] as num).toDouble(),
-      categoryId: json['categoryId'] as int,
-      rating: (json['rating'] as num?)?.toDouble() ?? 0,
-      discountPercentage: (json['discountPercentage'] as num?)?.toDouble(),
-      discountStartDate: json['discountStartDate'] == null
-          ? null
-          : DateTime.parse(json['discountStartDate'].toString()),
-      discountEndDate: json['discountEndDate'] == null
-          ? null
-          : DateTime.parse(json['discountEndDate'].toString()),
-      priceAfterDiscount: (json['priceAfterDiscount'] as num).toDouble(),
-      image: json['image']?.toString() ?? '',
+      id: asInt(json['id']),
+      name: asString(json['name']),
+      description: asString(json['description']),
+      price: asDouble(json['price']),
+      categoryId: asInt(json['categoryId']),
+      rating: asDouble(json['rating']),
+      discountPercentage: asDoubleOrNull(json['discountPercentage']),
+      discountStartDate: asDateOrNull(json['discountStartDate']),
+      discountEndDate: asDateOrNull(json['discountEndDate']),
+      priceAfterDiscount: asDouble(json['priceAfterDiscount']),
+      image: asString(json['image']),
     );
   }
 }

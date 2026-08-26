@@ -4,6 +4,9 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
+import 'package:easy_localization/easy_localization.dart';
+
+import '../../core/localization/translation_keys.dart';
 import '../../core/utils/api_error_helper.dart';
 import '../../core/utils/api_service.dart';
 import '../../models/common/api_response_model.dart';
@@ -35,26 +38,28 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
     if (event.description != null) body['description'] = event.description;
     await ApiService.postMethod(endPoint: 'Complaint/AddComplaint', body: body)
         .then((response) {
-      log(response.data.toString());
-      add(GetAllComplaintsByUserEvent());
-      emit(state.copyWith(addComplaintStatus: AddComplaintStatus.success));
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          addComplaintStatus: AddComplaintStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          addComplaintStatus: AddComplaintStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          log(response.data.toString());
+          add(GetAllComplaintsByUserEvent());
+          emit(state.copyWith(addComplaintStatus: AddComplaintStatus.success));
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              addComplaintStatus: AddComplaintStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              addComplaintStatus: AddComplaintStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetAllComplaintsEvent(
@@ -64,37 +69,39 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
     emit(
       state.copyWith(getAllComplaintsStatus: GetAllComplaintsStatus.loading),
     );
-    await ApiService.getMethod(endPoint: 'Complaint/GetAllComplaints').then((
-      response,
-    ) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<StoreComplaintModel>>.fromJson(
-        response.data,
-        (json) => storeComplaintListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getAllComplaintsStatus: GetAllComplaintsStatus.success,
-          storeComplaints: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllComplaintsStatus: GetAllComplaintsStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllComplaintsStatus: GetAllComplaintsStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+    await ApiService.getMethod(endPoint: 'Complaint/GetAllComplaints')
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse =
+              ApiResponseModel<List<StoreComplaintModel>>.fromJson(
+                response.data,
+                (json) => storeComplaintListFromJson(json),
+              );
+          emit(
+            state.copyWith(
+              getAllComplaintsStatus: GetAllComplaintsStatus.success,
+              storeComplaints: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllComplaintsStatus: GetAllComplaintsStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllComplaintsStatus: GetAllComplaintsStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetAllComplaintsByUserEvent(
@@ -108,34 +115,40 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
     );
     await ApiService.getMethod(endPoint: 'Complaint/GetAllComplaintsByUser')
         .then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<UserComplaintModel>>.fromJson(
-        response.data,
-        (json) => userComplaintListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getAllComplaintsByUserStatus: GetAllComplaintsByUserStatus.success,
-          userComplaints: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllComplaintsByUserStatus: GetAllComplaintsByUserStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getAllComplaintsByUserStatus: GetAllComplaintsByUserStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          log(response.data.toString());
+          final apiResponse =
+              ApiResponseModel<List<UserComplaintModel>>.fromJson(
+                response.data,
+                (json) => userComplaintListFromJson(json),
+              );
+          emit(
+            state.copyWith(
+              getAllComplaintsByUserStatus:
+                  GetAllComplaintsByUserStatus.success,
+              userComplaints: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllComplaintsByUserStatus:
+                  GetAllComplaintsByUserStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getAllComplaintsByUserStatus:
+                  GetAllComplaintsByUserStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onGetComplaintMessagesEvent(
@@ -148,36 +161,39 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
       ),
     );
     await ApiService.getMethod(
-      endPoint: 'Message/GetMessagesByComplaintId/${event.complaintId}',
-    ).then((response) {
-      log(response.data.toString());
-      final apiResponse = ApiResponseModel<List<MessageModel>>.fromJson(
-        response.data,
-        (json) => messageListFromJson(json),
-      );
-      emit(
-        state.copyWith(
-          getComplaintMessagesStatus: GetComplaintMessagesStatus.success,
-          messages: apiResponse.data ?? [],
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getComplaintMessagesStatus: GetComplaintMessagesStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          getComplaintMessagesStatus: GetComplaintMessagesStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Message/GetMessagesByComplaintId/${event.complaintId}',
+        )
+        .then((response) {
+          log(response.data.toString());
+          final apiResponse = ApiResponseModel<List<MessageModel>>.fromJson(
+            response.data,
+            (json) => messageListFromJson(json),
+          );
+          emit(
+            state.copyWith(
+              getComplaintMessagesStatus: GetComplaintMessagesStatus.success,
+              messages: apiResponse.data ?? [],
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getComplaintMessagesStatus: GetComplaintMessagesStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              getComplaintMessagesStatus: GetComplaintMessagesStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 
   FutureOr<void> _onReadComplaintMessagesEvent(
@@ -190,32 +206,35 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
       ),
     );
     await ApiService.putMethod(
-      endPoint: 'Message/ReadMessage',
-      body: {"complaintId": event.complaintId},
-    ).then((response) {
-      log(response.data.toString());
-      add(GetComplaintMessagesEvent(complaintId: event.complaintId));
-      emit(
-        state.copyWith(
-          readComplaintMessagesStatus: ReadComplaintMessagesStatus.success,
-        ),
-      );
-    }).catchError((error) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          readComplaintMessagesStatus: ReadComplaintMessagesStatus.failure,
-          errorMessage: apiErrorMessage(error),
-        ),
-      );
-    }).onError((error, stackTrace) {
-      log(error.toString());
-      emit(
-        state.copyWith(
-          readComplaintMessagesStatus: ReadComplaintMessagesStatus.failure,
-          errorMessage: "حدث خطأ ما!",
-        ),
-      );
-    });
+          endPoint: 'Message/ReadMessage',
+          body: {"complaintId": event.complaintId},
+        )
+        .then((response) {
+          log(response.data.toString());
+          add(GetComplaintMessagesEvent(complaintId: event.complaintId));
+          emit(
+            state.copyWith(
+              readComplaintMessagesStatus: ReadComplaintMessagesStatus.success,
+            ),
+          );
+        })
+        .catchError((error) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              readComplaintMessagesStatus: ReadComplaintMessagesStatus.failure,
+              errorMessage: apiErrorMessage(error),
+            ),
+          );
+        })
+        .onError((error, stackTrace) {
+          log(error.toString());
+          emit(
+            state.copyWith(
+              readComplaintMessagesStatus: ReadComplaintMessagesStatus.failure,
+              errorMessage: LK.commonErrorGeneric.tr(),
+            ),
+          );
+        });
   }
 }

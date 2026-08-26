@@ -8,7 +8,13 @@ import 'package:fashion_store/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'app/sensitive_connectivity/sensitive_connectivity_bloc.dart';
+import 'blocs/admin_bloc/admin_bloc.dart';
 import 'blocs/auth_bloc/auth_bloc.dart';
+import 'blocs/category_bloc/category_bloc.dart';
+import 'blocs/comment_bloc/comment_bloc.dart';
+import 'blocs/product_bloc/product_bloc.dart';
+import 'blocs/rating_bloc/rating_bloc.dart';
+import 'blocs/super_admin_bloc/super_admin_bloc.dart';
 import 'blocs/complaint_bloc/complaint_bloc.dart';
 import 'blocs/order_bloc/order_bloc.dart';
 import 'blocs/store_request_bloc/store_request_bloc.dart';
@@ -26,6 +32,11 @@ class FashionApp extends StatelessWidget {
       designSize: const Size(430, 932),
       minTextAdapt: true,
       splitScreenMode: true,
+      // Every bloc lives here, above MaterialApp and therefore above the
+      // Navigator. That matters: `Navigator.push` mounts a route *outside*
+      // the provider scope of the widget that pushed it, so a bloc provided
+      // lower down (in a shell) would be invisible - or worse, silently
+      // resolve to a second instance - on every pushed page.
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (context) => SensitiveConnectivityBloc()),
@@ -40,6 +51,12 @@ class FashionApp extends StatelessWidget {
           BlocProvider(create: (context) => StoreRequestBloc()),
           BlocProvider(create: (context) => UserBloc()),
           BlocProvider(create: (context) => OrderBloc()),
+          BlocProvider(create: (context) => ProductBloc()),
+          BlocProvider(create: (context) => CategoryBloc()),
+          BlocProvider(create: (context) => CommentBloc()),
+          BlocProvider(create: (context) => RatingBloc()),
+          BlocProvider(create: (context) => AdminBloc()),
+          BlocProvider(create: (context) => SuperAdminBloc()),
         ],
         child: LocalizationService(
           child: Builder(

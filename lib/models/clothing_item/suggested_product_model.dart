@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Item of `POST ClothingItem/GetSuggestByProductId` -> `data`.
 class SuggestedProductModel {
   final int productId;
@@ -28,17 +30,17 @@ class SuggestedProductModel {
 
   factory SuggestedProductModel.fromJson(Map<String, dynamic> json) {
     return SuggestedProductModel(
-      productId: json['productId'] as int,
-      imageUrl: json['imageUrl']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      color: json['color']?.toString() ?? '',
-      gender: json['gender']?.toString() ?? '',
-      season: json['season']?.toString() ?? '',
-      occasion: json['occasion']?.toString(),
-      type: json['type']?.toString() ?? '',
-      price: (json['price'] as num).toDouble(),
-      priceAfterDiscount: (json['priceAfterDiscount'] as num).toDouble(),
-      ratingValue: (json['ratingValue'] as num?)?.toDouble() ?? 0,
+      productId: asInt(json['productId']),
+      imageUrl: asString(json['imageUrl']),
+      name: asString(json['name']),
+      color: asString(json['color']),
+      gender: asString(json['gender']),
+      season: asString(json['season']),
+      occasion: asStringOrNull(json['occasion']),
+      type: asString(json['type']),
+      price: asDouble(json['price']),
+      priceAfterDiscount: asDouble(json['priceAfterDiscount']),
+      ratingValue: asDouble(json['ratingValue']),
     );
   }
 }

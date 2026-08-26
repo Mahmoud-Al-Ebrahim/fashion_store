@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/wallet_bloc/wallet_bloc.dart';
 import '../../../core/screen_util.dart';
+import '../../shop/widgets/wallet_id_card.dart';
 import '../widgets/admin_async_view.dart';
 import '../../../core/localization/translation_keys.dart';
 
@@ -63,6 +64,8 @@ class _AdminWalletPageState extends State<AdminWalletPage> {
                   ],
                 ),
               ),
+              SizedBox(height: height(14)),
+              WalletIdCard(walletId: state.wallet?.id),
               SizedBox(height: height(20)),
               Text(
                 LK.profileTransactions.tr(),

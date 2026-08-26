@@ -9,8 +9,11 @@ import '../../../blocs/complaint_bloc/complaint_bloc.dart';
 import '../../../blocs/store_bloc/store_bloc.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
+import '../widgets/unread_badge.dart';
 import '../../../core/utils/show_message.dart';
 import '../../admin/widgets/option_picker_field.dart';
+import '../../../core/extensions/build_context.dart';
+import 'complaint_chat_page.dart';
 
 /// Complaints the customer has filed, plus a form to raise a new one
 /// against a store.
@@ -159,9 +162,19 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        complaint.title,
-                        style: Theme.of(context).textTheme.titleSmall,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              complaint.title,
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ),
+                          // Unread messages waiting in this thread.
+                          UnreadBadge(
+                            count: complaint.numberOfUnReadMessage,
+                          ),
+                        ],
                       ),
                       SizedBox(height: height(4)),
                       Text(
@@ -174,6 +187,20 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                       Text(
                         complaint.description,
                         style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      SizedBox(height: height(6)),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: TextButton.icon(
+                          onPressed: () => context.pushPage(
+                            ComplaintChatPage(
+                              complaintId: complaint.complaintId,
+                              counterpartName: complaint.storeName,
+                            ),
+                          ),
+                          icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                          label: Text(LK.chatOpenChat.tr()),
+                        ),
                       ),
                     ],
                   ),

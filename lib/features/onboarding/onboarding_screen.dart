@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../app/widgets/button.dart';
 import '../../core/localization/translation_keys.dart';
+import '../../core/utils/my_shared_pref.dart';
 import '../auth/pages/on_boarding_screen.dart';
 
 class _OnboardingPage {
@@ -202,11 +203,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  void _goToWelcome() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => OnBoardingScreen()
-      ),
+  Future<void> _goToWelcome() async {
+    // Persist that the intro was completed so it never shows again, and
+    // replace this route so Back can't return to it.
+    await MySharedPref.setOnBoardingSeen();
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => OnBoardingScreen()),
     );
   }
 }

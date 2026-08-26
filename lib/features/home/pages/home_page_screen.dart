@@ -11,7 +11,6 @@ import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../../models/product/product_ref.dart';
 import '../../nav_bar/user_nav_bar/user_nav_bar_bloc.dart';
-import '../widgets/ad/ad_.dart';
 import '../widgets/product_card/store_card_list_view.dart';
 import '../widgets/store_card/store_list_view.dart';
 import '../widgets/title_and_see_more.dart';
@@ -22,7 +21,9 @@ import '../widgets/title_and_see_more.dart';
 ///  - followed stores feed -> `StoreFollower/GetProductsByFollowerStores`
 ///
 /// The old "nearest stores to you" section was removed along with location
-/// support, per the dropped-features decision.
+/// support, and the ad banner that used to head the page was dropped too -
+/// both per the dropped-features decision. The widgets themselves are kept
+/// in the tree in case they come back.
 class HomePageScreen extends StatefulWidget {
   static String name = "home-screen";
   static String path = "/home-screen";
@@ -61,11 +62,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
             child: Column(
               spacing: height(22),
               children: [
-                Ad()
-                    .animate()
-                    .fadeIn(duration: 400.ms)
-                    .slide(begin: const Offset(1, 0), duration: 500.ms),
-
                 // ----- discounted products -----
                 TitleAndSeeMore(
                       onSeeMore: _goToExplore,

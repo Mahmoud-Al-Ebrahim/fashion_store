@@ -11,6 +11,7 @@ import '../../../core/utils/show_message.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/confirm_dialog.dart';
 import 'admin_product_detail_page.dart';
+import 'admin_discounted_products_page.dart';
 import 'admin_product_form_page.dart';
 import '../../../core/localization/translation_keys.dart';
 
@@ -42,10 +43,22 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
         title: Text(LK.adminProducts.tr()),
+        actions: [
+          // What is on offer right now, so an expired or forgotten
+          // promotion is easy to spot.
+          IconButton(
+            tooltip: LK.adminDiscountedProducts.tr(),
+            icon: const Icon(Icons.local_offer_outlined),
+            onPressed: () =>
+                context.pushPage(const AdminDiscountedProductsPage()),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final added = await context.pushPage<bool>(const AdminProductFormPage());
+          final added = await context.pushPage<bool>(
+            const AdminProductFormPage(),
+          );
           if (added == true) _load();
         },
         icon: const Icon(Icons.add),
@@ -54,12 +67,15 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       body: MultiBlocListener(
         listeners: [
           BlocListener<ProductBloc, ProductState>(
-            listenWhen: (p, c) => p.productTransactionStatus != c.productTransactionStatus,
+            listenWhen: (p, c) =>
+                p.productTransactionStatus != c.productTransactionStatus,
             listener: (context, state) {
-              if (state.productTransactionStatus == ProductTransactionStatus.success) {
+              if (state.productTransactionStatus ==
+                  ProductTransactionStatus.success) {
                 showMessage(LK.adminProductDeleted.tr(), hasError: false);
                 _load();
-              } else if (state.productTransactionStatus == ProductTransactionStatus.failure) {
+              } else if (state.productTransactionStatus ==
+                  ProductTransactionStatus.failure) {
                 showMessage(state.errorMessage);
               }
             },
@@ -72,12 +88,15 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
               final products = state.productDashboard?.products ?? [];
               return AdminAsyncView(
                 isLoading:
-                    state.getProductDashboardStatus == GetProductDashboardStatus.loading,
+                    state.getProductDashboardStatus ==
+                    GetProductDashboardStatus.loading,
                 isFailure:
-                    state.getProductDashboardStatus == GetProductDashboardStatus.failure,
+                    state.getProductDashboardStatus ==
+                    GetProductDashboardStatus.failure,
                 isEmpty:
-                    state.getProductDashboardStatus == GetProductDashboardStatus.success &&
-                        products.isEmpty,
+                    state.getProductDashboardStatus ==
+                        GetProductDashboardStatus.success &&
+                    products.isEmpty,
                 errorMessage: state.errorMessage,
                 emptyText: LK.adminNoProducts.tr(),
                 onRetry: _load,
@@ -126,12 +145,16 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
                           onPressed: () async {
                             final confirmed = await confirmDialog(
                               context,
                               title: LK.commonDelete.tr(),
-                              message: '${LK.adminDeleteProductConfirm.tr()}\n${product.name}',
+                              message:
+                                  '${LK.adminDeleteProductConfirm.tr()}\n${product.name}',
                             );
                             if (!confirmed || !context.mounted) return;
                             context.read<ProductBloc>().add(

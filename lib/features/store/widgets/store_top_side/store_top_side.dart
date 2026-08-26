@@ -7,7 +7,10 @@ import '../../../../blocs/store_follower_bloc/store_follower_bloc.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
 import '../../../../core/utils/api_service.dart';
+import '../../../../core/helper/helper_functions.dart';
+import '../../../../core/utils/session.dart';
 import '../../../../core/utils/show_message.dart';
+import '../../../auth/pages/sign_in_screen/sign_in_screen.dart';
 import '../../../../models/store/store_model.dart';
 import 'image_top_side.dart';
 import 'store_name_and_stars_top_side.dart';
@@ -70,9 +73,23 @@ class _StoreTopSideState extends State<StoreTopSide> {
                       ),
                     )
                   : GestureDetector(
-                      onTap: () => context.read<StoreFollowerBloc>().add(
-                        ToggleStoreFollowEvent(storeId: widget.store.id),
-                      ),
+                      onTap: () async {
+                        if (!await requireAuth(
+                          context,
+                          onSignIn: () =>
+                              HelperFunctions.navigateToPageAndPopAll(
+                            context,
+                            const SignInScreen(),
+                            true,
+                          ),
+                        )) {
+                          return;
+                        }
+                        if (!context.mounted) return;
+                        context.read<StoreFollowerBloc>().add(
+                          ToggleStoreFollowEvent(storeId: widget.store.id),
+                        );
+                      },
                       child: FollowButton(isFollowing: _isFollowing),
                     ),
             ],

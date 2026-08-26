@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Nested size entry inside [ClothingItemModel.productSizes], and item of
 /// `GET ClothingItem/GetAllSizeByProductColor` -> `data`.
 class ProductSizeModel {
@@ -15,10 +17,10 @@ class ProductSizeModel {
 
   factory ProductSizeModel.fromJson(Map<String, dynamic> json) {
     return ProductSizeModel(
-      productSizeId: json['productSizeId'] as int,
-      size: json['size']?.toString() ?? '',
+      productSizeId: asInt(json['productSizeId']),
+      size: asString(json['size']),
       quantity: json['quantity'] as int?,
-      isFoundProduct: json['isFoundProduct'] == true,
+      isFoundProduct: asBool(json['isFoundProduct']),
     );
   }
 }

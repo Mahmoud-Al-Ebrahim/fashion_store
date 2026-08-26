@@ -46,9 +46,7 @@ class ContactInformationStep extends StatelessWidget {
               formatters: [
                 FilteringTextInputFormatter.digitsOnly
               ],
-              validator: (value) => (value == null || value.trim().isEmpty)
-                  ? LK.commonRequiredField.tr()
-                  : null,
+              validator: validateSyrianPhone,
             )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 150.ms)
@@ -57,9 +55,7 @@ class ContactInformationStep extends StatelessWidget {
             AuthTextField(
               controller: usernameController,
               hintText: LK.authUsername.tr(),
-              validator: (value) => (value == null || value.trim().isEmpty)
-                  ? LK.commonRequiredField.tr()
-                  : null,
+              validator: validateUsername,
             )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 300.ms)

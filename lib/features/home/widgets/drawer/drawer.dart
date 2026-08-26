@@ -9,6 +9,7 @@ import '../../../../core/helper/helper_functions.dart';
 import '../../../../core/localization/language_service.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../core/utils/session.dart';
 import '../../../auth/pages/sign_in_screen/sign_in_screen.dart';
 import '../../../shop/pages/complaints_page.dart';
 import '../../../shop/pages/profile_page.dart';
@@ -61,25 +62,38 @@ class CustomDrawer extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(height: height(40)),
-                BlocBuilder<UserBloc, UserState>(
-                  builder: (context, state) {
-                    final profile = state.userProfile;
-                    return DrawerCard(
-                      showArrow: false,
-                      icon: "assets/svg/user.svg",
-                      title: profile == null
-                          ? LK.profileTitle.tr()
-                          : profile.fullName,
-                      onTap: () => context.pushPage(const ProfilePage()),
-                    );
-                  },
-                ),
+                if (Session.isGuest)
+                  DrawerCard(
+                    showArrow: false,
+                    icon: "assets/svg/user.svg",
+                    title: LK.authGuestMode.tr(),
+                    onTap: () => HelperFunctions.navigateToPageAndPopAll(
+                      context,
+                      const SignInScreen(),
+                      true,
+                    ),
+                  )
+                else
+                  BlocBuilder<UserBloc, UserState>(
+                    builder: (context, state) {
+                      final profile = state.userProfile;
+                      return DrawerCard(
+                        showArrow: false,
+                        icon: "assets/svg/user.svg",
+                        title: profile == null
+                            ? LK.profileTitle.tr()
+                            : profile.fullName,
+                        onTap: () => context.pushPage(const ProfilePage()),
+                      );
+                    },
+                  ),
                 Divider(
                   thickness: 0.5,
                   color: onPrimary,
                   endIndent: width(40),
                 ),
                 SizedBox(height: height(30)),
+                if (Session.isSignedIn) ...[
                 DrawerCard(
                   icon: "assets/svg/who_i_follow.svg",
                   title: LK.profileFollowing.tr(),
@@ -104,6 +118,7 @@ class CustomDrawer extends StatelessWidget {
                   onTap: () => context.pushPage(const SellerRequestPage()),
                 ),
                 SizedBox(height: height(4)),
+                ],
                 DrawerCard(
                   icon: "assets/svg/lock.svg",
                   title: LK.profileLanguage.tr(),
@@ -117,8 +132,16 @@ class CustomDrawer extends StatelessWidget {
                 ),
                 DrawerCard(
                   icon: "assets/svg/log_out.svg",
-                  title: LK.authLogout.tr(),
-                  onTap: () => _confirmLogout(context),
+                  title: Session.isGuest
+                      ? LK.authLogin.tr()
+                      : LK.authLogout.tr(),
+                  onTap: () => Session.isGuest
+                      ? HelperFunctions.navigateToPageAndPopAll(
+                          context,
+                          const SignInScreen(),
+                          true,
+                        )
+                      : _confirmLogout(context),
                 ),
                 SizedBox(height: height(20)),
               ],

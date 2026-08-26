@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Item of `GET Comment/GetAll` -> `data`, and response model for
 /// `POST Comment/Add` -> `data`.
 class CommentModel {
@@ -23,16 +25,14 @@ class CommentModel {
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
     return CommentModel(
-      commentId: json['commentId'] as int,
+      commentId: asInt(json['commentId']),
       productId: json['productId'] as int?,
-      userId: json['userId']?.toString() ?? '',
-      userFullName: json['userFullName']?.toString() ?? '',
-      userImage: json['userImage']?.toString(),
-      text: json['text']?.toString() ?? '',
-      createdAt: DateTime.parse(json['createdAt'].toString()),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'].toString()),
+      userId: asString(json['userId']),
+      userFullName: asString(json['userFullName']),
+      userImage: asStringOrNull(json['userImage']),
+      text: asString(json['text']),
+      createdAt: asDate(json['createdAt']),
+      updatedAt: asDateOrNull(json['updatedAt']),
     );
   }
 }

@@ -70,11 +70,11 @@ class AdminState {
       deleteStoreStatus: deleteStoreStatus ?? this.deleteStoreStatus,
       getOrdersDetailStatus:
           getOrdersDetailStatus ?? this.getOrdersDetailStatus,
-      getProductInventoryAlertStatus: getProductInventoryAlertStatus ??
-          this.getProductInventoryAlertStatus,
+      getProductInventoryAlertStatus:
+          getProductInventoryAlertStatus ?? this.getProductInventoryAlertStatus,
       getAllDiscountProductByStoreStatus:
           getAllDiscountProductByStoreStatus ??
-              this.getAllDiscountProductByStoreStatus,
+          this.getAllDiscountProductByStoreStatus,
       getProductDashboardStatus:
           getProductDashboardStatus ?? this.getProductDashboardStatus,
       getDashboardAnalyticsStatus:

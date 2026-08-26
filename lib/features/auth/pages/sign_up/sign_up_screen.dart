@@ -1,12 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
 import '../../../../app/widgets/button.dart';
 import '../../../../blocs/auth_bloc/auth_bloc.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/utils/my_shared_pref.dart';
 import '../../../../core/utils/show_message.dart';
 import '../sign_in_screen/otp_verification_page.dart';
 import 'additional_information_step.dart';
@@ -21,7 +24,12 @@ import 'password_step.dart';
 /// seller now lives behind "Open your own store" in the drawer. Location and
 /// national-ID capture were removed here for the same reason.
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  /// True when the user picked "store owner" on the account-kind screen -
+  /// after their first successful sign-in they are taken straight to the
+  /// store-request form.
+  final bool wantsStore;
+
+  const SignUpScreen({super.key, this.wantsStore = false});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -90,7 +98,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         lastName: lastNameController.text.trim(),
         userName: usernameController.text.trim(),
         email: emailController.text.trim(),
-        phoneNumber: phoneController.text.trim(),
+        phoneNumber: normalizeSyrianPhone(phoneController.text),
         gender: genderController.text.trim(),
         birthDate: birthDate,
         password: passwordController.text,
@@ -131,12 +139,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         listenWhen: (p, c) => p.registerStatus != c.registerStatus,
         listener: (context, state) {
           if (state.registerStatus == RegisterStatus.success) {
+            // Remember the intent so the post-login router can open the
+            // store-request form once the account is verified.
+            MySharedPref.saveWantsStore(widget.wantsStore);
             showMessage(LK.authRegisterSuccess.tr(), hasError: false);
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (_) => OTPVerificationPage(
                   email: emailController.text.trim(),
-                  cameFromRegisterPage: true,
+                  purpose: OtpPurpose.emailConfirmation,
                 ),
               ),
             );
@@ -149,32 +160,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: Column(
             children: [
               SizedBox(height: height(75)),
-              Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Text(
-                    LK.authRegister.tr(),
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                  if (currentStep > 0)
-                    PositionedDirectional(
-                      end: 0,
-                      child: InkWell(
-                        onTap: previousStep,
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            shape: BoxShape.circle,
+              SizedBox(
+                width: 1.sw,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Text(
+                      LK.authRegister.tr(),
+                      style: Theme.of(context).textTheme.displaySmall,
+                    ),
+                    if (currentStep > 0)
+                      PositionedDirectional(
+                        end: 0,
+                        child: InkWell(
+                          onTap: previousStep,
+                          borderRadius: BorderRadius.circular(50),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.arrow_back, size: 20),
                           ),
-                          child: const Icon(Icons.arrow_back, size: 20),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
               SizedBox(height: height(40)),
               Padding(

@@ -32,6 +32,18 @@ class AddRoleEvent extends SuperAdminEvent {
   AddRoleEvent({required this.userId, required this.role});
 }
 
+/// DELETE SuperAdmin/RemoveRole - strips a role from a user.
+///
+/// The mirror image of [AddRoleEvent]: same `{userId, role}` body, sent as
+/// a DELETE. Used to demote a store owner or payment employee back to a
+/// plain customer without deleting or banning the account.
+class RemoveRoleEvent extends SuperAdminEvent {
+  final String userId;
+  final String role;
+
+  RemoveRoleEvent({required this.userId, required this.role});
+}
+
 /// PATCH SuperAdmin/RequestApproved/{requestId} - approves a pending store request
 class ApproveStoreRequestEvent extends SuperAdminEvent {
   final int requestId;

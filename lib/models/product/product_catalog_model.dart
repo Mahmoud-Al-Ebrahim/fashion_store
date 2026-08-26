@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Lightweight product card shape returned by catalog/browse-style endpoints:
 /// `GET Product/GetSearch/{query}`, `GET Product/GetFilter`,
 /// `GET Product/GetAllDiscountProduct`, `GET StoreFollower/GetProductsByFollowerStores`.
@@ -26,19 +28,15 @@ class ProductCatalogModel {
 
   factory ProductCatalogModel.fromJson(Map<String, dynamic> json) {
     return ProductCatalogModel(
-      id: json['id'] as int,
-      storeId: json['storeId'] as int,
-      name: json['name']?.toString() ?? '',
-      price: (json['price'] as num).toDouble(),
-      discountPercentage: (json['discountPercentage'] as num?)?.toDouble(),
-      discountStartDate: json['discountStartDate'] == null
-          ? null
-          : DateTime.parse(json['discountStartDate'].toString()),
-      discountEndDate: json['discountEndDate'] == null
-          ? null
-          : DateTime.parse(json['discountEndDate'].toString()),
-      priceAfterDiscount: (json['priceAfterDiscount'] as num).toDouble(),
-      image: json['image']?.toString() ?? '',
+      id: asInt(json['id']),
+      storeId: asInt(json['storeId']),
+      name: asString(json['name']),
+      price: asDouble(json['price']),
+      discountPercentage: asDoubleOrNull(json['discountPercentage']),
+      discountStartDate: asDateOrNull(json['discountStartDate']),
+      discountEndDate: asDateOrNull(json['discountEndDate']),
+      priceAfterDiscount: asDouble(json['priceAfterDiscount']),
+      image: asString(json['image']),
     );
   }
 }

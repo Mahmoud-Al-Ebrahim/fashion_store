@@ -12,3 +12,23 @@ class UpdateProfilePhotoEvent extends UserEvent {
 
   UpdateProfilePhotoEvent({required this.image});
 }
+
+/// PUT User/UpdateUser - edits the signed-in account's own details.
+///
+/// Every role has a personal profile, so this is not gated on any role.
+/// Fields are optional: the API treats a null as "leave unchanged".
+class UpdateUserEvent extends UserEvent {
+  final String? firstName;
+  final String? lastName;
+  final DateTime? birthDate;
+  final String? gender;
+  final String? phoneNumber;
+
+  UpdateUserEvent({
+    this.firstName,
+    this.lastName,
+    this.birthDate,
+    this.gender,
+    this.phoneNumber,
+  });
+}

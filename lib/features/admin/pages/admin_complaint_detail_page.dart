@@ -6,6 +6,9 @@ import '../../../blocs/complaint_bloc/complaint_bloc.dart';
 import '../../../core/screen_util.dart';
 import '../../../models/complaint/complaint_model.dart';
 import '../widgets/admin_async_view.dart';
+import '../../shop/pages/complaint_chat_page.dart';
+import '../../../core/extensions/build_context.dart';
+import '../../../app/widgets/button.dart';
 import '../widgets/admin_status_badge.dart';
 import '../../../core/localization/translation_keys.dart';
 
@@ -68,39 +71,16 @@ class _AdminComplaintDetailPageState extends State<AdminComplaintDetailPage> {
             ),
           ),
           SizedBox(height: height(8)),
-          BlocBuilder<ComplaintBloc, ComplaintState>(
-            builder: (context, state) {
-              return AdminAsyncView(
-                isLoading:
-                    state.getComplaintMessagesStatus == GetComplaintMessagesStatus.loading,
-                isFailure:
-                    state.getComplaintMessagesStatus == GetComplaintMessagesStatus.failure,
-                isEmpty:
-                    state.getComplaintMessagesStatus == GetComplaintMessagesStatus.success &&
-                        state.messages.isEmpty,
-                errorMessage: state.errorMessage,
-                emptyText: LK.adminNoMessages.tr(),
-                child: Column(
-                  children: state.messages.map((m) {
-                    return Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: height(8)),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: width(12),
-                          vertical: height(8),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(m.text),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
-            },
+          AuthButton(
+            text: LK.chatOpenChat.tr(),
+            widthButton: double.infinity,
+            heightButton: height(52),
+            onTap: () => context.pushPage(
+              ComplaintChatPage(
+                complaintId: complaint.complaintId,
+                counterpartName: complaint.customerFullName,
+              ),
+            ),
           ),
         ],
       ),

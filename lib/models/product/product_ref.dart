@@ -42,65 +42,66 @@ class ProductRef {
   String get imageUrl => image;
 
   ProductRef copyWith({int? storeId, String? storeName}) => ProductRef(
-        id: id,
-        name: name,
-        price: price,
-        priceAfterDiscount: priceAfterDiscount,
-        image: image,
-        storeId: storeId ?? this.storeId,
-        storeName: storeName ?? this.storeName,
-        description: description,
-        discountPercentage: discountPercentage,
-        rating: rating,
-      );
+    id: id,
+    name: name,
+    price: price,
+    priceAfterDiscount: priceAfterDiscount,
+    image: image,
+    storeId: storeId ?? this.storeId,
+    storeName: storeName ?? this.storeName,
+    description: description,
+    discountPercentage: discountPercentage,
+    rating: rating,
+  );
 
   factory ProductRef.fromCatalog(ProductCatalogModel p) => ProductRef(
-        id: p.id,
-        storeId: p.storeId,
-        name: p.name,
-        price: p.price,
-        priceAfterDiscount: p.priceAfterDiscount,
-        discountPercentage: p.discountPercentage,
-        image: p.image,
-      );
+    id: p.id,
+    storeId: p.storeId,
+    name: p.name,
+    price: p.price,
+    priceAfterDiscount: p.priceAfterDiscount,
+    discountPercentage: p.discountPercentage,
+    image: p.image,
+  );
 
   factory ProductRef.fromStoreProduct(
     StoreProductModel p, {
     int? storeId,
     String? storeName,
-  }) =>
-      ProductRef(
-        id: p.id,
-        storeId: storeId,
-        storeName: storeName,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        priceAfterDiscount: p.priceAfterDiscount,
-        discountPercentage: p.discountPercentage,
-        image: p.image,
-        rating: p.rating,
-      );
+  }) => ProductRef(
+    id: p.id,
+    storeId: storeId,
+    storeName: storeName,
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    priceAfterDiscount: p.priceAfterDiscount,
+    discountPercentage: p.discountPercentage,
+    image: p.image,
+    rating: p.rating,
+  );
 
   factory ProductRef.fromSuggested(SuggestedProductModel p) => ProductRef(
-        id: p.productId,
-        name: p.name,
-        price: p.price,
-        priceAfterDiscount: p.priceAfterDiscount,
-        image: p.imageUrl,
-        rating: p.ratingValue,
-      );
+    id: p.productId,
+    name: p.name,
+    price: p.price,
+    priceAfterDiscount: p.priceAfterDiscount,
+    image: p.imageUrl,
+    rating: p.ratingValue,
+  );
 
-  factory ProductRef.fromDashboard(ProductDashboardItemModel p, {int? storeId}) =>
-      ProductRef(
-        id: p.id,
-        storeId: storeId,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        priceAfterDiscount: p.priceAfterDiscount,
-        discountPercentage: p.discountPercentage,
-        image: p.image,
-        rating: p.ratingValue,
-      );
+  factory ProductRef.fromDashboard(
+    ProductDashboardItemModel p, {
+    int? storeId,
+  }) => ProductRef(
+    id: p.id,
+    storeId: storeId,
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    priceAfterDiscount: p.priceAfterDiscount,
+    discountPercentage: p.discountPercentage,
+    image: p.image,
+    rating: p.ratingValue,
+  );
 }

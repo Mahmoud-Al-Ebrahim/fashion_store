@@ -328,6 +328,218 @@ class LK {
   static const onboardingSkip = 'onboarding.skip';
   static const onboardingStart = 'onboarding.start';
 
+
+  // ---------- auth ----------
+  static const authNameTooShort = 'auth.name_too_short';
+  static const authNameLettersOnly = 'auth.name_letters_only';
+  static const authUsernameInvalid = 'auth.username_invalid';
+  static const authPhoneInvalidSy = 'auth.phone_invalid_sy';
+  static const authContinueAsGuest = 'auth.continue_as_guest';
+  static const authGuestMode = 'auth.guest_mode';
+  static const authLoginRequired = 'auth.login_required';
+  static const authLoginRequiredBody = 'auth.login_required_body';
+  static const authLoginNow = 'auth.login_now';
+  static const authForgotTitle = 'auth.forgot_title';
+  static const authForgotSubtitle = 'auth.forgot_subtitle';
+  static const authForgotSend = 'auth.forgot_send';
+
+  // ---------- account_kind ----------
+  static const accountKindTitle = 'account_kind.title';
+  static const accountKindCustomer = 'account_kind.customer';
+  static const accountKindCustomerDesc = 'account_kind.customer_desc';
+  static const accountKindStoreOwner = 'account_kind.store_owner';
+  static const accountKindStoreOwnerDesc = 'account_kind.store_owner_desc';
+  static const accountKindStoreNote = 'account_kind.store_note';
+
+  // ---------- store_status ----------
+  static const storeStatusPendingTitle = 'store_status.pending_title';
+  static const storeStatusPendingBody = 'store_status.pending_body';
+  static const storeStatusRejectedTitle = 'store_status.rejected_title';
+  static const storeStatusRejectedBody = 'store_status.rejected_body';
+  static const storeStatusNoneTitle = 'store_status.none_title';
+  static const storeStatusNoneBody = 'store_status.none_body';
+  static const storeStatusRejectionReason = 'store_status.rejection_reason';
+  static const storeStatusBrowseAsCustomer = 'store_status.browse_as_customer';
+
+  // ---------- superadmin ----------
+  static const superadminTitle = 'superadmin.title';
+  static const superadminRequests = 'superadmin.requests';
+  static const superadminUsers = 'superadmin.users';
+  static const superadminCatalog = 'superadmin.catalog';
+  static const superadminPlatformOrders = 'superadmin.platform_orders';
+  static const superadminApprove = 'superadmin.approve';
+  static const superadminReject = 'superadmin.reject';
+  static const superadminApproveConfirm = 'superadmin.approve_confirm';
+  static const superadminRejectConfirm = 'superadmin.reject_confirm';
+  static const superadminRejectionReasonHint = 'superadmin.rejection_reason_hint';
+  static const superadminApprovedDone = 'superadmin.approved_done';
+  static const superadminRejectedDone = 'superadmin.rejected_done';
+  static const superadminNoRequests = 'superadmin.no_requests';
+  static const superadminActiveUsers = 'superadmin.active_users';
+  static const superadminBannedUsers = 'superadmin.banned_users';
+  static const superadminUnban = 'superadmin.unban';
+  static const superadminUnbanConfirm = 'superadmin.unban_confirm';
+  static const superadminUnbannedDone = 'superadmin.unbanned_done';
+  static const superadminRevokeToken = 'superadmin.revoke_token';
+  static const superadminRevokeConfirm = 'superadmin.revoke_confirm';
+  static const superadminRevokedDone = 'superadmin.revoked_done';
+  static const superadminDeleteUser = 'superadmin.delete_user';
+  static const superadminDeleteUserConfirm = 'superadmin.delete_user_confirm';
+  static const superadminDeletedDone = 'superadmin.deleted_done';
+  static const superadminAddRole = 'superadmin.add_role';
+  static const superadminAddRoleConfirm = 'superadmin.add_role_confirm';
+  static const superadminRoleAdded = 'superadmin.role_added';
+  static const superadminNoUsers = 'superadmin.no_users';
+  static const superadminViewDocuments = 'superadmin.view_documents';
+  static const superadminDocuments = 'superadmin.documents';
+  static const superadminStoreCategoriesOf = 'superadmin.store_categories_of';
+  static const superadminManageOwnStore = 'superadmin.manage_own_store';
+  static const superadminGlobalCategories = 'superadmin.global_categories';
+  static const superadminAddGlobalCategory = 'superadmin.add_global_category';
+  static const superadminCategoryName = 'superadmin.category_name';
+  static const superadminFilterStatus = 'superadmin.filter_status';
+
+
+  // ---------- payment (added) ----------
+  static const paymentTitle = 'payment.title';
+  static const paymentTopups = 'payment.topups';
+  static const paymentNewTopup = 'payment.new_topup';
+  static const paymentWalletId = 'payment.wallet_id';
+  static const paymentWalletIdHint = 'payment.wallet_id_hint';
+  static const paymentWalletIdInvalid = 'payment.wallet_id_invalid';
+  static const paymentAmount = 'payment.amount';
+  static const paymentAmountInvalid = 'payment.amount_invalid';
+  static const paymentAmountMustBePositive = 'payment.amount_must_be_positive';
+  static const paymentSubmit = 'payment.submit';
+  static const paymentConfirmTitle = 'payment.confirm_title';
+  static const paymentConfirmBody = 'payment.confirm_body';
+  static const paymentSuccess = 'payment.success';
+  static const paymentNoTopups = 'payment.no_topups';
+  static const paymentDepositOnlyNote = 'payment.deposit_only_note';
+  static const paymentEmployeeRole = 'payment.employee_role';
+  static const paymentHistoryScopeNote = 'payment.history_scope_note';
+
+  // ---------- superadmin (added) ----------
+  static const superadminBanUser = 'superadmin.ban_user';
+  static const superadminBanConfirm = 'superadmin.ban_confirm';
+  static const superadminBannedDone = 'superadmin.banned_done';
+  static const superadminWalletTopup = 'superadmin.wallet_topup';
+
+
+  // ---------- chat ----------
+  static const chatTitle = 'chat.title';
+  static const chatHint = 'chat.hint';
+  static const chatSend = 'chat.send';
+  static const chatEmpty = 'chat.empty';
+  static const chatConnecting = 'chat.connecting';
+  static const chatConnected = 'chat.connected';
+  static const chatDisconnected = 'chat.disconnected';
+  static const chatReconnecting = 'chat.reconnecting';
+  static const chatSendFailed = 'chat.send_failed';
+  static const chatOfflineNote = 'chat.offline_note';
+  static const chatWithStore = 'chat.with_store';
+  static const chatWithCustomer = 'chat.with_customer';
+  static const chatOpenChat = 'chat.open_chat';
+
+  // ---------- wallet ----------
+  static const walletIdLabel = 'wallet.id_label';
+  static const walletIdHint = 'wallet.id_hint';
+  static const walletCopied = 'wallet.copied';
+  static const walletCopy = 'wallet.copy';
+  static const walletNone = 'wallet.none';
+
+  // ---------- suggestions ----------
+  static const suggestionsTitle = 'suggestions.title';
+  static const suggestionsSeeAll = 'suggestions.see_all';
+  static const suggestionsNone = 'suggestions.none';
+
+
+  // ---------- following ----------
+  static const followingEmpty = 'following.empty';
+
+
+  // ---------- added: ads removal / whatsapp / tx details / roles / stock ----------
+  static const commonWhatsapp = 'common.whatsapp';
+  static const commonWhatsappUnavailable = 'common.whatsapp_unavailable';
+  static const walletContactAgent = 'wallet.contact_agent';
+  static const walletContactAgentHint = 'wallet.contact_agent_hint';
+  static const walletContactAgentMessage = 'wallet.contact_agent_message';
+  static const paymentTxDetails = 'payment.tx_details';
+  static const paymentTxOrder = 'payment.tx_order';
+  static const paymentTxCustomer = 'payment.tx_customer';
+  static const paymentTxProducts = 'payment.tx_products';
+  static const paymentTxNoDetails = 'payment.tx_no_details';
+  static const paymentTxAmount = 'payment.tx_amount';
+  static const paymentTxType = 'payment.tx_type';
+  static const paymentTxDate = 'payment.tx_date';
+  static const paymentTxWallet = 'payment.tx_wallet';
+  static const paymentTxQty = 'payment.tx_qty';
+  static const complaintsUnreadCount = 'complaints.unread_count';
+  static const superadminRequestDetails = 'superadmin.request_details';
+  static const superadminOwnerInfo = 'superadmin.owner_info';
+  static const superadminStoreInfo = 'superadmin.store_info';
+  static const superadminOwnerUnknown = 'superadmin.owner_unknown';
+  static const superadminWorkingHours = 'superadmin.working_hours';
+  static const superadminSubmittedAt = 'superadmin.submitted_at';
+  static const superadminRemoveRole = 'superadmin.remove_role';
+  static const superadminRemoveRoleConfirm = 'superadmin.remove_role_confirm';
+  static const superadminRemoveRoleDone = 'superadmin.remove_role_done';
+  static const superadminPickRole = 'superadmin.pick_role';
+  static const superadminNoRoles = 'superadmin.no_roles';
+  static const superadminOrderDetails = 'superadmin.order_details';
+  static const adminLowStockOpen = 'admin.low_stock_open';
+  static const adminStockBreakdown = 'admin.stock_breakdown';
+  static const adminStockTotal = 'admin.stock_total';
+  static const adminStockNone = 'admin.stock_none';
+  static const adminStockQty = 'admin.stock_qty';
+  static const adminStockOut = 'admin.stock_out';
+  static const adminStockLow = 'admin.stock_low';
+
+  // ---------- profile editing ----------
+  static const profileEdit = 'profile.edit';
+  static const profileEditSaved = 'profile.edit_saved';
+  static const profilePickBirthdate = 'profile.pick_birthdate';
+
+  // ---------- endpoint coverage additions ----------
+  static const adminSalesBreakdown = 'admin.sales_breakdown';
+  static const adminNoSalesInRange = 'admin.no_sales_in_range';
+  static const adminUnitsSold = 'admin.units_sold';
+  static const adminRevenue = 'admin.revenue';
+  static const adminRemaining = 'admin.remaining';
+  static const adminEditPost = 'admin.edit_post';
+  static const adminPostUpdated = 'admin.post_updated';
+  static const adminDiscountedProducts = 'admin.discounted_products';
+  static const adminNoDiscounts = 'admin.no_discounts';
+  static const storeStatusCancelRequest = 'store_status.cancel_request';
+  static const storeStatusCancelConfirm = 'store_status.cancel_confirm';
+  static const storeStatusCancelledDone = 'store_status.cancelled_done';
+  static const storeStatusEditRequest = 'store_status.edit_request';
+  static const storeStatusRequestUpdated = 'store_status.request_updated';
+  static const superadminStoreCategories = 'superadmin.store_categories';
+  static const superadminNoCategories = 'superadmin.no_categories';
+
+  // ---------- onboarding / guest / store profile ----------
+  static const onboardingWelcomeTo = 'onboarding.welcome_to';
+  static const onboardingBrand = 'onboarding.brand';
+  static const onboardingTagline1 = 'onboarding.tagline_1';
+  static const onboardingTagline2 = 'onboarding.tagline_2';
+  static const onboardingBullet1 = 'onboarding.bullet_1';
+  static const onboardingBullet2 = 'onboarding.bullet_2';
+  static const onboardingContinueGuest = 'onboarding.continue_guest';
+  static const ordersGuestTitle = 'orders.guest_title';
+  static const ordersGuestBody = 'orders.guest_body';
+  static const storeProfileTitle = 'store_profile.title';
+  static const storeProfileDocuments = 'store_profile.documents';
+  static const storeProfileNationalIdFront = 'store_profile.national_id_front';
+  static const storeProfileNationalIdBack = 'store_profile.national_id_back';
+  static const storeProfileLicense = 'store_profile.license';
+  static const storeProfileNoDocuments = 'store_profile.no_documents';
+  static const storeProfileReadonlyNote = 'store_profile.readonly_note';
+  static const storeProfileEditableNote = 'store_profile.editable_note';
+  static const adminDeleteSizeConfirm = 'admin.delete_size_confirm';
+  static const adminSizeDeleted = 'admin.size_deleted';
+  static const adminManageSizes = 'admin.manage_sizes';
+
   // ---------- enums ----------
   static String genderKey(String value) => 'enums.gender.$value';
 

@@ -6,19 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../blocs/cart_bloc/cart_bloc.dart';
-import '../../../blocs/category_bloc/category_bloc.dart';
-import '../../../blocs/clothing_item_bloc/clothing_item_bloc.dart';
-import '../../../blocs/comment_bloc/comment_bloc.dart';
-import '../../../blocs/complaint_bloc/complaint_bloc.dart';
-import '../../../blocs/order_bloc/order_bloc.dart';
-import '../../../blocs/post_bloc/post_bloc.dart';
-import '../../../blocs/product_bloc/product_bloc.dart';
-import '../../../blocs/rating_bloc/rating_bloc.dart';
-import '../../../blocs/store_bloc/store_bloc.dart';
-import '../../../blocs/store_follower_bloc/store_follower_bloc.dart';
-import '../../../blocs/store_request_bloc/store_request_bloc.dart';
 import '../../../blocs/user_bloc/user_bloc.dart';
-import '../../../blocs/wallet_bloc/wallet_bloc.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../community/pages/community_page.dart';
@@ -43,25 +31,18 @@ class UserNavBar extends StatefulWidget {
 
 class _UserNavBarState extends State<UserNavBar> {
   @override
+  void initState() {
+    super.initState();
+    // Blocs are provided app-wide (see FashionApp); the shell only kicks off
+    // the data it needs on entry.
+    context.read<UserBloc>().add(GetUserProfileEvent());
+    context.read<CartBloc>().add(GetCartItemsEvent());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => NavBarBloc()),
-        BlocProvider(create: (_) => UserBloc()..add(GetUserProfileEvent())),
-        BlocProvider(create: (_) => StoreBloc()),
-        BlocProvider(create: (_) => ProductBloc()),
-        BlocProvider(create: (_) => ClothingItemBloc()),
-        BlocProvider(create: (_) => StoreFollowerBloc()),
-        BlocProvider(create: (_) => CartBloc()..add(GetCartItemsEvent())),
-        BlocProvider(create: (_) => OrderBloc()),
-        BlocProvider(create: (_) => PostBloc()),
-        BlocProvider(create: (_) => CommentBloc()),
-        BlocProvider(create: (_) => RatingBloc()),
-        BlocProvider(create: (_) => CategoryBloc()),
-        BlocProvider(create: (_) => ComplaintBloc()),
-        BlocProvider(create: (_) => WalletBloc()),
-        BlocProvider(create: (_) => StoreRequestBloc()),
-      ],
+    return BlocProvider(
+      create: (_) => NavBarBloc(),
       child: const _UserNavBarView(),
     );
   }

@@ -13,6 +13,10 @@ class ToggleStoreFollowEvent extends StoreFollowerEvent {
 /// GET StoreFollower/GetProductsByFollowerStores
 class GetProductsByFollowerStoresEvent extends StoreFollowerEvent {}
 
+/// GET StoreFollower/GetStoreFollowByUser - the stores the signed-in
+/// customer follows.
+class GetFollowedStoresEvent extends StoreFollowerEvent {}
+
 /// GET StoreFollower/GetStoreFollowersCount
 class GetStoreFollowersCountEvent extends StoreFollowerEvent {
   final int storeId;

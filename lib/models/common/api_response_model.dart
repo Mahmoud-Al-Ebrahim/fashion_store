@@ -29,7 +29,8 @@ class ApiResponseModel<T> {
       data: rawData == null
           ? null
           : (fromData != null ? fromData(rawData) : rawData as T),
-      errors: (json['errors'] as List<dynamic>?)
+      errors:
+          (json['errors'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],

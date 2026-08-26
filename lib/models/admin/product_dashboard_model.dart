@@ -40,7 +40,8 @@ class ProductDashboardColorModel {
       colorHexCode: json['colorHexCode']?.toString() ?? '',
       sizes: (json['sizes'] as List<dynamic>? ?? [])
           .map(
-            (e) => ProductDashboardSizeModel.fromJson(e as Map<String, dynamic>),
+            (e) =>
+                ProductDashboardSizeModel.fromJson(e as Map<String, dynamic>),
           )
           .toList(),
     );
@@ -103,7 +104,8 @@ class ProductDashboardItemModel {
       image: json['image']?.toString() ?? '',
       colors: (json['colors'] as List<dynamic>? ?? [])
           .map(
-            (e) => ProductDashboardColorModel.fromJson(e as Map<String, dynamic>),
+            (e) =>
+                ProductDashboardColorModel.fromJson(e as Map<String, dynamic>),
           )
           .toList(),
       totalStock: json['totalStock'] as int,
@@ -127,7 +129,8 @@ class ProductDashboardResultModel {
     return ProductDashboardResultModel(
       products: (json['products'] as List<dynamic>? ?? [])
           .map(
-            (e) => ProductDashboardItemModel.fromJson(e as Map<String, dynamic>),
+            (e) =>
+                ProductDashboardItemModel.fromJson(e as Map<String, dynamic>),
           )
           .toList(),
       totalProductsCount: json['totalProductsCount'] as int,

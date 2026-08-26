@@ -1,3 +1,5 @@
+import '../../core/utils/json_parse.dart';
+
 /// Item of `GET Order/GetAllOrder` -> `data`.
 class OrderSummaryModel {
   final int id;
@@ -16,11 +18,11 @@ class OrderSummaryModel {
 
   factory OrderSummaryModel.fromJson(Map<String, dynamic> json) {
     return OrderSummaryModel(
-      id: json['id'] as int,
-      address: json['address']?.toString() ?? '',
-      totalPrice: (json['totalPrice'] as num).toDouble(),
-      createdAt: DateTime.parse(json['createdAt'].toString()),
-      status: json['status']?.toString() ?? '',
+      id: asInt(json['id']),
+      address: asString(json['address']),
+      totalPrice: asDouble(json['totalPrice']),
+      createdAt: asDate(json['createdAt']),
+      status: asString(json['status']),
     );
   }
 }
@@ -55,14 +57,14 @@ class OrderDetailModel {
 
   factory OrderDetailModel.fromJson(Map<String, dynamic> json) {
     return OrderDetailModel(
-      id: json['id'] as int,
-      userId: json['userId']?.toString() ?? '',
-      fullName: json['fullName']?.toString() ?? '',
-      phoneNumber: json['phoneNumber']?.toString() ?? '',
-      address: json['address']?.toString() ?? '',
-      totalPrice: (json['totalPrice'] as num).toDouble(),
-      createdAt: DateTime.parse(json['createdAt'].toString()),
-      status: json['status']?.toString() ?? '',
+      id: asInt(json['id']),
+      userId: asString(json['userId']),
+      fullName: asString(json['fullName']),
+      phoneNumber: asString(json['phoneNumber']),
+      address: asString(json['address']),
+      totalPrice: asDouble(json['totalPrice']),
+      createdAt: asDate(json['createdAt']),
+      status: asString(json['status']),
     );
   }
 }
@@ -96,16 +98,16 @@ class OrderItemModel {
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
     return OrderItemModel(
-      id: json['id'] as int,
-      orderId: json['orderId'] as int,
-      userId: json['userId']?.toString() ?? '',
-      productId: json['productId'] as int,
-      quantity: json['quantity'] as int,
-      size: json['size']?.toString() ?? '',
-      color: json['color']?.toString() ?? '',
-      colorHex: json['colorHex']?.toString() ?? '',
-      price: (json['price'] as num).toDouble(),
-      image: json['image']?.toString() ?? '',
+      id: asInt(json['id']),
+      orderId: asInt(json['orderId']),
+      userId: asString(json['userId']),
+      productId: asInt(json['productId']),
+      quantity: asInt(json['quantity']),
+      size: asString(json['size']),
+      color: asString(json['color']),
+      colorHex: asString(json['colorHex']),
+      price: asDouble(json['price']),
+      image: asString(json['image']),
     );
   }
 }
@@ -172,12 +174,12 @@ class PaymentModel {
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
     return PaymentModel(
-      id: json['id'] as int,
-      walletId: json['walletId'].toString(),
-      orderId: json['orderId'] as int,
-      amount: (json['amount'] as num).toDouble(),
-      date: DateTime.parse(json['date'].toString()),
-      status: json['status']?.toString() ?? '',
+      id: asInt(json['id']),
+      walletId: asString(json['walletId']),
+      orderId: asInt(json['orderId']),
+      amount: asDouble(json['amount']),
+      date: asDate(json['date']),
+      status: asString(json['status']),
     );
   }
 }

@@ -58,7 +58,10 @@ class GetAllSizesByProductColorEvent extends ClothingItemEvent {
   final int productId;
   final String color;
 
-  GetAllSizesByProductColorEvent({required this.productId, required this.color});
+  GetAllSizesByProductColorEvent({
+    required this.productId,
+    required this.color,
+  });
 }
 
 /// PUT ClothingItem/UpdateSizeforProduct?productSizeId=
