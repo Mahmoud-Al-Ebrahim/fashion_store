@@ -35,8 +35,13 @@ class ColorSelector extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = items[index];
           final selected = item.id == selectedClothingItemId;
-          final hex = hexForColorName(item.color);
-          final swatchColor = parseHexColor(hex, fallback: const Color(0xFFEAEAF2));
+          // Prefer the hex the API returns; the name lookup is only a
+          // fallback for older records that predate the field.
+          final hex = item.colorHexCode ?? hexForColorName(item.color);
+          final swatchColor = parseHexColor(
+            hex,
+            fallback: const Color(0xFFEAEAF2),
+          );
           final label = localizedColorName(item.color);
 
           return GestureDetector(
@@ -56,19 +61,9 @@ class ColorSelector extends StatelessWidget {
                       width: selected ? 3 : 1,
                     ),
                   ),
-                  // Unknown colour names have no swatch colour - show an
-                  // initial so the option is still distinguishable.
-                  child: hex == null
-                      ? Center(
-                          child: Text(
-                            label.isNotEmpty ? label.characters.first : '?',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        )
-                      : null,
+                  // With a real hex there is nothing to fall back to: the
+                  // circle shows the colour and the name sits underneath.
+                  child: null,
                 ),
                 SizedBox(height: height(4)),
                 SizedBox(

@@ -18,7 +18,8 @@ class AdminComplaintDetailPage extends StatefulWidget {
   const AdminComplaintDetailPage({super.key, required this.complaint});
 
   @override
-  State<AdminComplaintDetailPage> createState() => _AdminComplaintDetailPageState();
+  State<AdminComplaintDetailPage> createState() =>
+      _AdminComplaintDetailPageState();
 }
 
 class _AdminComplaintDetailPageState extends State<AdminComplaintDetailPage> {
@@ -49,7 +50,10 @@ class _AdminComplaintDetailPageState extends State<AdminComplaintDetailPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(complaint.customerFullName, style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                complaint.customerFullName,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               AdminStatusBadge(status: complaint.status),
             ],
           ),
@@ -66,9 +70,9 @@ class _AdminComplaintDetailPageState extends State<AdminComplaintDetailPage> {
           SizedBox(height: height(20)),
           Text(
             LK.adminConversation.tr(),
-            style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w700),
           ),
           SizedBox(height: height(8)),
           AuthButton(

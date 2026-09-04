@@ -17,11 +17,7 @@ class ResetPasswordPage extends StatefulWidget {
   final String email;
   final String code;
 
-  const ResetPasswordPage({
-    super.key,
-    required this.email,
-    required this.code,
-  });
+  const ResetPasswordPage({super.key, required this.email, required this.code});
 
   @override
   State<ResetPasswordPage> createState() => _ResetPasswordPageState();
@@ -89,13 +85,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   controller: _confirmController,
                   hintText: LK.authConfirmPassword.tr(),
                   isPassword: true,
-                  validator:
-                      validateConfirmPassword(() => _passwordController.text),
+                  validator: validateConfirmPassword(
+                    () => _passwordController.text,
+                  ),
                 ),
                 SizedBox(height: height(30)),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
-                    final loading = state.resetPasswordStatus ==
+                    final loading =
+                        state.resetPasswordStatus ==
                         ResetPasswordStatus.loading;
                     return AuthButton(
                       text: loading

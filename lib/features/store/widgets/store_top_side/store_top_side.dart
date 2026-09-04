@@ -27,9 +27,15 @@ class StoreTopSide extends StatefulWidget {
 }
 
 class _StoreTopSideState extends State<StoreTopSide> {
-  /// The follow endpoint is a toggle and there's no "am I following?" query,
-  /// so this mirrors whatever the last toggle returned for this store.
-  bool _isFollowing = false;
+  /// Set by a toggle in this session; null until the user acts.
+  ///
+  /// The follow endpoint is a toggle, so the authoritative answer to "am I
+  /// following?" is the followed-stores list
+  /// (`StoreFollower/GetStoreFollowByUser`), which the screen loads on
+  /// entry. This only overrides it between a tap and that list refreshing -
+  /// previously the button hardcoded `false` and always opened on "Follow",
+  /// even for a store the user already followed.
+  bool? _optimistic;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +46,7 @@ class _StoreTopSideState extends State<StoreTopSide> {
         listener: (context, state) {
           final follow = state.storeFollow;
           if (follow != null && follow.storeId == widget.store.id) {
-            setState(() => _isFollowing = follow.isFollow);
+            setState(() => _optimistic = follow.isFollow);
             showMessage(
               follow.isFollow ? LK.storeFollow.tr() : LK.storeUnfollow.tr(),
               hasError: false,
@@ -48,8 +54,13 @@ class _StoreTopSideState extends State<StoreTopSide> {
           }
         },
         builder: (context, state) {
-          final busy = state.toggleStoreFollowStatus ==
-              ToggleStoreFollowStatus.loading;
+          final busy =
+              state.toggleStoreFollowStatus == ToggleStoreFollowStatus.loading;
+          // The server's list wins; the optimistic flag only covers the gap
+          // between tapping and that list coming back.
+          final isFollowing =
+              _optimistic ??
+              state.followedStores.any((s) => s.id == widget.store.id);
           return Row(
             children: [
               ImageTopSide(
@@ -78,10 +89,10 @@ class _StoreTopSideState extends State<StoreTopSide> {
                           context,
                           onSignIn: () =>
                               HelperFunctions.navigateToPageAndPopAll(
-                            context,
-                            const SignInScreen(),
-                            true,
-                          ),
+                                context,
+                                const SignInScreen(),
+                                true,
+                              ),
                         )) {
                           return;
                         }
@@ -90,7 +101,7 @@ class _StoreTopSideState extends State<StoreTopSide> {
                           ToggleStoreFollowEvent(storeId: widget.store.id),
                         );
                       },
-                      child: FollowButton(isFollowing: _isFollowing),
+                      child: FollowButton(isFollowing: isFollowing),
                     ),
             ],
           );

@@ -33,8 +33,8 @@ class _SuggestedProductsPageState extends State<SuggestedProductsPage> {
   }
 
   void _load() => context.read<ClothingItemBloc>().add(
-        GetSuggestedProductsEvent(productId: widget.productId),
-      );
+    GetSuggestedProductsEvent(productId: widget.productId),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +48,14 @@ class _SuggestedProductsPageState extends State<SuggestedProductsPage> {
       body: BlocBuilder<ClothingItemBloc, ClothingItemState>(
         builder: (context, state) {
           return AsyncView(
-            isLoading: state.getSuggestedProductsStatus ==
+            isLoading:
+                state.getSuggestedProductsStatus ==
                 GetSuggestedProductsStatus.loading,
-            isFailure: state.getSuggestedProductsStatus ==
+            isFailure:
+                state.getSuggestedProductsStatus ==
                 GetSuggestedProductsStatus.failure,
-            isEmpty: state.getSuggestedProductsStatus ==
+            isEmpty:
+                state.getSuggestedProductsStatus ==
                     GetSuggestedProductsStatus.success &&
                 state.suggestedProducts.isEmpty,
             errorMessage: state.errorMessage,

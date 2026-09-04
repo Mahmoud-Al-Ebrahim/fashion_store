@@ -7,8 +7,7 @@ class ProductCardShimmer extends StatelessWidget {
   const ProductCardShimmer({super.key});
   @override
   Widget build(BuildContext context) {
-    return
-      Stack(
+    return Stack(
       clipBehavior: Clip.none,
       children: [
         Shimmer.fromColors(
@@ -23,27 +22,31 @@ class ProductCardShimmer extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: OneItemShimmer(
-                        itemHeight: 40,
-                        itemWidth: 40,
-                        borderWidth: 2,
-                        radius: 32,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: OneItemShimmer(itemHeight: 20, itemWidth: 20,radius: 20,),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: OneItemShimmer(
+                      itemHeight: 40,
+                      itemWidth: 40,
+                      borderWidth: 2,
+                      radius: 32,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: OneItemShimmer(
+                          itemHeight: 20,
+                          itemWidth: 20,
+                          radius: 20,
                         ),
                       ),
                     ),
-                    SizedBox(height: height(20),),
-                    OneItemShimmer(itemHeight: 12, itemWidth: 120,radius: 20,),
-                    SizedBox(height: height(10),),
-                    OneItemShimmer(itemHeight: 12, itemWidth: 80,radius: 20,),
-
-                  ]),
+                  ),
+                  SizedBox(height: height(20)),
+                  OneItemShimmer(itemHeight: 12, itemWidth: 120, radius: 20),
+                  SizedBox(height: height(10)),
+                  OneItemShimmer(itemHeight: 12, itemWidth: 80, radius: 20),
+                ],
+              ),
             ),
           ),
         ),
@@ -61,7 +64,11 @@ class ProductCardShimmer extends StatelessWidget {
               borderWidth: 3,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: OneItemShimmer(itemHeight: 20, itemWidth: 20,radius: 20,),
+                child: OneItemShimmer(
+                  itemHeight: 20,
+                  itemWidth: 20,
+                  radius: 20,
+                ),
               ),
             ),
           ),

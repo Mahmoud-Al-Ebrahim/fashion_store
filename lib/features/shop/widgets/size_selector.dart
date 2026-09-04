@@ -50,7 +50,9 @@ class SizeSelector extends StatelessWidget {
               color: selected ? primary : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: available ? (selected ? primary : Colors.black26) : Colors.black12,
+                color: available
+                    ? (selected ? primary : Colors.black26)
+                    : Colors.black12,
               ),
             ),
             child: Text(
@@ -60,8 +62,8 @@ class SizeSelector extends StatelessWidget {
                 color: !available
                     ? Colors.grey.shade400
                     : selected
-                        ? Colors.white
-                        : Colors.black87,
+                    ? Colors.white
+                    : Colors.black87,
                 decoration: available ? null : TextDecoration.lineThrough,
               ),
             ),

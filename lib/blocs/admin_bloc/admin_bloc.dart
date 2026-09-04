@@ -27,6 +27,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     on<GetProductDashboardEvent>(_onGetProductDashboardEvent);
     on<GetDashboardAnalyticsEvent>(_onGetDashboardAnalyticsEvent);
     on<GetDashboardSummaryEvent>(_onGetDashboardSummaryEvent);
+    on<ClearAdminEvent>((event, emit) => emit(AdminState()));
   }
 
   String _dateOnly(DateTime d) =>

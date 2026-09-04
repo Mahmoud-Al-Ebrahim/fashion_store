@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/store_bloc/store_bloc.dart';
 import 'pages/admin_dashboard_page.dart';
 import 'pages/admin_more_page.dart';
-import 'pages/admin_orders_page.dart';
 import 'pages/admin_posts_page.dart';
 import 'pages/admin_products_page.dart';
 import 'pages/store_pending_page.dart';
@@ -35,85 +34,82 @@ class _AdminShellScreenState extends State<AdminShellScreen> {
 
   /// Built per-frame so the labels follow the active locale.
   List<({IconData icon, IconData selectedIcon, String label})> get _items => [
-        (
-          icon: Icons.dashboard_outlined,
-          selectedIcon: Icons.dashboard,
-          label: LK.adminDashboard.tr()
-        ),
-        (
-          icon: Icons.inventory_2_outlined,
-          selectedIcon: Icons.inventory_2,
-          label: LK.adminProducts.tr()
-        ),
-        (
-          icon: Icons.receipt_long_outlined,
-          selectedIcon: Icons.receipt_long,
-          label: LK.adminOrders.tr()
-        ),
-        (
-          icon: Icons.dynamic_feed_outlined,
-          selectedIcon: Icons.dynamic_feed,
-          label: LK.adminPosts.tr()
-        ),
-        (
-          icon: Icons.more_horiz,
-          selectedIcon: Icons.more_horiz,
-          label: LK.adminMore.tr()
-        ),
-      ];
+    (
+      icon: Icons.dashboard_outlined,
+      selectedIcon: Icons.dashboard,
+      label: LK.adminDashboard.tr(),
+    ),
+    (
+      icon: Icons.inventory_2_outlined,
+      selectedIcon: Icons.inventory_2,
+      label: LK.adminProducts.tr(),
+    ),
+    (
+      icon: Icons.dynamic_feed_outlined,
+      selectedIcon: Icons.dynamic_feed,
+      label: LK.adminPosts.tr(),
+    ),
+    (
+      icon: Icons.more_horiz,
+      selectedIcon: Icons.more_horiz,
+      label: LK.adminMore.tr(),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StoreBloc, StoreState>(
-        buildWhen: (p, c) =>
-            p.getStoreByAdminStatus != c.getStoreByAdminStatus ||
-            p.myStore != c.myStore,
-        builder: (context, storeState) {
-          // Gate the dashboard on an approved store: the role alone isn't
-          // enough, the platform admin must have approved the request.
-          final loading = storeState.getStoreByAdminStatus ==
-                  GetStoreByAdminStatus.init ||
-              storeState.getStoreByAdminStatus ==
-                  GetStoreByAdminStatus.loading;
-          if (loading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-          final store = storeState.myStore;
-          if (store == null || store.storeStatus != 'Approved') {
-            return const StorePendingPage();
-          }
-          return _buildShell(context);
-        },
+      buildWhen: (p, c) =>
+          p.getStoreByAdminStatus != c.getStoreByAdminStatus ||
+          p.myStore != c.myStore,
+      builder: (context, storeState) {
+        // Gate the dashboard on an approved store: the role alone isn't
+        // enough, the platform admin must have approved the request.
+        final loading =
+            storeState.getStoreByAdminStatus == GetStoreByAdminStatus.init ||
+            storeState.getStoreByAdminStatus == GetStoreByAdminStatus.loading;
+        if (loading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final store = storeState.myStore;
+        if (store == null || store.storeStatus != 'Approved') {
+          return const StorePendingPage();
+        }
+        return _buildShell(context);
+      },
     );
   }
 
   Widget _buildShell(BuildContext context) {
+    // The orders tab was removed on request. `AdminOrdersPage` and
+    // `AdminOrderDetailPage` are untouched and still reachable - the super
+    // admin's platform order list opens the same detail screen - so nothing
+    // about order handling was deleted, only this entry point.
     return Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: const [
-            AdminDashboardPage(),
-            AdminProductsPage(),
-            AdminOrdersPage(),
-            AdminPostsPage(),
-            AdminMorePage(),
-          ],
-        ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) => setState(() => _currentIndex = index),
-          destinations: _items
-              .map(
-                (item) => NavigationDestination(
-                  icon: Icon(item.icon),
-                  selectedIcon: Icon(item.selectedIcon),
-                  label: item.label,
-                ),
-              )
-              .toList(),
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          AdminDashboardPage(),
+          AdminProductsPage(),
+          AdminPostsPage(),
+          AdminMorePage(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) => setState(() => _currentIndex = index),
+        destinations: _items
+            .map(
+              (item) => NavigationDestination(
+                icon: Icon(item.icon),
+                selectedIcon: Icon(item.selectedIcon),
+                label: item.label,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 }

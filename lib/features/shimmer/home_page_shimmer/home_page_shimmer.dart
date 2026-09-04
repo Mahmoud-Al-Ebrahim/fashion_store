@@ -27,8 +27,7 @@ class HomePageShimmer extends StatelessWidget {
             HeaderShimmer(),
             ArabicStoreListView(),
             HeaderShimmer(),
-            StoreShimmerListView()
-
+            StoreShimmerListView(),
           ],
         ),
       ),

@@ -46,9 +46,9 @@ class WalletIdCard extends StatelessWidget {
           if (id == null || id.isEmpty)
             Text(
               LK.walletNone.tr(),
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                color: Colors.grey,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(color: Colors.grey),
             )
           else ...[
             Row(
@@ -75,10 +75,9 @@ class WalletIdCard extends StatelessWidget {
             SizedBox(height: height(4)),
             Text(
               LK.walletIdHint.tr(),
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                color: Colors.grey,
-                fontSize: 11,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(color: Colors.grey, fontSize: 11),
             ),
           ],
         ],

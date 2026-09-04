@@ -34,37 +34,40 @@ class PasswordStep extends StatelessWidget {
           children: [
             SizedBox(height: height(35)),
             AuthTextField(
-              controller: passwordController,
-              hintText: LK.authPassword.tr(),
-              isPassword: true,
-              validator: validatePassword,
-            )
+                  controller: passwordController,
+                  hintText: LK.authPassword.tr(),
+                  isPassword: true,
+                  validator: validatePassword,
+                )
                 .animate()
                 .fadeIn(duration: 400.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),
             SizedBox(height: height(5)),
             AuthTextField(
-              controller: confirmPasswordController,
-              hintText: LK.authConfirmPassword.tr(),
-              isPassword: true,
-              validator: validateConfirmPassword(() => passwordController.text),
-            )
+                  controller: confirmPasswordController,
+                  hintText: LK.authConfirmPassword.tr(),
+                  isPassword: true,
+                  validator: validateConfirmPassword(
+                    () => passwordController.text,
+                  ),
+                )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 150.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),
             SizedBox(height: height(30)),
             BlocBuilder<AuthBloc, AuthState>(
-              buildWhen: (p, c) => p.registerStatus != c.registerStatus,
-              builder: (context, state) {
-                final loading = state.registerStatus == RegisterStatus.loading;
-                return AuthButton(
-                  text: loading
-                      ? LK.commonLoading.tr()
-                      : LK.authRegister.tr(),
-                  onTap: loading ? null : onSubmit,
-                );
-              },
-            )
+                  buildWhen: (p, c) => p.registerStatus != c.registerStatus,
+                  builder: (context, state) {
+                    final loading =
+                        state.registerStatus == RegisterStatus.loading;
+                    return AuthButton(
+                      text: loading
+                          ? LK.commonLoading.tr()
+                          : LK.authRegister.tr(),
+                      onTap: loading ? null : onSubmit,
+                    );
+                  },
+                )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 300.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),

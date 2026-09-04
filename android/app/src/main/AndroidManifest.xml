@@ -6,9 +6,18 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Android's Auto Backup restores SharedPreferences after a reinstall,
+         so what looks like a fresh install could come back holding the
+         previous session's token and onboarding flag - on some devices the
+         app reopened already signed in as the old user. A session must not
+         outlive an uninstall. `allowBackup` covers Android 11 and below;
+         `dataExtractionRules` is what Android 12+ reads. -->
     <application
         android:label="fashion_store"
         android:name="${applicationName}"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

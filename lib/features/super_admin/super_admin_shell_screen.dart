@@ -24,60 +24,59 @@ class _SuperAdminShellScreenState extends State<SuperAdminShellScreen> {
   int _currentIndex = 0;
 
   List<({IconData icon, IconData selectedIcon, String label})> get _items => [
-        (
-          icon: Icons.store_mall_directory_outlined,
-          selectedIcon: Icons.store_mall_directory,
-          label: LK.superadminRequests.tr()
-        ),
-        (
-          icon: Icons.people_outline,
-          selectedIcon: Icons.people,
-          label: LK.superadminUsers.tr()
-        ),
-        (
-          icon: Icons.category_outlined,
-          selectedIcon: Icons.category,
-          label: LK.superadminCatalog.tr()
-        ),
-        (
-          icon: Icons.receipt_long_outlined,
-          selectedIcon: Icons.receipt_long,
-          label: LK.superadminPlatformOrders.tr()
-        ),
-        (
-          icon: Icons.more_horiz,
-          selectedIcon: Icons.more_horiz,
-          label: LK.adminMore.tr()
-        ),
-      ];
+    (
+      icon: Icons.store_mall_directory_outlined,
+      selectedIcon: Icons.store_mall_directory,
+      label: LK.superadminRequests.tr(),
+    ),
+    (
+      icon: Icons.people_outline,
+      selectedIcon: Icons.people,
+      label: LK.superadminUsers.tr(),
+    ),
+    (
+      icon: Icons.category_outlined,
+      selectedIcon: Icons.category,
+      label: LK.superadminCatalog.tr(),
+    ),
+    (
+      icon: Icons.receipt_long_outlined,
+      selectedIcon: Icons.receipt_long,
+      label: LK.superadminPlatformOrders.tr(),
+    ),
+    (
+      icon: Icons.more_horiz,
+      selectedIcon: Icons.more_horiz,
+      label: LK.adminMore.tr(),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: const [
-            StoreRequestsPage(),
-            UsersManagementPage(),
-            GlobalCategoriesPage(),
-            PlatformOrdersPage(),
-            SuperAdminMorePage(),
-          ],
-        ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) =>
-              setState(() => _currentIndex = index),
-          destinations: _items
-              .map(
-                (item) => NavigationDestination(
-                  icon: Icon(item.icon),
-                  selectedIcon: Icon(item.selectedIcon),
-                  label: item.label,
-                ),
-              )
-              .toList(),
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          StoreRequestsPage(),
+          UsersManagementPage(),
+          GlobalCategoriesPage(),
+          PlatformOrdersPage(),
+          SuperAdminMorePage(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) => setState(() => _currentIndex = index),
+        destinations: _items
+            .map(
+              (item) => NavigationDestination(
+                icon: Icon(item.icon),
+                selectedIcon: Icon(item.selectedIcon),
+                label: item.label,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 }

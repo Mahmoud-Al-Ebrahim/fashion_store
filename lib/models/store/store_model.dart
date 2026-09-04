@@ -1,3 +1,5 @@
+import '../../core/utils/api_service.dart';
+
 /// Public store card, returned by `GET Store/GetAllStores`.
 class StoreModel {
   final int id;
@@ -34,8 +36,8 @@ class StoreModel {
       storePhoneNumber: json['storePhoneNumber']?.toString() ?? '',
       address: json['address']?.toString() ?? '',
       storeEmail: json['storeEmail']?.toString() ?? '',
-      logo: json['logo']?.toString(),
-      featuredImage: json['featuredImage']?.toString(),
+      logo: ApiService.resolveUrl(json['logo']?.toString()),
+      featuredImage: ApiService.resolveUrl(json['featuredImage']?.toString()),
       workingHoursStart: json['workingHoursStart']?.toString() ?? '',
       workingHoursEnd: json['workingHoursEnd']?.toString() ?? '',
       isActive: json['isActive'] == true,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/theme/app_color.dart';
@@ -10,6 +11,9 @@ Future<void> main() async {
   HttpOverrides.global = MyHttpOverrides();
   await MySharedPref.init();
   await ApiService.init();
+  // Required by easy_localization: without it the saved locale is not
+  // restored before the first frame.
+  await EasyLocalization.ensureInitialized();
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

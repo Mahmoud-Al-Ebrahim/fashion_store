@@ -29,6 +29,7 @@ class StoreRequestBloc extends Bloc<StoreRequestEvent, StoreRequestState> {
     on<GetStoreRequestFilesEvent>(_onGetStoreRequestFilesEvent);
     on<GetAllStoreRequestsByUserEvent>(_onGetAllStoreRequestsByUserEvent);
     on<GetFilterStoreRequestsByUserEvent>(_onGetFilterStoreRequestsByUserEvent);
+    on<ClearStoreRequestEvent>((event, emit) => emit(StoreRequestState()));
   }
 
   Future<MultipartFile> _toMultipartFile(File file) async {

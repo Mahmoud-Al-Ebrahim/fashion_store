@@ -41,8 +41,8 @@ class WhoIFollowCardShimmer extends StatelessWidget {
               OneItemShimmer(itemHeight: 30, itemWidth: 80, radius: 15),
             ],
           ),
-          SizedBox(height: height(10),),
-          OneItemShimmer(itemHeight: 1.2, itemWidth: 350)
+          SizedBox(height: height(10)),
+          OneItemShimmer(itemHeight: 1.2, itemWidth: 350),
         ],
       ),
     );

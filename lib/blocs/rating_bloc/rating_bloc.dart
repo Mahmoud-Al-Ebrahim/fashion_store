@@ -20,6 +20,7 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
   RatingBloc() : super(RatingState()) {
     on<AddRatingEvent>(_onAddRatingEvent);
     on<GetProductRatingByUserEvent>(_onGetProductRatingByUserEvent);
+    on<ClearRatingEvent>((event, emit) => emit(RatingState()));
   }
 
   FutureOr<void> _onAddRatingEvent(

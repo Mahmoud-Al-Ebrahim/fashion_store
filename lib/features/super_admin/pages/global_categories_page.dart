@@ -90,7 +90,8 @@ class _GlobalCategoriesPageState extends State<GlobalCategoriesPage> {
                 state.getAllCategoriesStatus == GetAllCategoriesStatus.loading,
             isFailure:
                 state.getAllCategoriesStatus == GetAllCategoriesStatus.failure,
-            isEmpty: state.getAllCategoriesStatus ==
+            isEmpty:
+                state.getAllCategoriesStatus ==
                     GetAllCategoriesStatus.success &&
                 state.categories.isEmpty,
             errorMessage: state.errorMessage,

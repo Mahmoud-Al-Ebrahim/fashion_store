@@ -22,6 +22,7 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
     on<AddCommentEvent>(_onAddCommentEvent);
     on<DeleteCommentEvent>(_onDeleteCommentEvent);
     on<UpdateCommentEvent>(_onUpdateCommentEvent);
+    on<ClearCommentEvent>((event, emit) => emit(CommentState()));
   }
 
   FutureOr<void> _onGetProductCommentsEvent(

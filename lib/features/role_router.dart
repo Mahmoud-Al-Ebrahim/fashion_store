@@ -45,10 +45,14 @@ class RoleRouter {
 
     if (role == AppRole.user && MySharedPref.getWantsStore()) {
       MySharedPref.clearWantsStore();
-      HelperFunctions.navigateToPageAndPopAll(context, const UserNavBar(), true);
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const SellerRequestPage()),
+      HelperFunctions.navigateToPageAndPopAll(
+        context,
+        const UserNavBar(),
+        true,
       );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const SellerRequestPage()));
       return;
     }
 

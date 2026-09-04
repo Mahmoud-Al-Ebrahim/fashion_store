@@ -9,16 +9,14 @@ class StoreFavShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return
-      SizedBox(
+    return SizedBox(
       height: height(700),
       child: Shimmer.fromColors(
         baseColor: Colors.grey.shade300,
         highlightColor: Colors.grey.shade100,
         child: Padding(
           padding: const EdgeInsets.all(12.14),
-          child:
-          GridView.builder(
+          child: GridView.builder(
             itemCount: 8, // عدد العناصر
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2, // عدد الأعمدة
@@ -28,8 +26,7 @@ class StoreFavShimmer extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               // كل عنصر داخل Grid
-              return
-              StoreFavCardShimmer();
+              return StoreFavCardShimmer();
             },
           ),
         ),

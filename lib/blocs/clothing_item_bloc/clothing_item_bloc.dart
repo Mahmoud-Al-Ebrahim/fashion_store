@@ -35,6 +35,7 @@ class ClothingItemBloc extends Bloc<ClothingItemEvent, ClothingItemState> {
     on<GetSuggestedProductsEvent>(_onGetSuggestedProductsEvent);
     on<DeleteProductColorEvent>(_onDeleteProductColorEvent);
     on<DeleteProductSizeEvent>(_onDeleteProductSizeEvent);
+    on<ClearClothingItemEvent>((event, emit) => emit(ClothingItemState()));
   }
 
   Future<MultipartFile> _toMultipartFile(File file) async {

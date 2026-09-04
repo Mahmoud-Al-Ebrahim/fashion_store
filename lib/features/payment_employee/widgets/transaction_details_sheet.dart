@@ -115,6 +115,38 @@ class _TransactionDetailsSheet extends StatelessWidget {
                     builder: (context, state) {
                       final status = state.getOrderDetailsByPaymentStatus;
                       final details = state.paymentOrderDetails;
+
+                      // A wallet top-up carries no `paymentId` and has no
+                      // order behind it, so the lookup answers 404. That is
+                      // the normal, expected outcome for a top-up - not a
+                      // failure worth a Retry button - so it is explained
+                      // in place instead.
+                      final isBalanceTransfer = transaction.paymentId == null;
+                      if (isBalanceTransfer &&
+                          status != GetOrderDetailsByPaymentStatus.loading &&
+                          status != GetOrderDetailsByPaymentStatus.init) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: height(18)),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.swap_horiz,
+                                size: 18,
+                                color: Colors.grey.shade600,
+                              ),
+                              SizedBox(width: width(8)),
+                              Expanded(
+                                child: Text(
+                                  LK.paymentFromBalanceTransfer.tr(),
+                                  style: Theme.of(context).textTheme.bodyMedium!
+                                      .copyWith(color: Colors.grey),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
                       return AsyncView(
                         isLoading:
                             status == GetOrderDetailsByPaymentStatus.loading ||

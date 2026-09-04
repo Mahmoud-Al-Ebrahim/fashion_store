@@ -21,11 +21,7 @@ class ReviewsStars extends StatelessWidget {
         }
         return Padding(
           padding: EdgeInsets.only(right: index == 0 ? 0 : 2.0),
-          child: Icon(
-            iconData,
-            color: Colors.amber,
-            size: 12,
-          ),
+          child: Icon(iconData, color: Colors.amber, size: 12),
         );
       }),
     );

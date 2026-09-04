@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/screen_util.dart';
 
-
-
 class OneItemShimmer extends StatelessWidget {
   final double itemHeight;
   final double itemWidth;
@@ -26,9 +24,13 @@ class OneItemShimmer extends StatelessWidget {
       height: height(itemHeight),
       width: width(itemWidth),
       decoration: BoxDecoration(
-        color: borderWidth ==0 ? Colors.white : null, // لا نضع اللون إلا عند وجود radius
+        color: borderWidth == 0
+            ? Colors.white
+            : null, // لا نضع اللون إلا عند وجود radius
         borderRadius: radius != null ? BorderRadius.circular(radius!) : null,
-        border: borderWidth > 0 ? Border.all(color: Colors.white, width: borderWidth) : null, // يتم التعيين فقط عند وجود عرض للحدود
+        border: borderWidth > 0
+            ? Border.all(color: Colors.white, width: borderWidth)
+            : null, // يتم التعيين فقط عند وجود عرض للحدود
       ),
       child: child ?? const SizedBox(),
     );

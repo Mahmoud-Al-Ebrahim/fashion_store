@@ -24,6 +24,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     on<GetAllTransactionsEvent>(_onGetAllTransactionsEvent);
     on<AddTransactionEvent>(_onAddTransactionEvent);
     on<GetOrderDetailsByPaymentEvent>(_onGetOrderDetailsByPaymentEvent);
+    on<ClearWalletEvent>((event, emit) => emit(WalletState()));
   }
 
   FutureOr<void> _onGetWalletEvent(

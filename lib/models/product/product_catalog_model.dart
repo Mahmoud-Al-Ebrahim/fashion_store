@@ -1,3 +1,4 @@
+import '../../core/utils/api_service.dart';
 import '../../core/utils/json_parse.dart';
 
 /// Lightweight product card shape returned by catalog/browse-style endpoints:
@@ -36,7 +37,7 @@ class ProductCatalogModel {
       discountStartDate: asDateOrNull(json['discountStartDate']),
       discountEndDate: asDateOrNull(json['discountEndDate']),
       priceAfterDiscount: asDouble(json['priceAfterDiscount']),
-      image: asString(json['image']),
+      image: ApiService.resolveUrl(asString(json['image'])) ?? '',
     );
   }
 }

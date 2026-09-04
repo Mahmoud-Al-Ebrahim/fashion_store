@@ -11,6 +11,8 @@ class AddProductEvent extends ProductEvent {
   final String season; // enSeason: Summer|Spring|Autumn|Winter
   final String gender; // enGender: Male|Female
   final String type; // enType
+  /// enOccasion: Formal|Casual|Party|Sport. Required by the endpoint.
+  final String occasion;
   final File image;
   final int categoryId;
   final double? discountPercentage;
@@ -24,6 +26,7 @@ class AddProductEvent extends ProductEvent {
     required this.season,
     required this.gender,
     required this.type,
+    required this.occasion,
     required this.image,
     required this.categoryId,
     this.discountPercentage,
@@ -43,6 +46,7 @@ class UpdateProductEvent extends ProductEvent {
   final DateTime? discountStartDate;
   final DateTime? discountEndDate;
   final File? image;
+  final String? name, desc;
 
   UpdateProductEvent({
     required this.productId,
@@ -52,6 +56,8 @@ class UpdateProductEvent extends ProductEvent {
     this.discountStartDate,
     this.discountEndDate,
     this.image,
+    this.name,
+    this.desc,
   });
 }
 
@@ -101,3 +107,27 @@ class LookupProductEvent extends ProductEvent {
 
   LookupProductEvent({required this.productId});
 }
+
+/// Fills in the product fields the catalog endpoints leave out.
+///
+/// `Product/GetFilter`, `GetAllDiscountProduct` and
+/// `StoreFollower/GetProductsByFollowerStores` all return a product without
+/// its `description` - only `Store/GetAllProductsByStore` carries one. A
+/// product opened from the home page therefore had no description to show.
+/// This reads that store's catalog and keeps the descriptions in a map
+/// keyed by product id, so it never disturbs whatever list a screen is
+/// already displaying.
+class LoadProductDescriptionEvent extends ProductEvent {
+  final int productId;
+  final int storeId;
+
+  LoadProductDescriptionEvent({required this.productId, required this.storeId});
+}
+
+/// Wipes this bloc back to its initial state.
+///
+/// Dispatched for every bloc on sign-out: the blocs live at the app
+/// root and outlive any single session, so without this the next
+/// account would open onto the previous one's cart, orders, wallet and
+/// profile until each screen happened to refetch.
+class ClearProductEvent extends ProductEvent {}

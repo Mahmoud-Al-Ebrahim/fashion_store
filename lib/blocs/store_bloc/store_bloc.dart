@@ -29,6 +29,7 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
     on<GetAllProductsByStoreEvent>(_onGetAllProductsByStoreEvent);
     on<UpdateStoreEvent>(_onUpdateStoreEvent);
     on<UpdateStoreImagesEvent>(_onUpdateStoreImagesEvent);
+    on<ClearStoreEvent>((event, emit) => emit(StoreState()));
   }
 
   FutureOr<void> _onGetAllStoresEvent(

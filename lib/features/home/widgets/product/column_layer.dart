@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../blocs/clothing_item_bloc/clothing_item_bloc.dart';
+import '../../../../blocs/product_bloc/product_bloc.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
 import '../../../../models/clothing_item/clothing_item_model.dart';
@@ -15,6 +16,7 @@ import '../../../shop/widgets/size_selector.dart';
 import 'des_product_scrooll.dart';
 import 'more_detail_about_product.dart';
 import 'product_name.dart';
+import 'product_store_block.dart';
 
 /// The sliding detail sheet (rounded-44 top corners) - original layout, now
 /// fed by `ClothingItemBloc` instead of hard-coded sizes/colours.
@@ -82,19 +84,36 @@ class ProductColumnLayer extends StatelessWidget {
               ),
               ProductName(showIngredients: false, productName: product.name),
               SizedBox(height: height(15)),
-              if ((product.description ?? '').isNotEmpty)
-                ContentProductScrollable(
-                  title: product.description!,
-                  heightScroll: 95,
-                ),
+              // The description either travelled with the product (store
+              // screen, dashboard) or was fetched by `ProductScreen` for the
+              // catalog paths that omit it.
+              BlocBuilder<ProductBloc, ProductState>(
+                buildWhen: (p, c) =>
+                    p.productDescriptions != c.productDescriptions,
+                builder: (context, state) {
+                  final description =
+                      (product.description ?? '').trim().isNotEmpty
+                      ? product.description!.trim()
+                      : (state.productDescriptions[product.id] ?? '');
+                  if (description.isEmpty) return const SizedBox.shrink();
+                  return ContentProductScrollable(
+                    title: description,
+                    heightScroll: 95,
+                  );
+                },
+              ),
               SizedBox(height: height(30)),
               MoreDetailAboutProduct(product: product),
+              SizedBox(height: height(16)),
+              // Who sells it, and what that store says about itself.
+              ProductStoreBlock(product: product),
               SizedBox(height: height(30)),
 
               // ----- colours -----
               BlocBuilder<ClothingItemBloc, ClothingItemState>(
                 builder: (context, state) {
-                  final loading = state.getAllClothingItemsStatus ==
+                  final loading =
+                      state.getAllClothingItemsStatus ==
                       GetAllClothingItemsStatus.loading;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

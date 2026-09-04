@@ -5,11 +5,9 @@ class ImageLayer extends StatelessWidget {
   final String imageUrl;
   const ImageLayer({super.key, required this.imageUrl});
 
-
-
   @override
   Widget build(BuildContext context) {
- //   print(imageUrl);
+    //   print(imageUrl);
     return ClipRRect(
       borderRadius: BorderRadius.circular(34),
       child: Stack(
@@ -19,11 +17,10 @@ class ImageLayer extends StatelessWidget {
             width: double.infinity,
             height: double.infinity,
             fit: BoxFit.cover,
-            placeholder: (context, url) => const Center(
-              child: CircularProgressIndicator(),
-            ),
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
             errorWidget: (context, url, error) {
-           //   print('❌ Image load error for $url: $error');
+              //   print('❌ Image load error for $url: $error');
               return const Icon(Icons.error, color: Colors.red);
             },
           ),

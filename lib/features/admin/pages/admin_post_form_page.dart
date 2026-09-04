@@ -90,7 +90,9 @@ class _AdminPostFormPageState extends State<AdminPostFormPage> {
         storeId: widget.storeId,
         content: _contentController.text.trim(),
         visibility: _visibility,
-        newMedias: _images,
+        newMedias: _images
+            .map((f) => PostMediaInput(file: f, mediaType: 'Image'))
+            .toList(),
         deletedMediaIds: _deletedMediaIds,
       ),
     );

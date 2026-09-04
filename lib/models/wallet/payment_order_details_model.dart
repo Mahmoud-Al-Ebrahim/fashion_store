@@ -1,3 +1,5 @@
+import '../../core/utils/api_service.dart';
+
 /// Response model for `GET Transaction/GetOrderDetailsByPayment/{transactionId}`
 /// -> `data`.
 ///
@@ -76,7 +78,11 @@ class PaymentOrderProductModel {
       color: json['color']?.toString() ?? '',
       colorHex: json['colorHex']?.toString() ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0,
-      image: json['image']?.toString() ?? '',
+      image:
+          ApiService.resolveUrl(
+            ApiService.resolveUrl(json['image']?.toString()),
+          ) ??
+          '',
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0,
     );
   }

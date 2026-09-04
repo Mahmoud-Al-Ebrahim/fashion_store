@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../core/screen_util.dart';
 import '../home_page_shimmer/product/product_card.dart';
+
 class ProductsShimmer extends StatelessWidget {
   const ProductsShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return
-      SizedBox(
+    return SizedBox(
       height: height(660),
       child: GridView.builder(
         itemCount: 6, // عدد العناصر (غيره حسب حاجتك)

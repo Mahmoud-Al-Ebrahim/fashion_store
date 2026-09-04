@@ -9,18 +9,24 @@ import '../../../core/helper/helper_functions.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
 import '../../auth/pages/sign_in_screen/sign_in_screen.dart';
-import '../../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
 import '../../../core/utils/show_message.dart';
 import '../../shop/pages/seller_request_page.dart';
 import '../widgets/confirm_dialog.dart';
 import 'store_request_edit_page.dart';
 import 'store_request_history_page.dart';
+import '../../../core/utils/clear_session_blocs.dart';
 
 /// Shown to an account that holds the store-owner role but has no approved
 /// store yet - the dashboard stays locked until a platform admin approves
 /// the request. Also covers rejected and never-submitted cases.
 class StorePendingPage extends StatefulWidget {
-  const StorePendingPage({super.key});
+  /// The store-owner shell opens this as its *whole* app, so it carries
+  /// sign-out. Reached from a customer's drawer it is just another pushed
+  /// page - the drawer already has sign-out - so both actions are dropped
+  /// and the normal back button applies.
+  final bool showAccountActions;
+
+  const StorePendingPage({super.key, this.showAccountActions = true});
 
   @override
   State<StorePendingPage> createState() => _StorePendingPageState();
@@ -41,30 +47,36 @@ class _StorePendingPageState extends State<StorePendingPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(LK.sellerMyRequests.tr()),
-        actions: [
-          // Past requests - cancelled, rejected, superseded.
-          IconButton(
-            tooltip: LK.sellerMyRequests.tr(),
-            icon: const Icon(Icons.history),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const StoreRequestHistoryPage(),
-              ),
-            ),
-          ),
-          IconButton(
-            tooltip: LK.authLogout.tr(),
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              context.read<AuthBloc>().add(LogoutEvent());
-              HelperFunctions.navigateToPageAndPopAll(
-                context,
-                const SignInScreen(),
-                true,
-              );
-            },
-          ),
-        ],
+        actions: !widget.showAccountActions
+            ? const []
+            : [
+                // Past requests - cancelled, rejected, superseded.
+                IconButton(
+                  tooltip: LK.sellerMyRequests.tr(),
+                  icon: const Icon(Icons.history),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const StoreRequestHistoryPage(),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: LK.authLogout.tr(),
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    // Wipe every bloc first: they live at the app root and
+                    // would otherwise carry this session's data into the
+                    // next sign-in.
+                    clearSessionBlocs(context);
+                    context.read<AuthBloc>().add(LogoutEvent());
+                    HelperFunctions.navigateToPageAndPopAll(
+                      context,
+                      const SignInScreen(),
+                      true,
+                    );
+                  },
+                ),
+              ],
       ),
       body: BlocConsumer<StoreRequestBloc, StoreRequestState>(
         listenWhen: (p, c) =>
@@ -207,17 +219,6 @@ class _StorePendingPageState extends State<StorePendingPage> {
                       ),
                     ),
                   ),
-                SizedBox(height: height(10)),
-                AuthButton(
-                  text: LK.storeStatusBrowseAsCustomer.tr(),
-                  isWhiteBackground: true,
-                  widthButton: double.infinity,
-                  onTap: () => HelperFunctions.navigateToPageAndPopAll(
-                    context,
-                    const UserNavBar(),
-                    true,
-                  ),
-                ),
               ],
             ),
           );

@@ -6,7 +6,12 @@ import '../../../../models/product/product_ref.dart';
 import '../../../shop/widgets/price_tag.dart';
 import 'one_item_more_detail.dart';
 
-/// Grey info strip under the product name: store name (when known) + price.
+/// Grey info strip under the product name: rating (when known) + price.
+///
+/// The store used to be a chip in here. It moved to `ProductStoreBlock`
+/// directly below, which shows the store's name *and* its description and
+/// resolves both from the store list - so a product opened from the home
+/// page names its seller too, which this chip never could.
 class MoreDetailAboutProduct extends StatelessWidget {
   final ProductRef product;
 
@@ -28,19 +33,11 @@ class MoreDetailAboutProduct extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: width(20)),
         child: Row(
           children: [
-            if ((product.storeName ?? '').isNotEmpty) ...[
-              Flexible(
-                child: OneItemMoreDetail(
-                  icon: "assets/svg/who_i_follow.svg",
-                  title: product.storeName!,
-                ),
-              ),
-              SizedBox(width: width(24)),
-            ],
             if (product.rating != null && product.rating! > 0) ...[
               OneItemMoreDetail(
                 icon: "assets/svg/Coins.svg",
-                title: '${LK.productRating.tr()} ${product.rating!.toStringAsFixed(1)}',
+                title:
+                    '${LK.productRating.tr()} ${product.rating!.toStringAsFixed(1)}',
               ),
               SizedBox(width: width(24)),
             ],

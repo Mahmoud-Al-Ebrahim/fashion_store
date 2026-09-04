@@ -1,3 +1,5 @@
+import '../../core/utils/api_service.dart';
+
 /// Full store record including status/audit fields. Returned by
 /// `GET Store/GetStoresByAdmin` (single store owned by the caller) and by
 /// the StoreRequest endpoints (`GetAllRequestStoreByUser`,
@@ -63,8 +65,8 @@ class StoreDetailModel {
           (json['storePhoneNumber'] ?? json['phoneNumber'])?.toString() ?? '',
       address: json['address']?.toString() ?? '',
       storeEmail: (json['storeEmail'] ?? json['email'])?.toString() ?? '',
-      logo: json['logo']?.toString(),
-      featuredImage: json['featuredImage']?.toString(),
+      logo: ApiService.resolveUrl(json['logo']?.toString()),
+      featuredImage: ApiService.resolveUrl(json['featuredImage']?.toString()),
       workingHoursStart: json['workingHoursStart']?.toString() ?? '',
       workingHoursEnd: json['workingHoursEnd']?.toString() ?? '',
       createdAt: DateTime.parse(json['createdAt'].toString()),

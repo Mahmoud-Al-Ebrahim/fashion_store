@@ -1,3 +1,5 @@
+import '../../core/utils/api_service.dart';
+
 /// Nested size entry inside [ProductDashboardColorModel.sizes].
 class ProductDashboardSizeModel {
   final int productSizeId;
@@ -101,7 +103,11 @@ class ProductDashboardItemModel {
           ? null
           : DateTime.parse(json['discountEndDate'].toString()),
       priceAfterDiscount: (json['priceAfterDiscount'] as num).toDouble(),
-      image: json['image']?.toString() ?? '',
+      image:
+          ApiService.resolveUrl(
+            ApiService.resolveUrl(json['image']?.toString()),
+          ) ??
+          '',
       colors: (json['colors'] as List<dynamic>? ?? [])
           .map(
             (e) =>

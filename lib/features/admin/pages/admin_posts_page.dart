@@ -9,6 +9,7 @@ import '../../../core/extensions/build_context.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
 import '../../../core/utils/show_message.dart';
+import '../../shop/pages/image_viewer_page.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/confirm_dialog.dart';
 import 'admin_post_form_page.dart';
@@ -113,15 +114,33 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                                 borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(16),
                                 ),
-                                child: CachedNetworkImage(
-                                  imageUrl:
-                                      ApiService.resolveUrl(
-                                        post.postMedias.first.mediaUrl,
-                                      ) ??
-                                      '',
-                                  height: height(160),
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => ImageViewerPage(
+                                          imageUrl:
+                                              post.postMedias.first.mediaUrl,
+                                          heroTag:
+                                              'post-media-${post.postMedias.first.mediaUrl}',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Hero(
+                                    tag:
+                                        'post-media-${post.postMedias.first.mediaUrl}',
+                                    child: CachedNetworkImage(
+                                      imageUrl:
+                                          ApiService.resolveUrl(
+                                            post.postMedias.first.mediaUrl,
+                                          ) ??
+                                          '',
+                                      height: height(160),
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                               ),
                             Padding(

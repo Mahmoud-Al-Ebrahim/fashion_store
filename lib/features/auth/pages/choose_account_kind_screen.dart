@@ -59,39 +59,40 @@ class _ChooseAccountKindScreenState extends State<ChooseAccountKindScreen> {
             SizedBox(height: height(40)),
             SizedBox(
               height: height(220),
-              child: GridView(
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.9,
-                ),
-                children: [
-                  AccountKindItem(
-                    title: LK.accountKindCustomer.tr(),
-                    description: LK.accountKindCustomerDesc.tr(),
-                    icon: Icons.shopping_bag_outlined,
-                    isSelected: _selected == AccountKind.customer,
-                    onTap: () =>
-                        setState(() => _selected = AccountKind.customer),
+              child:
+                  GridView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 0.9,
+                        ),
+                    children: [
+                      AccountKindItem(
+                        title: LK.accountKindCustomer.tr(),
+                        description: LK.accountKindCustomerDesc.tr(),
+                        icon: Icons.shopping_bag_outlined,
+                        isSelected: _selected == AccountKind.customer,
+                        onTap: () =>
+                            setState(() => _selected = AccountKind.customer),
+                      ),
+                      AccountKindItem(
+                        title: LK.accountKindStoreOwner.tr(),
+                        description: LK.accountKindStoreOwnerDesc.tr(),
+                        icon: Icons.storefront_outlined,
+                        isSelected: _selected == AccountKind.storeOwner,
+                        onTap: () =>
+                            setState(() => _selected = AccountKind.storeOwner),
+                      ),
+                    ],
+                  ).animate().slide(
+                    begin: const Offset(-1, 0),
+                    end: Offset.zero,
+                    duration: 600.ms,
+                    curve: Curves.easeOut,
                   ),
-                  AccountKindItem(
-                    title: LK.accountKindStoreOwner.tr(),
-                    description: LK.accountKindStoreOwnerDesc.tr(),
-                    icon: Icons.storefront_outlined,
-                    isSelected: _selected == AccountKind.storeOwner,
-                    onTap: () =>
-                        setState(() => _selected = AccountKind.storeOwner),
-                  ),
-                ],
-              ).animate().slide(
-                begin: const Offset(-1, 0),
-                end: Offset.zero,
-                duration: 600.ms,
-                curve: Curves.easeOut,
-              ),
             ),
             if (_selected == AccountKind.storeOwner) ...[
               SizedBox(height: height(16)),
@@ -126,9 +127,7 @@ class _ChooseAccountKindScreenState extends State<ChooseAccountKindScreen> {
                 widthButton: double.infinity,
                 onTap: () => HelperFunctions.navigateToPage(
                   context,
-                  SignUpScreen(
-                    wantsStore: _selected == AccountKind.storeOwner,
-                  ),
+                  SignUpScreen(wantsStore: _selected == AccountKind.storeOwner),
                 ),
               ),
             SizedBox(height: height(20)),

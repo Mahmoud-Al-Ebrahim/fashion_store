@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../app/widgets/button.dart';
@@ -39,6 +40,7 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
   String? _gender;
   String? _season;
   String? _type;
+  String? _occasion;
   int? _categoryId;
   String? _categoryLabel;
   File? _image;
@@ -105,7 +107,10 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
       return;
     }
     if (!_isEdit) {
-      if (_gender == null || _season == null || _type == null) {
+      if (_gender == null ||
+          _season == null ||
+          _type == null ||
+          _occasion == null) {
         showMessage(LK.adminCompleteFields.tr());
         return;
       }
@@ -121,13 +126,15 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
 
     final discountPercentage =
         _hasDiscount && _discountController.text.isNotEmpty
-            ? double.tryParse(_discountController.text)
-            : null;
+        ? double.tryParse(_discountController.text)
+        : null;
 
     if (_isEdit) {
       context.read<ProductBloc>().add(
         UpdateProductEvent(
           productId: widget.existingProduct!.id,
+          name: _nameController.text,
+          desc: _descriptionController.text,
           price: double.tryParse(_priceController.text),
           categoryId: _categoryId,
           discountPercentage: discountPercentage,
@@ -145,6 +152,7 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
           season: _season!,
           gender: _gender!,
           type: _type!,
+          occasion: _occasion!,
           image: _image!,
           categoryId: _categoryId!,
           discountPercentage: discountPercentage,
@@ -162,15 +170,23 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: Text(_isEdit ? LK.adminEditProduct.tr() : LK.adminAddProduct.tr()),
+        title: Text(
+          _isEdit ? LK.adminEditProduct.tr() : LK.adminAddProduct.tr(),
+        ),
       ),
       body: BlocListener<ProductBloc, ProductState>(
-        listenWhen: (p, c) => p.productTransactionStatus != c.productTransactionStatus,
+        listenWhen: (p, c) =>
+            p.productTransactionStatus != c.productTransactionStatus,
         listener: (context, state) {
-          if (state.productTransactionStatus == ProductTransactionStatus.success) {
-            showMessage(_isEdit ? LK.adminProductUpdated.tr() : LK.adminProductAdded.tr(), hasError: false);
+          if (state.productTransactionStatus ==
+              ProductTransactionStatus.success) {
+            showMessage(
+              _isEdit ? LK.adminProductUpdated.tr() : LK.adminProductAdded.tr(),
+              hasError: false,
+            );
             Navigator.of(context).pop(true);
-          } else if (state.productTransactionStatus == ProductTransactionStatus.failure) {
+          } else if (state.productTransactionStatus ==
+              ProductTransactionStatus.failure) {
             showMessage(state.errorMessage);
           }
         },
@@ -191,61 +207,51 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                 SizedBox(height: height(16)),
                 AuthTextField(
                   controller: _nameController,
+                  labelText: LK.adminProductName.tr(),
                   hintText: LK.adminProductName.tr(),
-                  enabled: !_isEdit,
+                  // `Product/UpdateProduct` silently discards Name and
+                  // Description - it answers 200 and changes nothing
+                  // (verified against the server). The explanatory banner
+                  // was dropped as requested, so the fields are disabled
+                  // instead: without either, an owner would retype a name,
+                  // be told it saved, and lose the edit.
                   validator: (v) {
-                    if (_isEdit) return null;
-                    if (v == null || v.trim().isEmpty) return LK.commonRequiredField.tr();
+                    // if (_isEdit) return null;
+                    if (v == null || v.trim().isEmpty)
+                      return LK.commonRequiredField.tr();
                     return null;
                   },
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _descriptionController,
+                  labelText: LK.adminProductDescription.tr(),
                   hintText: LK.adminProductDescription.tr(),
                   maxLines: 4,
-                  enabled: !_isEdit,
                   validator: (v) {
-                    if (_isEdit) return null;
-                    if (v == null || v.trim().isEmpty) return LK.commonRequiredField.tr();
+                    if (v == null || v.trim().isEmpty)
+                      return LK.commonRequiredField.tr();
                     return null;
                   },
                 ),
                 SizedBox(height: height(10)),
-                // `Product/UpdateProduct` accepts only Price, CategoryId,
-                // Discount* and Image. Name and Description are silently
-                // discarded by the server - it answers 200 and changes
-                // nothing - so they stay disabled with a reason rather than
-                // pretending an edit was saved.
-                if (_isEdit) ...[
-                  Padding(
-                    padding: EdgeInsets.only(bottom: height(10)),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.lock_outline,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        SizedBox(width: width(6)),
-                        Expanded(
-                          child: Text(
-                            LK.adminNameNotEditable.tr(),
-                            style: Theme.of(context).textTheme.bodySmall!
-                                .copyWith(color: Colors.grey),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
                 AuthTextField(
                   controller: _priceController,
+                  labelText: LK.adminProductPrice.tr(),
                   hintText: LK.adminProductPrice.tr(),
-                  formatters: const [],
+                  // Digits and a decimal separator only - the value is
+                  // parsed with double.tryParse before it is sent, and a
+                  // stray letter used to fail validation after the fact.
+                  formatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
                   validator: (v) {
-                    if (v == null || v.isEmpty) return LK.commonRequiredField.tr();
-                    if (double.tryParse(v) == null) return LK.commonInvalidValue.tr();
+                    if (v == null || v.isEmpty) {
+                      return LK.commonRequiredField.tr();
+                    }
+                    if (double.tryParse(v) == null) {
+                      return LK.commonInvalidValue.tr();
+                    }
                     return null;
                   },
                 ),
@@ -267,7 +273,9 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                         _categoryId = int.parse(o.value);
                         _categoryLabel = o.label;
                       }),
-                      validator: (_) => _categoryId == null ? LK.adminCategoryRequired.tr() : null,
+                      validator: (_) => _categoryId == null
+                          ? LK.adminCategoryRequired.tr()
+                          : null,
                     );
                   },
                 ),
@@ -278,7 +286,8 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                     options: genderOptions(),
                     selectedValue: _gender,
                     onSelected: (o) => setState(() => _gender = o.value),
-                    validator: (_) => _gender == null ? LK.commonRequiredField.tr() : null,
+                    validator: (_) =>
+                        _gender == null ? LK.commonRequiredField.tr() : null,
                   ),
                   SizedBox(height: height(10)),
                   OptionPickerField(
@@ -286,7 +295,8 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                     options: seasonOptions(),
                     selectedValue: _season,
                     onSelected: (o) => setState(() => _season = o.value),
-                    validator: (_) => _season == null ? LK.commonRequiredField.tr() : null,
+                    validator: (_) =>
+                        _season == null ? LK.commonRequiredField.tr() : null,
                   ),
                   SizedBox(height: height(10)),
                   OptionPickerField(
@@ -294,7 +304,20 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                     options: typeOptions(),
                     selectedValue: _type,
                     onSelected: (o) => setState(() => _type = o.value),
-                    validator: (_) => _type == null ? LK.commonRequiredField.tr() : null,
+                    validator: (_) =>
+                        _type == null ? LK.commonRequiredField.tr() : null,
+                  ),
+                  SizedBox(height: height(10)),
+                  // `Occasion` is required by Product/AddProduct - without it
+                  // the request is rejected. Like gender/season/type it is
+                  // set once at creation: UpdateProduct takes no occasion.
+                  OptionPickerField(
+                    hintText: LK.adminOccasion.tr(),
+                    options: occasionOptions(),
+                    selectedValue: _occasion,
+                    onSelected: (o) => setState(() => _occasion = o.value),
+                    validator: (_) =>
+                        _occasion == null ? LK.commonRequiredField.tr() : null,
                   ),
                 ],
                 SizedBox(height: height(10)),
@@ -307,11 +330,17 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                 if (_hasDiscount) ...[
                   AuthTextField(
                     controller: _discountController,
+                    labelText: LK.adminDiscountPercentage.tr(),
+                    formatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
                     hintText: LK.adminDiscountPercentage.tr(),
                     validator: (v) {
                       if (!_hasDiscount) return null;
-                      if (v == null || v.isEmpty) return LK.commonRequiredField.tr();
-                      if (double.tryParse(v) == null) return LK.commonInvalidValue.tr();
+                      if (v == null || v.isEmpty)
+                        return LK.commonRequiredField.tr();
+                      if (double.tryParse(v) == null)
+                        return LK.commonInvalidValue.tr();
                       return null;
                     },
                   ),
@@ -346,7 +375,8 @@ class _AdminProductFormPageState extends State<AdminProductFormPage> {
                 BlocBuilder<ProductBloc, ProductState>(
                   builder: (context, state) {
                     final loading =
-                        state.productTransactionStatus == ProductTransactionStatus.loading;
+                        state.productTransactionStatus ==
+                        ProductTransactionStatus.loading;
                     return AuthButton(
                       text: loading ? LK.commonSaving.tr() : LK.commonSave.tr(),
                       onTap: loading ? null : _submit,

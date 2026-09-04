@@ -25,9 +25,11 @@ class CategoriesTab extends StatelessWidget {
           p.storeProducts != c.storeProducts,
       builder: (context, state) {
         return AsyncView(
-          isLoading: state.getAllProductsByStoreStatus ==
+          isLoading:
+              state.getAllProductsByStoreStatus ==
               GetAllProductsByStoreStatus.loading,
-          isFailure: state.getAllProductsByStoreStatus ==
+          isFailure:
+              state.getAllProductsByStoreStatus ==
               GetAllProductsByStoreStatus.failure,
           isEmpty: state.storeProducts.isEmpty,
           errorMessage: state.errorMessage,

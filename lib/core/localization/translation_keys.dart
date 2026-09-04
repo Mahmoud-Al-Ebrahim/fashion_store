@@ -261,6 +261,7 @@ class LK {
   static const adminCategory = 'admin.category';
   static const adminGenderTarget = 'admin.gender_target';
   static const adminSeason = 'admin.season';
+  static const adminOccasion = 'admin.occasion';
   static const adminClothingType = 'admin.clothing_type';
   static const adminProductImage = 'admin.product_image';
   static const adminEnableDiscount = 'admin.enable_discount';
@@ -557,6 +558,39 @@ class LK {
   static const chatMessageDeleted = 'chat.message_deleted';
   static const chatMessageEdited = 'chat.message_edited';
 
+  static const ordersStatusFinal = 'orders.status_final';
+
+  // ---------- cart summary / image viewer ----------
+  static const cartSubtotal = 'cart.subtotal';
+  static const cartDelivery = 'cart.delivery';
+  static const cartDeliveryFree = 'cart.delivery_free';
+  static const cartOrderSummary = 'cart.order_summary';
+  static const productViewImage = 'product.view_image';
+
+  // ---------- round: offline chat / transfers / hours ----------
+  static const superadminStoreDeleted = 'superadmin.store_deleted';
+  static const chatOfflineNoActions = 'chat.offline_no_actions';
+  static const paymentFromBalanceTransfer = 'payment.from_balance_transfer';
+
+  // ---------- user role tabs ----------
+  static const superadminTabCustomers = 'superadmin.tab_customers';
+  static const superadminTabStoreOwners = 'superadmin.tab_store_owners';
+  static const superadminTabPaymentStaff = 'superadmin.tab_payment_staff';
+  static const superadminRolesUnavailable = 'superadmin.roles_unavailable';
+  static const superadminMakePaymentStaff = 'superadmin.make_payment_staff';
+
+  // ---------- discounts / store info / chat status ----------
+  static const homeDiscountsTitle = 'home.discounts_title';
+  static const productAboutStore = 'product.about_store';
+  static const chatSent = 'chat.sent';
+  static const chatSeen = 'chat.seen';
+  static const chatToday = 'chat.today';
+  static const chatYesterday = 'chat.yesterday';
+  static const chatAm = 'chat.am';
+  static const chatPm = 'chat.pm';
+  static const complaintsExistingThread = 'complaints.existing_thread';
+  static const drawerReviewStoreRequest = 'profile.review_store_request';
+
   // ---------- enums ----------
   static String genderKey(String value) => 'enums.gender.$value';
 
@@ -565,4 +599,6 @@ class LK {
   static String typeKey(String value) => 'enums.type.$value';
 
   static String colorKey(String value) => 'enums.color.$value';
+
+  static String occasionKey(String value) => 'enums.occasion.$value';
 }

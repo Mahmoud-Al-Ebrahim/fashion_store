@@ -8,10 +8,7 @@ import '../../core/utils/my_shared_pref.dart';
 import '../auth/pages/on_boarding_screen.dart';
 
 class _OnboardingPage {
-  const _OnboardingPage({
-    required this.title,
-    required this.subtitle,
-  });
+  const _OnboardingPage({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -55,7 +52,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final primary = AppColor.primary;
@@ -91,14 +87,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Text(
                             page.title.tr(),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge!
+                            style: Theme.of(context).textTheme.titleLarge!
                                 .copyWith(
-                              color: AppColor.secondary,
-                              fontWeight: FontWeight.w700,
-                              height: 1.4,
-                            ),
+                                  color: AppColor.secondary,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.4,
+                                ),
                           ),
 
                           const SizedBox(height: 14),
@@ -107,15 +101,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Text(
                             page.subtitle.tr(),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
+                            style: Theme.of(context).textTheme.bodySmall!
                                 .copyWith(
-                              color: const Color(0xff7A7A7A),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                              height: 1.6,
-                            ),
+                                  color: const Color(0xff7A7A7A),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  height: 1.6,
+                                ),
                           ),
                         ],
                       ),
@@ -137,14 +129,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: AuthButton(
-
                         text: _current == _pages.length - 1
                             ? LK.onboardingStart.tr()
                             : LK.commonNext.tr(),
                         onTap: _next,
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -161,15 +151,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         _pages.length,
-            (i) => AnimatedContainer(
+        (i) => AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           margin: const EdgeInsets.symmetric(horizontal: 4),
           width: _current == i ? 18 : 7,
           height: 7,
           decoration: BoxDecoration(
-            color: _current == i
-                ? AppColor.primary
-                : AppColor.primarySoft,
+            color: _current == i ? AppColor.primary : AppColor.primarySoft,
             borderRadius: BorderRadius.circular(20),
           ),
         ),
@@ -193,11 +181,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: SvgPicture.asset(
           asset,
           fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => Icon(
-            Icons.auto_awesome,
-            size: 60,
-            color: AppColor.primary,
-          ),
+          errorBuilder: (_, __, ___) =>
+              Icon(Icons.auto_awesome, size: 60, color: AppColor.primary),
         ),
       ),
     );

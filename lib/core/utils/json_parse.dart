@@ -68,7 +68,9 @@ bool asBool(dynamic value, {bool fallback = false}) {
 /// A missing timestamp should render as "unknown", never take the screen
 /// down with it.
 DateTime asDate(dynamic value, {DateTime? fallback}) {
-  return asDateOrNull(value) ?? fallback ?? DateTime.fromMillisecondsSinceEpoch(0);
+  return asDateOrNull(value) ??
+      fallback ??
+      DateTime.fromMillisecondsSinceEpoch(0);
 }
 
 DateTime? asDateOrNull(dynamic value) {
@@ -78,3 +80,47 @@ DateTime? asDateOrNull(dynamic value) {
   if (text.isEmpty || text == 'null') return null;
   return DateTime.tryParse(text);
 }
+
+/// Parses a server timestamp that carries no timezone designator, as UTC.
+///
+/// The API serialises DateTimes bare - `2026-09-02T13:18:45.3350146`, no
+/// trailing `Z` and no `+03:00` - and the values are UTC. `DateTime.parse`
+/// reads an offset-less string as *local* time, so the subsequent
+/// `.toLocal()` was a no-op and every chat message rendered three hours
+/// early in Damascus (UTC+3).
+///
+/// A value that *does* carry an offset (or a `Z`) is parsed as given, so
+/// this stays correct if the backend starts emitting one.
+DateTime? asServerDateOrNull(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value.toLocal();
+  var text = value.toString().trim();
+  if (text.isEmpty || text == 'null') return null;
+
+  if (_needsUtcMarker(text)) text = '${text}Z';
+  return DateTime.tryParse(text)?.toLocal();
+}
+
+/// True when a `Z` has to be appended for the value to read as UTC.
+///
+/// False when the string already states its zone - a trailing `Z`, or a
+/// `+hh:mm` / `-hh:mm` offset - and false for a date with no time at all:
+/// `DateTime.parse` only accepts a zone after a time, so `2026-09-02Z`
+/// would fail to parse where `2026-09-02` succeeds.
+bool _needsUtcMarker(String text) {
+  if (text.endsWith('Z') || text.endsWith('z')) return false;
+
+  // The separator is `T` in ISO-8601, though a space is also accepted.
+  var timeStart = text.indexOf('T');
+  if (timeStart < 0) timeStart = text.indexOf(' ');
+  if (timeStart < 0) return false;
+
+  // Search past the separator so the dashes in the date are not mistaken
+  // for a negative offset.
+  final time = text.substring(timeStart);
+  return !time.contains('+') && !time.contains('-');
+}
+
+/// [asServerDateOrNull] with the epoch as the fallback, matching [asDate].
+DateTime asServerDate(dynamic value) =>
+    asServerDateOrNull(value) ?? DateTime.fromMillisecondsSinceEpoch(0);

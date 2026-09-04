@@ -9,10 +9,8 @@ import '../../core/localization/language_service.dart';
 import '../../core/localization/translation_keys.dart';
 import '../admin/widgets/confirm_dialog.dart';
 import '../auth/pages/sign_in_screen/sign_in_screen.dart';
-import '../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
-import '../../core/extensions/build_context.dart';
-import 'pages/topup_history_page.dart';
 import 'pages/wallet_topup_page.dart';
+import '../../core/utils/clear_session_blocs.dart';
 
 /// Shell for the payment-desk role ("EmployeeOfPayment").
 ///
@@ -28,8 +26,6 @@ class PaymentEmployeeShellScreen extends StatefulWidget {
 
 class _PaymentEmployeeShellScreenState
     extends State<PaymentEmployeeShellScreen> {
-  int _currentIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -68,69 +64,47 @@ class _PaymentEmployeeShellScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-          appBar: AppBar(
-            scrolledUnderElevation: 0,
-            surfaceTintColor: Colors.transparent,
-            centerTitle: true,
-            title: Text(LK.paymentTitle.tr()),
-            actions: [
-              // Every role can browse the catalogue (and therefore rate and
-              // comment on products), even this narrow back-office one.
-              IconButton(
-                tooltip: LK.storeStatusBrowseAsCustomer.tr(),
-                icon: const Icon(Icons.shopping_bag_outlined),
-                onPressed: () => context.pushPage(const UserNavBar()),
-              ),
-              IconButton(
-                tooltip: LK.profileLanguage.tr(),
-                icon: const Icon(Icons.language),
-                onPressed: () => _switchLanguage(context),
-              ),
-              IconButton(
-                tooltip: LK.authLogout.tr(),
-                icon: const Icon(Icons.logout),
-                onPressed: () async {
-                  final confirmed = await confirmDialog(
-                    context,
-                    title: LK.authLogout.tr(),
-                    message: LK.authLogoutConfirm.tr(),
-                    confirmText: LK.authLogout.tr(),
-                  );
-                  if (!confirmed || !context.mounted) return;
-                  context.read<AuthBloc>().add(LogoutEvent());
-                  HelperFunctions.navigateToPageAndPopAll(
-                    context,
-                    const SignInScreen(),
-                    true,
-                  );
-                },
-              ),
-            ],
+      appBar: AppBar(
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        title: Text(LK.paymentTitle.tr()),
+        actions: [
+          IconButton(
+            tooltip: LK.profileLanguage.tr(),
+            icon: const Icon(Icons.language),
+            onPressed: () => _switchLanguage(context),
           ),
-          body: IndexedStack(
-            index: _currentIndex,
-            children: const [
-              TopUpHistoryPage(embedded: true),
-              WalletTopUpPage(embedded: true),
-            ],
+          IconButton(
+            tooltip: LK.authLogout.tr(),
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final confirmed = await confirmDialog(
+                context,
+                title: LK.authLogout.tr(),
+                message: LK.authLogoutConfirm.tr(),
+                confirmText: LK.authLogout.tr(),
+              );
+              if (!confirmed || !context.mounted) return;
+              // Wipe every bloc first: they live at the app root and
+              // would otherwise carry this session's data into the
+              // next sign-in.
+              clearSessionBlocs(context);
+              context.read<AuthBloc>().add(LogoutEvent());
+              HelperFunctions.navigateToPageAndPopAll(
+                context,
+                const SignInScreen(),
+                true,
+              );
+            },
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _currentIndex,
-            onDestinationSelected: (index) =>
-                setState(() => _currentIndex = index),
-            destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.receipt_long_outlined),
-                selectedIcon: const Icon(Icons.receipt_long),
-                label: LK.paymentTopups.tr(),
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.account_balance_wallet_outlined),
-                selectedIcon: const Icon(Icons.account_balance_wallet),
-                label: LK.paymentNewTopup.tr(),
-              ),
-            ],
-          ),
+        ],
+      ),
+      // The top-up history tab was removed on request, leaving crediting a
+      // wallet as the only screen. The app bar still carries language and
+      // sign-out, so nothing became unreachable, and the bottom bar is gone
+      // because a single destination does not need one.
+      body: const WalletTopUpPage(embedded: true),
     );
   }
 }

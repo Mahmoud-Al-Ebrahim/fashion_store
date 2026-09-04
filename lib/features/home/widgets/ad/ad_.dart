@@ -22,8 +22,8 @@ class Ad extends StatelessWidget {
           ),
         ],
         border: Border.all(
-            width: 1,
-            color: Theme.of(context).colorScheme.onPrimary
+          width: 1,
+          color: Theme.of(context).colorScheme.onPrimary,
         ),
       ),
     );

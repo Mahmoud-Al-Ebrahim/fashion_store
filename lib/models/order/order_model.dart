@@ -1,3 +1,4 @@
+import '../../core/utils/api_service.dart';
 import '../../core/utils/json_parse.dart';
 
 /// Item of `GET Order/GetAllOrder` -> `data`.
@@ -107,7 +108,7 @@ class OrderItemModel {
       color: asString(json['color']),
       colorHex: asString(json['colorHex']),
       price: asDouble(json['price']),
-      image: asString(json['image']),
+      image: ApiService.resolveUrl(asString(json['image'])) ?? '',
     );
   }
 }

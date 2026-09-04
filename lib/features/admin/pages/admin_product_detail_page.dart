@@ -16,6 +16,7 @@ import '../../../core/utils/show_message.dart';
 import '../../../models/admin/product_dashboard_model.dart';
 import '../../../models/clothing_item/clothing_item_model.dart';
 import '../../../core/constants/product_enums.dart';
+import '../../shop/pages/image_viewer_page.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/image_pick_box.dart';
 import 'admin_product_form_page.dart';
@@ -32,6 +33,8 @@ class AdminProductDetailPage extends StatefulWidget {
 
 class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
   late ProductDashboardItemModel _product;
+
+  bool _deleting = false;
 
   @override
   void initState() {
@@ -365,6 +368,7 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
                     '${LK.adminDeleteProductConfirm.tr()}\n${_product.name}',
               );
               if (!confirmed || !context.mounted) return;
+              setState(() => _deleting = true);
               context.read<ProductBloc>().add(
                 DeleteProductEvent(productId: _product.id),
               );
@@ -380,8 +384,11 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
             listener: (context, state) {
               if (state.productTransactionStatus ==
                   ProductTransactionStatus.success) {
-                showMessage(LK.adminProductDeleted.tr(), hasError: false);
-                Navigator.of(context).pop(true);
+                if (_deleting) {
+                  _deleting = false;
+                  showMessage(LK.adminProductDeleted.tr(), hasError: false);
+                  Navigator.of(context).pop(true);
+                }
               } else if (state.productTransactionStatus ==
                   ProductTransactionStatus.failure) {
                 showMessage(state.errorMessage);
@@ -418,13 +425,30 @@ class _AdminProductDetailPageState extends State<AdminProductDetailPage> {
         child: ListView(
           padding: EdgeInsets.all(width(16)),
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: CachedNetworkImage(
-                imageUrl: _product.image,
-                height: height(180),
-                width: double.infinity,
-                fit: BoxFit.cover,
+            GestureDetector(
+              // Same full-screen zoom the customer gets - an owner checking
+              // a photo they uploaded needs to see it at size too.
+              onTap: _product.image.isEmpty
+                  ? null
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ImageViewerPage(
+                          imageUrl: _product.image,
+                          heroTag: 'admin-product-${_product.id}',
+                        ),
+                      ),
+                    ),
+              child: Hero(
+                tag: 'admin-product-${_product.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: CachedNetworkImage(
+                    imageUrl: _product.image,
+                    height: height(180),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
             SizedBox(height: height(12)),

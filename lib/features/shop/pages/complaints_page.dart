@@ -9,6 +9,7 @@ import '../../../blocs/complaint_bloc/complaint_bloc.dart';
 import '../../../blocs/store_bloc/store_bloc.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
+import '../../../models/complaint/complaint_model.dart';
 import '../widgets/unread_badge.dart';
 import '../../../core/utils/show_message.dart';
 import '../../admin/widgets/option_picker_field.dart';
@@ -32,6 +33,38 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
     if (context.read<StoreBloc>().state.stores.isEmpty) {
       context.read<StoreBloc>().add(GetAllStoresEvent());
     }
+  }
+
+  /// Opens the existing conversation with [storeId] if there is one.
+  ///
+  /// Filing a second complaint against a store the customer is already
+  /// talking to would split the conversation across two threads, and the
+  /// store owner would answer in whichever one they happened to open. The
+  /// complaint list already carries `storeId`, so the match is local.
+  bool _hasThreadWith(int storeId) => _threadsWith(storeId).isNotEmpty;
+
+  List<UserComplaintModel> _threadsWith(int storeId) => context
+      .read<ComplaintBloc>()
+      .state
+      .userComplaints
+      .where((c) => c.storeId == storeId)
+      .toList();
+
+  bool _openExistingThread(int storeId) {
+    final existing = _threadsWith(storeId);
+    if (existing.isEmpty) return false;
+
+    // Most recently active thread with this store.
+    existing.sort((a, b) => b.lastActivityAt.compareTo(a.lastActivityAt));
+    final complaint = existing.first;
+    showMessage(LK.complaintsExistingThread.tr(), hasError: false);
+    context.pushPage(
+      ComplaintChatPage(
+        complaintId: complaint.complaintId,
+        counterpartName: complaint.storeName,
+      ),
+    );
+    return true;
   }
 
   Future<void> _newComplaint() async {
@@ -66,8 +99,19 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                       .map((s) => PickerOption(s.id.toString(), s.storeName))
                       .toList(),
                   selectedValue: storeId?.toString(),
-                  onSelected: (o) =>
-                      setSheetState(() => storeId = int.parse(o.value)),
+                  onSelected: (o) {
+                    final picked = int.parse(o.value);
+                    if (_hasThreadWith(picked)) {
+                      // Close the sheet *before* pushing: popping afterwards
+                      // would take the chat page straight back off again.
+                      Navigator.of(sheetContext).pop();
+                      // Straight into the existing conversation - no point
+                      // making them fill in a title first.
+                      _openExistingThread(picked);
+                      return;
+                    }
+                    setSheetState(() => storeId = picked);
+                  },
                 ),
               ),
               SizedBox(height: height(10)),
@@ -94,6 +138,8 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                     return;
                   }
                   Navigator.of(sheetContext).pop();
+                  // The list may have refreshed while the sheet was open.
+                  if (_openExistingThread(storeId!)) return;
                   context.read<ComplaintBloc>().add(
                     AddComplaintEvent(
                       storeId: storeId!,
@@ -134,12 +180,21 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
           }
         },
         builder: (context, state) {
+          // Most recently active first. `lastMessageAt` is now returned by
+          // GetAllComplaintsByUser, so this is true last-activity order and
+          // no longer has to approximate it from the unread count; a thread
+          // with no messages at all falls back to when it was filed.
+          final sorted = [...state.userComplaints]
+            ..sort((a, b) => b.lastActivityAt.compareTo(a.lastActivityAt));
           return AsyncView(
-            isLoading: state.getAllComplaintsByUserStatus ==
+            isLoading:
+                state.getAllComplaintsByUserStatus ==
                 GetAllComplaintsByUserStatus.loading,
-            isFailure: state.getAllComplaintsByUserStatus ==
+            isFailure:
+                state.getAllComplaintsByUserStatus ==
                 GetAllComplaintsByUserStatus.failure,
-            isEmpty: state.getAllComplaintsByUserStatus ==
+            isEmpty:
+                state.getAllComplaintsByUserStatus ==
                     GetAllComplaintsByUserStatus.success &&
                 state.userComplaints.isEmpty,
             errorMessage: state.errorMessage,
@@ -149,10 +204,10 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
             ),
             child: ListView.separated(
               padding: EdgeInsets.all(width(16)),
-              itemCount: state.userComplaints.length,
+              itemCount: sorted.length,
               separatorBuilder: (_, __) => SizedBox(height: height(10)),
               itemBuilder: (context, index) {
-                final complaint = state.userComplaints[index];
+                final complaint = sorted[index];
                 return Container(
                   padding: EdgeInsets.all(width(14)),
                   decoration: BoxDecoration(
@@ -171,9 +226,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                             ),
                           ),
                           // Unread messages waiting in this thread.
-                          UnreadBadge(
-                            count: complaint.numberOfUnReadMessage,
-                          ),
+                          UnreadBadge(count: complaint.numberOfUnReadMessage),
                         ],
                       ),
                       SizedBox(height: height(4)),

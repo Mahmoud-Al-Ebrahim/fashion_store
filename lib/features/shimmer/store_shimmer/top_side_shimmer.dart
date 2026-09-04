@@ -15,8 +15,7 @@ class TopSideShimmer extends StatelessWidget {
       period: const Duration(milliseconds: 1500),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15),
-        child:
-        Row(
+        child: Row(
           children: [
             OneItemShimmer(
               itemHeight: 55,
@@ -38,60 +37,30 @@ class TopSideShimmer extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    OneItemShimmer(
-                      itemHeight: 15,
-                      itemWidth: 60,
-                      radius: 20,
-                    ),
+                    OneItemShimmer(itemHeight: 15, itemWidth: 60, radius: 20),
                     SizedBox(width: width(10)),
-                    OneItemShimmer(
-                      itemHeight: 15,
-                      itemWidth: 40,
-                      radius: 20,
-                    ),
+                    OneItemShimmer(itemHeight: 15, itemWidth: 40, radius: 20),
                   ],
                 ),
                 SizedBox(height: height(10)),
                 Row(
                   children: [
-                    OneItemShimmer(
-                      itemHeight: 15,
-                      itemWidth: 15,
-                      radius: 20,
-                    ),
+                    OneItemShimmer(itemHeight: 15, itemWidth: 15, radius: 20),
                     SizedBox(width: width(3)),
-                    OneItemShimmer(
-                      itemHeight: 15,
-                      itemWidth: 15,
-                      radius: 20,
-                    ),
-                    SizedBox(width: width(3)),   OneItemShimmer(
-                      itemHeight: 15,
-                      itemWidth: 15,
-                      radius: 20,
-                    ),
-                    SizedBox(width: width(3)),   OneItemShimmer(
-                      itemHeight: 15,
-                      itemWidth: 15,
-                      radius: 20,
-                    ),
-                    SizedBox(width: width(3)),   OneItemShimmer(
-                      itemHeight: 15,
-                      itemWidth: 15,
-                      radius: 20,
-                    ),
+                    OneItemShimmer(itemHeight: 15, itemWidth: 15, radius: 20),
                     SizedBox(width: width(3)),
-
+                    OneItemShimmer(itemHeight: 15, itemWidth: 15, radius: 20),
+                    SizedBox(width: width(3)),
+                    OneItemShimmer(itemHeight: 15, itemWidth: 15, radius: 20),
+                    SizedBox(width: width(3)),
+                    OneItemShimmer(itemHeight: 15, itemWidth: 15, radius: 20),
+                    SizedBox(width: width(3)),
                   ],
                 ),
               ],
             ),
             Spacer(),
-            OneItemShimmer(
-              itemHeight: 30,
-              itemWidth: 80,
-              radius: 20,
-            ),
+            OneItemShimmer(itemHeight: 30, itemWidth: 80, radius: 20),
           ],
         ),
       ),

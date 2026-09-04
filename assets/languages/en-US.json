@@ -98,7 +98,8 @@
     "followed_products": "From Stores You Follow",
     "categories": "Categories",
     "see_more": "See more",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "discounts_title": "Offers & Discounts"
   },
   "explore": {
     "title": "Explore",
@@ -137,10 +138,12 @@
     "add_comment": "Write a comment...",
     "comment_added": "Your comment was added",
     "no_comments": "No comments yet, be the first to comment",
-    "suggested": "Similar Products",
+    "suggested": "Suggested Products",
     "discount": "OFF",
     "price": "Price",
-    "unavailable": "This product is no longer available"
+    "unavailable": "This product is no longer available",
+    "view_image": "View image",
+    "about_store": "About the store"
   },
   "store": {
     "title": "Store",
@@ -171,7 +174,11 @@
     "remove_confirm": "Remove this item from your cart?",
     "item_removed": "Item removed",
     "quantity_updated": "Quantity updated",
-    "order_placed": "Your order was placed successfully"
+    "order_placed": "Your order was placed successfully",
+    "subtotal": "Subtotal",
+    "delivery": "Delivery",
+    "delivery_free": "Free",
+    "order_summary": "Order Summary"
   },
   "orders": {
     "title": "My Orders",
@@ -199,7 +206,8 @@
     "status_updated": "Order status updated",
     "guest_title": "You are browsing as a guest",
     "guest_body": "Sign in to see your orders",
-    "cannot_cancel": "This order can no longer be cancelled"
+    "cannot_cancel": "This order can no longer be cancelled",
+    "status_final": "This order is closed and its status can no longer be changed"
   },
   "profile": {
     "title": "My Profile",
@@ -226,7 +234,8 @@
     "seller_requests": "Store Requests",
     "edit": "Edit Profile",
     "edit_saved": "Profile updated",
-    "pick_birthdate": "Select date of birth"
+    "pick_birthdate": "Select date of birth",
+    "review_store_request": "Review my store request"
   },
   "community": {
     "title": "Community",
@@ -242,8 +251,8 @@
     "address": "Address",
     "phone": "Store Phone",
     "email": "Store Email",
-    "working_hours_start": "Opening Time",
-    "working_hours_end": "Closing Time",
+    "working_hours_start": "Opening time",
+    "working_hours_end": "Closing time",
     "logo": "Store Logo",
     "featured_image": "Featured Image",
     "national_id_front": "National ID (Front)",
@@ -359,7 +368,8 @@
     "delete_size_confirm": "Remove this size from the colour?",
     "size_deleted": "Size removed",
     "manage_sizes": "Manage sizes",
-    "name_not_editable": "Name and description are fixed after creation"
+    "name_not_editable": "Name and description are fixed after creation",
+    "occasion": "Occasion"
   },
   "enums": {
     "gender": {
@@ -390,14 +400,20 @@
       "green": "Green",
       "yellow": "Yellow",
       "gray": "Gray",
+      "silver": "Silver",
       "brown": "Brown",
       "pink": "Pink",
       "purple": "Purple",
       "orange": "Orange",
-      "silver": "Silver",
       "gold": "Gold",
       "navy": "Navy",
       "beige": "Beige"
+    },
+    "occasion": {
+      "Formal": "Formal",
+      "Casual": "Casual",
+      "Party": "Party",
+      "Sport": "Sport"
     }
   },
   "onboarding": {
@@ -494,7 +510,13 @@
     "no_roles": "This user has no removable role",
     "order_details": "Order Details",
     "store_categories": "Store Categories",
-    "no_categories": "This store has no categories"
+    "no_categories": "This store has no categories",
+    "store_deleted": "Store deleted",
+    "tab_customers": "Customers",
+    "tab_store_owners": "Store owners",
+    "tab_payment_staff": "Payment staff",
+    "roles_unavailable": "The server does not return user roles yet, so everyone is listed as a customer",
+    "make_payment_staff": "Make payment staff"
   },
   "payment": {
     "title": "Wallet Top-ups",
@@ -523,7 +545,8 @@
     "tx_type": "Type",
     "tx_date": "Date",
     "tx_wallet": "Wallet",
-    "tx_qty": "Quantity"
+    "tx_qty": "Quantity",
+    "from_balance_transfer": "Resulting from a balance transfer"
   },
   "chat": {
     "title": "Conversation",
@@ -546,7 +569,14 @@
     "edit_failed": "Could not edit the message",
     "delete_failed": "Could not delete the message",
     "message_deleted": "Message deleted",
-    "message_edited": "Message edited"
+    "message_edited": "Message edited",
+    "offline_no_actions": "You are offline - messages cannot be edited or deleted until the connection returns",
+    "sent": "Sent",
+    "seen": "Read",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "am": "AM",
+    "pm": "PM"
   },
   "wallet": {
     "id_label": "Wallet ID",
@@ -567,7 +597,8 @@
     "empty": "You don't follow any store yet - browse stores and follow them"
   },
   "complaints": {
-    "unread_count": "{} unread"
+    "unread_count": "{} unread",
+    "existing_thread": "You already have a conversation with this store - opening it"
   },
   "store_profile": {
     "title": "Store Profile",

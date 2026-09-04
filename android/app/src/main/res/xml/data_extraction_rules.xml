@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ reads these rules instead of android:allowBackup when deciding
+  what to include in cloud backup and device-to-device transfer.
+
+  Everything is excluded on purpose: restoring SharedPreferences would carry
+  the auth token, the saved locale and the onboarding flag onto a reinstall
+  or a new device, which is why uninstalling did not appear to sign the user
+  out. Nothing this app stores locally is worth preserving across an
+  uninstall - it is all re-fetched after signing in.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+        <exclude domain="file" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+        <exclude domain="file" />
+    </device-transfer>
+</data-extraction-rules>

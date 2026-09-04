@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:signalr_netcore/signalr_client.dart';
 
 import '../utils/api_service.dart';
+import '../utils/json_parse.dart';
 import 'utf8_signalr_http_client.dart';
 import '../utils/my_shared_pref.dart';
 
@@ -57,8 +58,9 @@ class HubMessage {
       text:
           pick<String>(['messageText', 'text', 'content', 'message', 'body']) ??
           '',
-      createdAt:
-          DateTime.tryParse(createdRaw ?? '')?.toLocal() ?? DateTime.now(),
+      // Same UTC-without-a-Z shape the REST endpoint returns - parsing it
+      // as local time put live messages three hours in the past.
+      createdAt: asServerDateOrNull(createdRaw) ?? DateTime.now(),
     );
   }
 }
@@ -101,6 +103,13 @@ class ChatHubService {
 
   /// `JoinComplaintGroup(int complaintId)` - positional, not a DTO.
   static const String joinMethod = 'JoinComplaintGroup';
+
+  /// The counterpart to [joinMethod]. Called on the way out of a thread so
+  /// the connection stops receiving that group's broadcasts: `ReceiveMessage`
+  /// carries no `complaintId`, so a connection left in two groups delivers
+  /// one thread's messages into the other's view. Invoked defensively - if
+  /// the hub has no such method the invocation just fails and is logged.
+  static const String leaveMethod = 'LeaveComplaintGroup';
 
   /// `MarkMessagesAsRead(RequestUpdateReadMessageDto)` - note there is no
   /// `Async` suffix on this one, unlike its neighbours.
@@ -253,6 +262,17 @@ class ChatHubService {
       // The hub throws HubException for an unknown or unauthorised
       // complaint - the caller stays on the history it already loaded.
       log('chatHub $joinMethod failed: $error');
+    }
+  }
+
+  /// Leaves the per-complaint group. Failure is not an error: the caller
+  /// is closing the screen either way.
+  Future<void> leaveComplaint(int complaintId) async {
+    if (!isConnected) return;
+    try {
+      await _connection?.invoke(leaveMethod, args: [complaintId]);
+    } catch (error) {
+      log('chatHub $leaveMethod failed: $error');
     }
   }
 

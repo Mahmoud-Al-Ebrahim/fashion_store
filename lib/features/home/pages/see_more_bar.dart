@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../blocs/product_bloc/product_bloc.dart';
 import '../../../blocs/store_bloc/store_bloc.dart';
 import '../../../core/screen_util.dart';
+import '../../nav_bar/user_nav_bar/user_nav_bar_bloc.dart';
 import '../widgets/see_more_tabs_sections/detail_tabs_name.dart';
 import '../widgets/see_more_tabs_sections/product_filter_sheet.dart';
 import '../widgets/see_more_tabs_sections/search_filter_section.dart';
@@ -22,15 +23,28 @@ class SeeMoreBar extends StatefulWidget {
   State<SeeMoreBar> createState() => _SeeMoreBarState();
 }
 
-class _SeeMoreBarState extends State<SeeMoreBar> {
+class _SeeMoreBarState extends State<SeeMoreBar>
+    with SingleTickerProviderStateMixin {
   int _currentTab = 0;
   String _query = '';
   ProductFilterValues _filters = const ProductFilterValues();
   Timer? _debounce;
 
+  /// Owned rather than taken from a DefaultTabController: the home page's
+  /// "see more" on the stores strip has to be able to *select* the stores
+  /// tab, and only an explicit controller can be driven from outside.
+  late final TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(() {
+        // Fires for swipes too, which `TabBar.onTap` misses.
+        if (_tabController.indexIsChanging) return;
+        if (_tabController.index == _currentTab) return;
+        setState(() => _currentTab = _tabController.index);
+      });
     // Seed both tabs so the screen isn't empty before the user types.
     context.read<ProductBloc>().add(FilterProductsEvent());
     if (context.read<StoreBloc>().state.stores.isEmpty) {
@@ -41,6 +55,7 @@ class _SeeMoreBarState extends State<SeeMoreBar> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -88,8 +103,14 @@ class _SeeMoreBarState extends State<SeeMoreBar> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
+    // The shell stays mounted behind an IndexedStack, so a request that
+    // arrives while Explore is off-screen still lands on the right tab.
+    return BlocListener<NavBarBloc, NavBarState>(
+      listenWhen: (p, c) => p.exploreTabRequest != c.exploreTabRequest,
+      listener: (context, state) {
+        if (state.exploreTab == _tabController.index) return;
+        _tabController.animateTo(state.exploreTab);
+      },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -100,11 +121,13 @@ class _SeeMoreBarState extends State<SeeMoreBar> {
               showFilter: _currentTab == 0,
             ),
             SeeMoreTabBarsName(
+              controller: _tabController,
               onTap: (index) => setState(() => _currentTab = index),
             ),
             SizedBox(height: height(10)),
             Expanded(
               child: TabBarView(
+                controller: _tabController,
                 children: [
                   ProductsTab(
                     hasQuery: _query.isNotEmpty,

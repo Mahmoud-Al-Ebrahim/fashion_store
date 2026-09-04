@@ -16,6 +16,7 @@ import '../../core/constants/product_enums.dart';
 import '../../core/utils/api_service.dart';
 import '../../models/common/api_response_model.dart';
 import '../../models/product/product_catalog_model.dart';
+import '../../models/product/store_product_model.dart';
 
 part 'product_event.dart';
 
@@ -30,6 +31,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<SearchProductsEvent>(_onSearchProductsEvent);
     on<FilterProductsEvent>(_onFilterProductsEvent);
     on<LookupProductEvent>(_onLookupProductEvent);
+    on<LoadProductDescriptionEvent>(_onLoadProductDescriptionEvent);
+    on<ClearProductEvent>((event, emit) => emit(ProductState()));
   }
 
   Future<MultipartFile> _toMultipartFile(File file) async {
@@ -59,6 +62,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       "Season": event.season,
       "Gender": event.gender,
       "Type": event.type,
+      "Occasion": event.occasion,
       "Image": await _toMultipartFile(event.image),
       "CategoryId": event.categoryId,
     };
@@ -117,10 +121,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       ),
     );
     final Map<String, dynamic> form = {};
-    if (event.price != null) form['Price'] = event.price;
+    if (event.price != null) form['Price'] = event.price?.toInt();
     if (event.categoryId != null) form['CategoryId'] = event.categoryId;
     if (event.discountPercentage != null) {
-      form['DiscountPrecentage'] = event.discountPercentage;
+      form['DiscountPrecentage'] = event.discountPercentage?.toInt();
     }
     if (event.discountStartDate != null) {
       form['DiscountStartDate'] = event.discountStartDate!
@@ -132,6 +136,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           .toUtc()
           .toIso8601String();
     }
+    if (event.name != null) {
+      form['Name'] = event.name;
+    }
+    if (event.desc != null) {
+      form['Description'] = event.desc;
+    }
+    print(form);
+    print(event.productId);
     if (event.image != null) {
       form['Image'] = await _toMultipartFile(event.image!);
     }
@@ -148,7 +160,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           );
         })
         .catchError((error) {
-          log(error.toString());
           emit(
             state.copyWith(
               productTransactionStatus: ProductTransactionStatus.failure,
@@ -348,6 +359,36 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             ),
           );
         });
+  }
+
+  /// Reads the store's catalog and keeps the description of [productId].
+  ///
+  /// Failure is deliberately silent: the description is supplementary, and
+  /// an error banner over a product screen that is otherwise fine would be
+  /// worse than simply not showing it.
+  FutureOr<void> _onLoadProductDescriptionEvent(
+    LoadProductDescriptionEvent event,
+    Emitter<ProductState> emit,
+  ) async {
+    if (state.productDescriptions.containsKey(event.productId)) return;
+    try {
+      final response = await ApiService.getMethod(
+        endPoint: 'Store/GetAllProductsByStore',
+        queryParameters: {'storeId': event.storeId.toString()},
+      );
+      final apiResponse = ApiResponseModel<List<StoreProductModel>>.fromJson(
+        response.data,
+        (json) => storeProductListFromJson(json),
+      );
+      final updated = Map<int, String>.from(state.productDescriptions);
+      for (final product in apiResponse.data ?? const <StoreProductModel>[]) {
+        if (product.description.trim().isEmpty) continue;
+        updated[product.id] = product.description.trim();
+      }
+      emit(state.copyWith(productDescriptions: updated));
+    } catch (error) {
+      log('product description lookup failed: $error');
+    }
   }
 
   FutureOr<void> _onLookupProductEvent(

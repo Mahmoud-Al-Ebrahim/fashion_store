@@ -57,7 +57,6 @@ class StoreShimmerWidget extends StatelessWidget {
                       OneItemShimmer(itemHeight: 12, itemWidth: 12, radius: 20),
                       SizedBox(width: width(3)),
                       OneItemShimmer(itemHeight: 12, itemWidth: 12, radius: 20),
-
                     ],
                   ),
                   SizedBox(height: height(10)),

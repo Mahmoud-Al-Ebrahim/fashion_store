@@ -299,18 +299,49 @@ class _CheckoutBarState extends State<_CheckoutBar> {
             hintText: LK.cartAddressHint.tr(),
             validator: (_) => null,
           ),
-          SizedBox(height: height(10)),
-          Row(
-            children: [
-              Text('${LK.cartTotal.tr()}: ', style: theme.textTheme.titleSmall),
-              Text(
-                '${formatPrice(widget.total)} ${LK.commonCurrency.tr()}',
-                style: theme.textTheme.titleMedium!.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.primary,
+          SizedBox(height: height(12)),
+          // Itemised so the customer can see exactly what they are paying
+          // for. Delivery is free today, and saying so explicitly is worth
+          // more than leaving it out - an unexplained gap between the item
+          // prices and the total is what makes people abandon a cart.
+          Container(
+            padding: EdgeInsets.all(width(12)),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6F6FA),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  LK.cartOrderSummary.tr(),
+                  style: theme.textTheme.titleSmall!.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(height: height(8)),
+                _SummaryRow(
+                  label: LK.cartSubtotal.tr(),
+                  value:
+                      '${formatPrice(widget.total)} ${LK.commonCurrency.tr()}',
+                ),
+                SizedBox(height: height(6)),
+                _SummaryRow(
+                  label: LK.cartDelivery.tr(),
+                  value: LK.cartDeliveryFree.tr(),
+                  valueColor: Colors.green,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: height(8)),
+                  child: const Divider(height: 1),
+                ),
+                _SummaryRow(
+                  label: LK.cartTotal.tr(),
+                  value:
+                      '${formatPrice(widget.total)} ${LK.commonCurrency.tr()}',
+                  emphasise: true,
+                ),
+              ],
+            ),
           ),
           SizedBox(height: height(10)),
           BlocBuilder<OrderBloc, OrderState>(
@@ -326,6 +357,46 @@ class _CheckoutBarState extends State<_CheckoutBar> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// One line of the cart summary.
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+    this.emphasise = false,
+  });
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+  final bool emphasise;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final style = emphasise
+        ? theme.textTheme.titleMedium!.copyWith(
+            fontWeight: FontWeight.w700,
+            color: valueColor ?? theme.colorScheme.primary,
+          )
+        : theme.textTheme.bodyMedium!.copyWith(color: valueColor);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: emphasise
+              ? theme.textTheme.titleSmall!.copyWith(
+                  fontWeight: FontWeight.w700,
+                )
+              : theme.textTheme.bodyMedium!.copyWith(color: Colors.grey),
+        ),
+        Text(value, style: style),
+      ],
     );
   }
 }

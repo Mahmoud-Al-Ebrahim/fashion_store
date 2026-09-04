@@ -1,3 +1,4 @@
+import '../../core/utils/api_service.dart';
 import '../../core/utils/json_parse.dart';
 
 /// Item of `POST ClothingItem/GetSuggestByProductId` -> `data`.
@@ -31,7 +32,7 @@ class SuggestedProductModel {
   factory SuggestedProductModel.fromJson(Map<String, dynamic> json) {
     return SuggestedProductModel(
       productId: asInt(json['productId']),
-      imageUrl: asString(json['imageUrl']),
+      imageUrl: ApiService.resolveUrl(asString(json['imageUrl'])) ?? '',
       name: asString(json['name']),
       color: asString(json['color']),
       gender: asString(json['gender']),

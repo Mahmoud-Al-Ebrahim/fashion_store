@@ -23,6 +23,10 @@ class AdminProductsPage extends StatefulWidget {
 }
 
 class _AdminProductsPageState extends State<AdminProductsPage> {
+  /// True while a delete started from this screen is in flight, so
+  /// the shared transaction status is only announced when it is ours.
+  bool _deleting = false;
+
   @override
   void initState() {
     super.initState();
@@ -72,7 +76,16 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
             listener: (context, state) {
               if (state.productTransactionStatus ==
                   ProductTransactionStatus.success) {
-                showMessage(LK.adminProductDeleted.tr(), hasError: false);
+                // `productTransactionStatus` covers add, update and
+                // delete alike, and the add/update screens announce their
+                // own result before popping back here - so this listener
+                // fired again and announced "product deleted" after a
+                // successful *add*. Only speak for a delete this page
+                // actually started.
+                if (_deleting) {
+                  _deleting = false;
+                  showMessage(LK.adminProductDeleted.tr(), hasError: false);
+                }
                 _load();
               } else if (state.productTransactionStatus ==
                   ProductTransactionStatus.failure) {
@@ -157,6 +170,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                                   '${LK.adminDeleteProductConfirm.tr()}\n${product.name}',
                             );
                             if (!confirmed || !context.mounted) return;
+                            setState(() => _deleting = true);
                             context.read<ProductBloc>().add(
                               DeleteProductEvent(productId: product.id),
                             );

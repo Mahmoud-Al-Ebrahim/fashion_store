@@ -9,6 +9,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../core/localization/translation_keys.dart';
 import '../../core/utils/api_error_helper.dart';
 import '../../core/utils/api_service.dart';
+import '../../core/utils/session.dart';
 import '../../models/common/api_response_model.dart';
 import '../../models/complaint/complaint_model.dart';
 import '../../models/complaint/message_model.dart';
@@ -24,6 +25,7 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
     on<GetAllComplaintsByUserEvent>(_onGetAllComplaintsByUserEvent);
     on<GetComplaintMessagesEvent>(_onGetComplaintMessagesEvent);
     on<ReadComplaintMessagesEvent>(_onReadComplaintMessagesEvent);
+    on<ClearComplaintEvent>((event, emit) => emit(ComplaintState()));
   }
 
   FutureOr<void> _onAddComplaintEvent(
@@ -212,6 +214,11 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
         .then((response) {
           log(response.data.toString());
           add(GetComplaintMessagesEvent(complaintId: event.complaintId));
+          // The thread's unread badge is served by the complaint lists, so
+          // re-read whichever one this account can see. Without this the
+          // badge kept its old count until the screen was reopened.
+          add(GetAllComplaintsByUserEvent());
+          if (Session.canManageStore) add(GetAllComplaintsEvent());
           emit(
             state.copyWith(
               readComplaintMessagesStatus: ReadComplaintMessagesStatus.success,

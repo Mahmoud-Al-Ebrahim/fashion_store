@@ -206,10 +206,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               if (currentStep != steps.length - 1)
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: width(10)),
-                  child: AuthButton(
-                    text: LK.commonNext.tr(),
-                    onTap: nextStep,
-                  ),
+                  child: AuthButton(text: LK.commonNext.tr(), onTap: nextStep),
                 ),
               SizedBox(height: height(20)),
             ],

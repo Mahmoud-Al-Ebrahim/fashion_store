@@ -18,6 +18,7 @@ import 'admin_store_categories_page.dart';
 import 'admin_store_profile_page.dart';
 import 'admin_wallet_page.dart';
 import '../../../core/localization/translation_keys.dart';
+import '../../../core/utils/clear_session_blocs.dart';
 
 class AdminMorePage extends StatelessWidget {
   const AdminMorePage({super.key});
@@ -39,7 +40,10 @@ class AdminMorePage extends StatelessWidget {
               final store = state.myStore;
               if (store == null) return const SizedBox.shrink();
               return Padding(
-                padding: EdgeInsets.symmetric(horizontal: width(16), vertical: height(10)),
+                padding: EdgeInsets.symmetric(
+                  horizontal: width(16),
+                  vertical: height(10),
+                ),
                 child: Row(
                   children: [
                     CircleAvatar(
@@ -48,15 +52,23 @@ class AdminMorePage extends StatelessWidget {
                       backgroundImage: store.logo != null
                           ? NetworkImage(ApiService.resolveUrl(store.logo)!)
                           : null,
-                      child: store.logo == null ? const Icon(Icons.store) : null,
+                      child: store.logo == null
+                          ? const Icon(Icons.store)
+                          : null,
                     ),
                     SizedBox(width: width(12)),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(store.storeName, style: Theme.of(context).textTheme.titleMedium),
-                          Text(store.storeEmail, style: Theme.of(context).textTheme.bodySmall),
+                          Text(
+                            store.storeName,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            store.storeEmail,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ],
                       ),
                     ),
@@ -67,23 +79,6 @@ class AdminMorePage extends StatelessWidget {
           ),
           const Divider(),
           // The owner's personal account, separate from the store record.
-          _tile(
-            context,
-            icon: Icons.person_outline,
-            title: LK.profileTitle.tr(),
-            onTap: () => context.pushPage(
-              BlocProvider(
-                create: (_) => UserBloc()..add(GetUserProfileEvent()),
-                child: const ProfilePage(),
-              ),
-            ),
-          ),
-          _tile(
-            context,
-            icon: Icons.shopping_bag_outlined,
-            title: LK.storeStatusBrowseAsCustomer.tr(),
-            onTap: () => context.pushPage(const UserNavBar()),
-          ),
           _tile(
             context,
             icon: Icons.storefront_outlined,
@@ -122,8 +117,16 @@ class AdminMorePage extends StatelessWidget {
                 confirmText: LK.authLogout.tr(),
               );
               if (!confirmed || !context.mounted) return;
+              // Wipe every bloc first: they live at the app root and
+              // would otherwise carry this session's data into the
+              // next sign-in.
+              clearSessionBlocs(context);
               context.read<AuthBloc>().add(LogoutEvent());
-              HelperFunctions.navigateToPageAndPopAll(context, const SignInScreen(), true);
+              HelperFunctions.navigateToPageAndPopAll(
+                context,
+                const SignInScreen(),
+                true,
+              );
             },
           ),
         ],
@@ -139,7 +142,10 @@ class AdminMorePage extends StatelessWidget {
     Color? color,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color ?? Theme.of(context).colorScheme.primary),
+      leading: Icon(
+        icon,
+        color: color ?? Theme.of(context).colorScheme.primary,
+      ),
       title: Text(title, style: TextStyle(color: color)),
       trailing: const Icon(Icons.chevron_left),
       onTap: onTap,

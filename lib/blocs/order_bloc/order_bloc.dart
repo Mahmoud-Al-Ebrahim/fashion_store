@@ -24,6 +24,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     on<CancelOrderEvent>(_onCancelOrderEvent);
     on<UpdateOrderStatusEvent>(_onUpdateOrderStatusEvent);
     on<GetPaymentEvent>(_onGetPaymentEvent);
+    on<ClearOrderEvent>((event, emit) => emit(OrderState()));
   }
 
   FutureOr<void> _onGetAllOrdersEvent(

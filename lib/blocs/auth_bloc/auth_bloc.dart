@@ -29,6 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ForgotPasswordEvent>(_onForgotPasswordEvent);
     on<ResetPasswordEvent>(_onResetPasswordEvent);
     on<LoadStoredAuthEvent>(_onLoadStoredAuthEvent);
+    on<ClearAuthEvent>((event, emit) => emit(AuthState()));
   }
 
   FutureOr<void> _onRegisterEvent(

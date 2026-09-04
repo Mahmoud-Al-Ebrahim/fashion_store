@@ -80,3 +80,11 @@ class ResetPasswordEvent extends AuthEvent {
 /// what's already persisted in SharedPreferences. Does not call the API.
 /// Use on app start to decide whether to show the login screen.
 class LoadStoredAuthEvent extends AuthEvent {}
+
+/// Wipes this bloc back to its initial state.
+///
+/// Dispatched for every bloc on sign-out: the blocs live at the app
+/// root and outlive any single session, so without this the next
+/// account would open onto the previous one's cart, orders, wallet and
+/// profile until each screen happened to refetch.
+class ClearAuthEvent extends AuthEvent {}

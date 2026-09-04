@@ -7,8 +7,7 @@ class ReturnIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return
-      Positioned(
+    return Positioned(
       top: height(35),
       right: width(15),
       child: Container(
@@ -28,7 +27,6 @@ class ReturnIcon extends StatelessWidget {
           ),
         ),
       ),
-    )
-    ;
+    );
   }
 }

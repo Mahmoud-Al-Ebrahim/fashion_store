@@ -18,12 +18,12 @@ class ArabicStoreShimmerWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           OneItemShimmer(itemHeight: 84, itemWidth: 113, radius: 34),
-          SizedBox(height: height(6),),
+          SizedBox(height: height(6)),
           Row(
             spacing: 10,
             children: [
-              OneItemShimmer(itemHeight: 20, itemWidth: 20,radius: 50,),
-              OneItemShimmer(itemHeight: 15, itemWidth: 60,radius: 20,),
+              OneItemShimmer(itemHeight: 20, itemWidth: 20, radius: 50),
+              OneItemShimmer(itemHeight: 15, itemWidth: 60, radius: 20),
             ],
           ),
         ],

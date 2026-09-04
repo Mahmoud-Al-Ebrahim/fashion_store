@@ -32,31 +32,29 @@ class ContactInformationStep extends StatelessWidget {
           children: [
             SizedBox(height: height(35)),
             AuthTextField(
-              controller: emailController,
-              hintText: LK.authEmail.tr(),
-              validator: validateEmail,
-            )
+                  controller: emailController,
+                  hintText: LK.authEmail.tr(),
+                  validator: validateEmail,
+                )
                 .animate()
                 .fadeIn(duration: 400.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),
             SizedBox(height: height(5)),
             AuthTextField(
-              controller: phoneController,
-              hintText: LK.authPhone.tr(),
-              formatters: [
-                FilteringTextInputFormatter.digitsOnly
-              ],
-              validator: validateSyrianPhone,
-            )
+                  controller: phoneController,
+                  hintText: LK.authPhone.tr(),
+                  formatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: validateSyrianPhone,
+                )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 150.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),
             SizedBox(height: height(5)),
             AuthTextField(
-              controller: usernameController,
-              hintText: LK.authUsername.tr(),
-              validator: validateUsername,
-            )
+                  controller: usernameController,
+                  hintText: LK.authUsername.tr(),
+                  validator: validateUsername,
+                )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 300.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),

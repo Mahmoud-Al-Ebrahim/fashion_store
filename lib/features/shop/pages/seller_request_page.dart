@@ -108,8 +108,9 @@ class _SellerRequestPageState extends State<SellerRequestPage> {
     );
   }
 
-  String? _required(String? value) =>
-      (value == null || value.trim().isEmpty) ? LK.commonRequiredField.tr() : null;
+  String? _required(String? value) => (value == null || value.trim().isEmpty)
+      ? LK.commonRequiredField.tr()
+      : null;
 
   @override
   Widget build(BuildContext context) {
@@ -131,9 +132,7 @@ class _SellerRequestPageState extends State<SellerRequestPage> {
             // to the waiting screen rather than dropping them back on the
             // form they just submitted.
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => const StorePendingPage(),
-              ),
+              MaterialPageRoute(builder: (_) => const StorePendingPage()),
             );
           } else if (state.storeRequestTransactionStatus ==
               StoreRequestTransactionStatus.failure) {
@@ -141,7 +140,8 @@ class _SellerRequestPageState extends State<SellerRequestPage> {
           }
         },
         builder: (context, state) {
-          final loading = state.storeRequestTransactionStatus ==
+          final loading =
+              state.storeRequestTransactionStatus ==
               StoreRequestTransactionStatus.loading;
           return SingleChildScrollView(
             padding: EdgeInsets.all(width(16)),
@@ -260,9 +260,7 @@ class _SellerRequestPageState extends State<SellerRequestPage> {
                   ),
                   SizedBox(height: height(22)),
                   AuthButton(
-                    text: loading
-                        ? LK.commonSaving.tr()
-                        : LK.sellerSubmit.tr(),
+                    text: loading ? LK.commonSaving.tr() : LK.sellerSubmit.tr(),
                     onTap: loading ? null : _submit,
                     widthButton: double.infinity,
                     heightButton: height(54),

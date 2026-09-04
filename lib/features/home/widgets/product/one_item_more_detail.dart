@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart' show SvgPicture;
 
 import '../../../../core/screen_util.dart';
+
 class OneItemMoreDetail extends StatelessWidget {
   final String icon;
   final String title;
@@ -20,7 +21,7 @@ class OneItemMoreDetail extends StatelessWidget {
           ),
           child: Center(child: SvgPicture.asset(icon)),
         ),
-        SizedBox(width: width(5),),
+        SizedBox(width: width(5)),
         Text(
           title,
           style: Theme.of(context).textTheme.bodySmall!.copyWith(

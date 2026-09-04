@@ -117,18 +117,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
               children: [
                 AuthTextField(
                   controller: _firstName,
+                  labelText: LK.authFirstName.tr(),
                   hintText: LK.authFirstName.tr(),
                   validator: validateName,
                 ),
                 SizedBox(height: height(12)),
                 AuthTextField(
                   controller: _lastName,
+                  labelText: LK.authLastName.tr(),
                   hintText: LK.authLastName.tr(),
                   validator: validateName,
                 ),
                 SizedBox(height: height(12)),
                 AuthTextField(
                   controller: _phone,
+                  labelText: LK.authPhone.tr(),
                   hintText: LK.authPhone.tr(),
                   validator: validateSyrianPhone,
                   formatters: [FilteringTextInputFormatter.digitsOnly],

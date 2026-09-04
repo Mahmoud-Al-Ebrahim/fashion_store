@@ -1,3 +1,5 @@
+import '../../core/utils/api_service.dart';
+
 /// Response model for `POST Complaint/AddComplaint` -> `data`.
 class ComplaintDetailModel {
   final int id;
@@ -29,7 +31,9 @@ class ComplaintDetailModel {
       id: json['id'] as int,
       customerId: json['customerId'].toString(),
       customerFullName: json['customerFullName']?.toString() ?? '',
-      customerImageUrl: json['customerImageUrl']?.toString(),
+      customerImageUrl: ApiService.resolveUrl(
+        json['customerImageUrl']?.toString(),
+      ),
       storeOwnerId: json['storeOwnerId'].toString(),
       storeName: json['storeName']?.toString() ?? '',
       storeLogoUrl: json['storeLogoUrl']?.toString(),
@@ -71,7 +75,9 @@ class StoreComplaintModel {
       complaintId: json['complaintId'] as int,
       customerId: json['customerId'].toString(),
       customerFullName: json['customerFullName']?.toString() ?? '',
-      customerImageUrl: json['customerImageUrl']?.toString(),
+      customerImageUrl: ApiService.resolveUrl(
+        json['customerImageUrl']?.toString(),
+      ),
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       createdAt: DateTime.parse(json['createdAt'].toString()),
@@ -100,6 +106,10 @@ class UserComplaintModel {
   /// Messages in this thread the signed-in side has not opened yet.
   final int numberOfUnReadMessage;
 
+  /// When the last message landed, or null for a thread nobody has written
+  /// in yet. Used to order the list by real activity.
+  final DateTime? lastMessageAt;
+
   UserComplaintModel({
     required this.complaintId,
     required this.storeId,
@@ -109,19 +119,25 @@ class UserComplaintModel {
     required this.description,
     required this.createdAt,
     this.numberOfUnReadMessage = 0,
+    this.lastMessageAt,
   });
+
+  /// Newest activity first: the last message if there is one, otherwise the
+  /// moment the complaint was filed.
+  DateTime get lastActivityAt => lastMessageAt ?? createdAt;
 
   factory UserComplaintModel.fromJson(Map<String, dynamic> json) {
     return UserComplaintModel(
       complaintId: json['complaintId'] as int,
       storeId: json['storeId'] as int,
       storeName: json['storeName']?.toString() ?? '',
-      storeLogo: json['storeLogo']?.toString(),
+      storeLogo: ApiService.resolveUrl(json['storeLogo']?.toString()),
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       createdAt: DateTime.parse(json['createdAt'].toString()),
       numberOfUnReadMessage:
           (json['numberOfUnReadMessage'] as num?)?.toInt() ?? 0,
+      lastMessageAt: DateTime.tryParse(json['lastMessageAt']?.toString() ?? ''),
     );
   }
 }

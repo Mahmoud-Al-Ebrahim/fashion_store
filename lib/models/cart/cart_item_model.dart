@@ -1,3 +1,5 @@
+import '../../core/utils/api_service.dart';
+
 /// Item inside `GET Cart/GetCartItems` -> `data.cartItemDto`.
 class CartItemModel {
   final int cartItemId;
@@ -32,7 +34,11 @@ class CartItemModel {
       productSizeId: json['productSizeId'] as int,
       storeId: json['storeId'] as int,
       productId: json['productId'] as int,
-      productImage: json['productImage']?.toString() ?? '',
+      productImage:
+          ApiService.resolveUrl(
+            ApiService.resolveUrl(json['productImage']?.toString()),
+          ) ??
+          '',
       quantity: json['quantity'] as int,
       price: (json['price'] as num).toDouble(),
       priceAfterDiscount: (json['priceAfterDiscount'] as num).toDouble(),
@@ -91,7 +97,11 @@ class AddToCartResultModel {
       cartId: json['cartId'] as int,
       storeId: json['storeId'] as int,
       productId: json['productId'] as int,
-      productImage: json['productImage']?.toString() ?? '',
+      productImage:
+          ApiService.resolveUrl(
+            ApiService.resolveUrl(json['productImage']?.toString()),
+          ) ??
+          '',
       quantity: json['quantity'] as int,
       price: (json['price'] as num).toDouble(),
       priceAfterDiscount: (json['priceAfterDiscount'] as num).toDouble(),

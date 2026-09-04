@@ -42,7 +42,8 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
             return AdminAsyncView(
               isLoading: state.getAllOrdersStatus == GetAllOrdersStatus.loading,
               isFailure: state.getAllOrdersStatus == GetAllOrdersStatus.failure,
-              isEmpty: state.getAllOrdersStatus == GetAllOrdersStatus.success &&
+              isEmpty:
+                  state.getAllOrdersStatus == GetAllOrdersStatus.success &&
                   state.orders.isEmpty,
               errorMessage: state.errorMessage,
               emptyText: LK.adminNoOrders.tr(),
@@ -65,7 +66,10 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                     ),
                     child: InkWell(
                       onTap: () => context.pushPage(
-                        AdminOrderDetailPage(orderId: order.id),
+                        AdminOrderDetailPage(
+                          orderId: order.id,
+                          orderStatus: order.status,
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -92,9 +96,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
                               ],
                             ),
                           ),
-                          AdminStatusBadge(
-                            status: order.status,
-                          ),
+                          AdminStatusBadge(status: order.status),
                         ],
                       ),
                     ),

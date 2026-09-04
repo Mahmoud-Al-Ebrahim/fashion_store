@@ -35,3 +35,11 @@ class ReadComplaintMessagesEvent extends ComplaintEvent {
 
   ReadComplaintMessagesEvent({required this.complaintId});
 }
+
+/// Wipes this bloc back to its initial state.
+///
+/// Dispatched for every bloc on sign-out: the blocs live at the app
+/// root and outlive any single session, so without this the next
+/// account would open onto the previous one's cart, orders, wallet and
+/// profile until each screen happened to refetch.
+class ClearComplaintEvent extends ComplaintEvent {}

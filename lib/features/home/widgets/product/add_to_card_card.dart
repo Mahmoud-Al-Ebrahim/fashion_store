@@ -106,8 +106,9 @@ class _AddToCardCardState extends State<AddToCardCard> {
                 return state.addToCartStatus == AddToCartStatus.loading
                     ? LinearProgressIndicator(
                         minHeight: 2.5,
-                        backgroundColor:
-                            theme.colorScheme.primary.withValues(alpha: 0.2),
+                        backgroundColor: theme.colorScheme.primary.withValues(
+                          alpha: 0.2,
+                        ),
                       )
                     : const SizedBox(height: 2.5);
               },

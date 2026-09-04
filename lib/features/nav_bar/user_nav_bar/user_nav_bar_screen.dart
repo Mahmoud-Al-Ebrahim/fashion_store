@@ -6,9 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../blocs/cart_bloc/cart_bloc.dart';
+import '../../../blocs/store_request_bloc/store_request_bloc.dart';
 import '../../../blocs/user_bloc/user_bloc.dart';
 import '../../../core/localization/translation_keys.dart';
 import '../../../core/screen_util.dart';
+import '../../../core/utils/session.dart';
 import '../../community/pages/community_page.dart';
 import '../../home/pages/home_page_screen.dart';
 import '../../home/pages/see_more_bar.dart';
@@ -66,16 +68,32 @@ class _UserNavBarView extends StatelessWidget {
           _NavItemData("assets/svg/bag.svg", LK.navOrders.tr()),
         ];
 
-        const screens = [
-          HomePageScreen(),
-          CommunityPage(),
-          SeeMoreBar(),
-          OrdersPage(),
+        // Deliberately NOT const. A const list hands Flutter the identical
+        // widget objects on every rebuild, and `Element.updateChild`
+        // short-circuits on `identical(new, old)` - so this subtree was
+        // never rebuilt and the home page kept whatever locale it first
+        // built with. Switching to English left "عروض وخصومات" and
+        // "متاجر موصى بها" in Arabic. The IndexedStack keeps each page's
+        // State alive, so rebuilding costs nothing and reloads nothing.
+        final screens = [
+          const HomePageScreen(),
+          const CommunityPage(),
+          const SeeMoreBar(),
+          const OrdersPage(),
         ];
 
         return Scaffold(
           backgroundColor: theme.colorScheme.onPrimary,
           drawer: const CustomDrawer(),
+          // The drawer decides between "open your own store" and "review my
+          // store request" from this list, so it is refreshed on every
+          // open - a request filed or cancelled a moment ago is reflected.
+          onDrawerChanged: (isOpen) {
+            if (!isOpen || Session.isGuest) return;
+            context.read<StoreRequestBloc>().add(
+              GetAllStoreRequestsByUserEvent(),
+            );
+          },
           appBar: AppBar(
             scrolledUnderElevation: 0,
             surfaceTintColor: Colors.transparent,
@@ -130,8 +148,9 @@ class _UserNavBarView extends StatelessWidget {
                 final isSelected = index == state.currentIndex;
 
                 return GestureDetector(
-                  onTap: () =>
-                      context.read<NavBarBloc>().add(ChangeNavBar(index: index)),
+                  onTap: () => context.read<NavBarBloc>().add(
+                    ChangeNavBar(index: index),
+                  ),
                   behavior: HitTestBehavior.opaque,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -141,8 +160,9 @@ class _UserNavBarView extends StatelessWidget {
                         width: 45,
                         height: 2,
                         decoration: BoxDecoration(
-                          color:
-                              isSelected ? colorSelected : Colors.transparent,
+                          color: isSelected
+                              ? colorSelected
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),

@@ -39,7 +39,12 @@ const List<String> kShoeSizeValues = [
   'Shoe44',
   'Shoe45',
 ];
-const List<String> kOrderStatusValues = ['Processing', 'Cancelled', 'Delivered'];
+const List<String> kOccasionValues = ['Formal', 'Casual', 'Party', 'Sport'];
+const List<String> kOrderStatusValues = [
+  'Processing',
+  'Cancelled',
+  'Delivered',
+];
 
 List<PickerOption> genderOptions() =>
     kGenderValues.map((v) => PickerOption(v, LK.genderKey(v).tr())).toList();
@@ -49,6 +54,10 @@ List<PickerOption> seasonOptions() =>
 
 List<PickerOption> typeOptions() =>
     kTypeValues.map((v) => PickerOption(v, LK.typeKey(v).tr())).toList();
+
+List<PickerOption> occasionOptions() => kOccasionValues
+    .map((v) => PickerOption(v, LK.occasionKey(v).tr()))
+    .toList();
 
 /// Shoe sizes display as the plain number ("40"), clothing sizes as-is ("M").
 String sizeLabel(String value) =>
@@ -61,13 +70,25 @@ List<PickerOption> shoeSizeOptions() =>
     kShoeSizeValues.map((v) => PickerOption(v, sizeLabel(v))).toList();
 
 List<PickerOption> allSizeOptions() => [
-      ...clothingSizeOptions(),
-      ...shoeSizeOptions(),
-    ];
+  ...clothingSizeOptions(),
+  ...shoeSizeOptions(),
+];
 
-List<PickerOption> orderStatusOptions() => kOrderStatusValues
-    .map((v) => PickerOption(v, LK.statusKey(v).tr()))
-    .toList();
+/// The only status an admin may move an order *into*.
+///
+/// An order starts life `Processing`; the one thing left to record is that
+/// it arrived. Cancelling belongs to the customer, and the server treats
+/// both `Delivered` and `Cancelled` as terminal - offering them here only
+/// produced a one-way trap and a rejected request.
+const String kDeliveredStatus = 'Delivered';
+
+/// True when [status] is an order an admin can still act on. Only
+/// `Processing` qualifies; the two terminal states are read-only.
+bool orderStatusIsEditable(String? status) => status == 'Processing';
+
+List<PickerOption> orderStatusUpdateOptions() => [
+  PickerOption(kDeliveredStatus, LK.statusKey(kDeliveredStatus).tr()),
+];
 
 /// A named colour offered when a store owner adds a product colour.
 ///
@@ -123,24 +144,37 @@ String normalizeColorName(String value) {
       .replaceAll('ة', 'ه');
 }
 
+/// The palette offered to a store owner, and - for the [isMain] entries -
+/// the customer's colour filter.
+///
+/// `apiName` is written hamza-free (ابيض, not أبيض) on purpose. `GetFilter`
+/// matches the stored colour string *exactly*, and the bulk of the existing
+/// catalog was entered without the hamza, so writing the hamza form created
+/// rows the filter could never select. [normalizeColorName] folds the two
+/// spellings together on the way in; writing the plain alif keeps new rows
+/// on the same form as the old ones.
 const List<ProductColorSwatch> kColorSwatches = [
-  ProductColorSwatch('white', '#FFFFFF', 'أبيض', isMain: true),
-  ProductColorSwatch('black', '#000000', 'أسود', isMain: true),
-  ProductColorSwatch('red', '#FF0000', 'أحمر', isMain: true),
-  ProductColorSwatch('blue', '#0000FF', 'أزرق', isMain: true),
-  ProductColorSwatch('green', '#008000', 'أخضر', isMain: true),
-  ProductColorSwatch('yellow', '#FFFF00', 'أصفر', isMain: true),
-  ProductColorSwatch('gray', '#808080', 'رمادي', isMain: true),
-  ProductColorSwatch('brown', '#8B4513', 'بني', isMain: true),
+  ProductColorSwatch('white', '#FFFFFF', 'ابيض', isMain: true),
+  ProductColorSwatch('black', '#000000', 'اسود', isMain: true),
+  ProductColorSwatch('red', '#E53935', 'احمر', isMain: true),
+  ProductColorSwatch('blue', '#1E88E5', 'ازرق', isMain: true),
+  ProductColorSwatch('green', '#2E7D32', 'اخضر', isMain: true),
+  ProductColorSwatch('yellow', '#FDD835', 'اصفر', isMain: true),
+  // Grey and silver are two different colours and were being conflated: the
+  // filter offered a single light-grey chip labelled "رمادي", so a shopper
+  // looking for silver picked something named grey. They are now separate
+  // chips - a true mid grey, and the lighter metallic beside it.
+  ProductColorSwatch('gray', '#757575', 'رمادي', isMain: true),
+  ProductColorSwatch('silver', '#C0C0C0', 'فضي', isMain: true),
+  ProductColorSwatch('brown', '#795548', 'بني', isMain: true),
   // The catalog stores زهري for pink, not وردي - filtering on the
   // latter matched nothing, and writing it would split the data in two.
-  ProductColorSwatch('pink', '#FFB6C1', 'زهري', isMain: true),
-  ProductColorSwatch('purple', '#800080', 'بنفسجي', isMain: true),
-  ProductColorSwatch('orange', '#FFA500', 'برتقالي', isMain: true),
-  ProductColorSwatch('silver', '#C0C0C0', 'فضي'),
+  ProductColorSwatch('pink', '#F48FB1', 'زهري', isMain: true),
+  ProductColorSwatch('purple', '#7B1FA2', 'بنفسجي', isMain: true),
+  ProductColorSwatch('orange', '#FB8C00', 'برتقالي', isMain: true),
   ProductColorSwatch('gold', '#FFD700', 'ذهبي'),
-  ProductColorSwatch('navy', '#000080', 'كحلي'),
-  ProductColorSwatch('beige', '#F5F5DC', 'بيج'),
+  ProductColorSwatch('navy', '#0D1B4C', 'كحلي'),
+  ProductColorSwatch('beige', '#E8DCC0', 'بيج'),
 ];
 
 /// Existing catalog data uses a few colour spellings that differ from
@@ -156,6 +190,8 @@ const Map<String, String> _colorAliases = {
   'زهري': 'pink',
   'وردي': 'pink',
   'رمادى': 'gray',
+  'رصاصي': 'gray',
+  'سلفر': 'silver',
 };
 
 /// Translates a colour name coming back from the API. Unknown/free-form

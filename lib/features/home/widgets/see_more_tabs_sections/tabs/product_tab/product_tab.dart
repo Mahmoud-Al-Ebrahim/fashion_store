@@ -15,18 +15,13 @@ class ProductsTab extends StatelessWidget {
   final bool hasQuery;
   final VoidCallback onRetry;
 
-  const ProductsTab({
-    super.key,
-    required this.hasQuery,
-    required this.onRetry,
-  });
+  const ProductsTab({super.key, required this.hasQuery, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProductBloc, ProductState>(
       builder: (context, state) {
-        final results =
-            hasQuery ? state.searchResults : state.filterResults;
+        final results = hasQuery ? state.searchResults : state.filterResults;
         final status = hasQuery
             ? state.searchProductsStatus.index
             : state.filterProductsStatus.index;

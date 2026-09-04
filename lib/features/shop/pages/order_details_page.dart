@@ -79,7 +79,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           return ListView(
             padding: EdgeInsets.all(width(16)),
             children: [
-              if (payment != null)
+              // A cancelled order was never settled, so its payment line
+              // is noise at best and misleading at worst.
+              if (payment != null && status != 'Cancelled')
                 Container(
                   padding: EdgeInsets.all(width(14)),
                   decoration: BoxDecoration(

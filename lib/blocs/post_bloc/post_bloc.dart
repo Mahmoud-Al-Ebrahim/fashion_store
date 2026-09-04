@@ -20,6 +20,23 @@ part 'post_event.dart';
 
 part 'post_state.dart';
 
+/// Field names for one entry of `NewMedias` on `PUT Post/Update/{postId}`.
+///
+/// `NewMedias` binds to a `List<RequestAddPostMediaDto>`, so every entry
+/// needs its own indexed, dotted keys - `NewMedias[0].File`,
+/// `NewMedias[0].MediaType`, `NewMedias[0].Duration`. Sending the files as
+/// a bare `NewMedias` list (which is what this used to do) bound an *empty*
+/// list server-side: the call answered 200, the post's text and visibility
+/// were updated, and the new image was silently dropped - which is exactly
+/// how "editing a post's image does nothing" presented. `Post/Add` already
+/// used this shape for `mediaDtos`, which is why *creating* a post with an
+/// image always worked.
+String updateMediaFileKey(int index) => 'NewMedias[$index].File';
+
+String updateMediaTypeKey(int index) => 'NewMedias[$index].MediaType';
+
+String updateMediaDurationKey(int index) => 'NewMedias[$index].Duration';
+
 class PostBloc extends Bloc<PostEvent, PostState> {
   PostBloc() : super(PostState()) {
     on<AddPostEvent>(_onAddPostEvent);
@@ -28,6 +45,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<GetCommunityFeedEvent>(_onGetCommunityFeedEvent);
     on<UpdatePostEvent>(_onUpdatePostEvent);
     on<TogglePostReactionEvent>(_onTogglePostReactionEvent);
+    on<ClearPostEvent>((event, emit) => emit(PostState()));
   }
 
   FutureOr<void> _onGetCommunityFeedEvent(
@@ -239,10 +257,13 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     final Map<String, dynamic> form = {};
     if (event.content != null) form['Content'] = event.content;
     if (event.visibility != null) form['Visibility'] = event.visibility;
-    if (event.newMedias.isNotEmpty) {
-      form['NewMedias'] = await Future.wait(
-        event.newMedias.map((f) => _toMultipartFile(f)),
-      );
+    for (var i = 0; i < event.newMedias.length; i++) {
+      final media = event.newMedias[i];
+      form[updateMediaFileKey(i)] = await _toMultipartFile(media.file);
+      form[updateMediaTypeKey(i)] = media.mediaType;
+      // Sent unconditionally - 0 for an image - matching the request shape
+      // confirmed working against the server.
+      form[updateMediaDurationKey(i)] = media.durationSeconds ?? 0;
     }
     if (event.deletedMediaIds.isNotEmpty) {
       form['DeletedMediaIds'] = event.deletedMediaIds;

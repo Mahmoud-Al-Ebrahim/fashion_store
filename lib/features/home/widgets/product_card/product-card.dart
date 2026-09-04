@@ -44,9 +44,7 @@ class ProductCard extends StatelessWidget {
                 PositionedDirectional(
                   top: height(10),
                   end: width(10),
-                  child: DiscountBadge(
-                    percentage: product.discountPercentage!,
-                  ),
+                  child: DiscountBadge(percentage: product.discountPercentage!),
                 ),
               isWithDetail
                   ? NameStorePriceTime(product: product)

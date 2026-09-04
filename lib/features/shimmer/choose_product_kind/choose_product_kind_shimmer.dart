@@ -41,12 +41,7 @@ class ChooseProductKindShimmer extends StatelessWidget {
                         radius: 100, // صورة دائرية
                       ),
                       const SizedBox(height: 12),
-                      OneItemShimmer(
-                        itemHeight: 15,
-                        itemWidth: 100,
-                        radius: 8,
-                      ),
-
+                      OneItemShimmer(itemHeight: 15, itemWidth: 100, radius: 8),
                     ],
                   ),
                 ),

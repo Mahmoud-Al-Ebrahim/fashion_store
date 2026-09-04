@@ -26,6 +26,11 @@ class ProductState {
   /// Result of the most recent [LookupProductEvent].
   final ProductCatalogModel? lookupProduct;
 
+  /// Descriptions resolved by [LoadProductDescriptionEvent], keyed by
+  /// product id. A separate slot on purpose: filling one product's
+  /// description must not replace the list a screen is showing.
+  final Map<int, String> productDescriptions;
+
   ProductState({
     this.productTransactionStatus = ProductTransactionStatus.init,
     this.getAllDiscountProductStatus = GetAllDiscountProductStatus.init,
@@ -37,6 +42,7 @@ class ProductState {
     this.searchResults = const [],
     this.filterResults = const [],
     this.lookupProduct,
+    this.productDescriptions = const {},
   });
 
   ProductState copyWith({
@@ -50,6 +56,7 @@ class ProductState {
     List<ProductCatalogModel>? searchResults,
     List<ProductCatalogModel>? filterResults,
     ProductCatalogModel? lookupProduct,
+    Map<int, String>? productDescriptions,
   }) {
     return ProductState(
       productTransactionStatus:
@@ -64,6 +71,7 @@ class ProductState {
       searchResults: searchResults ?? this.searchResults,
       filterResults: filterResults ?? this.filterResults,
       lookupProduct: lookupProduct ?? this.lookupProduct,
+      productDescriptions: productDescriptions ?? this.productDescriptions,
     );
   }
 }

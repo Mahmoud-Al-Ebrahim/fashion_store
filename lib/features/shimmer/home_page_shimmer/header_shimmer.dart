@@ -7,11 +7,11 @@ class HeaderShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return   Row(
+    return Row(
       children: [
-        OneItemShimmer(itemHeight: 15, itemWidth: 120,radius: 20,),
+        OneItemShimmer(itemHeight: 15, itemWidth: 120, radius: 20),
         Spacer(),
-        OneItemShimmer(itemHeight: 15, itemWidth: 60,radius: 20,),
+        OneItemShimmer(itemHeight: 15, itemWidth: 60, radius: 20),
       ],
     );
   }

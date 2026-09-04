@@ -7,7 +7,9 @@ import '../../../core/screen_util.dart';
 /// Formats a money amount without trailing ".00" noise.
 String formatPrice(double value) {
   final rounded = value.roundToDouble();
-  return (value == rounded ? rounded.toInt().toString() : value.toStringAsFixed(2));
+  return (value == rounded
+      ? rounded.toInt().toString()
+      : value.toStringAsFixed(2));
 }
 
 /// Shows the effective price, with the original struck through when a

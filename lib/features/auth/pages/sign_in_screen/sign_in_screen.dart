@@ -82,9 +82,9 @@ class _SignInScreenState extends State<SignInScreen> {
               children: [
                 SizedBox(height: height(90)),
                 Text(
-                  LK.authLogin.tr(),
-                  style: Theme.of(context).textTheme.displaySmall,
-                )
+                      LK.authLogin.tr(),
+                      style: Theme.of(context).textTheme.displaySmall,
+                    )
                     .animate()
                     .fadeIn(duration: 400.ms)
                     .slide(begin: const Offset(1, 0), duration: 400.ms),
@@ -94,20 +94,20 @@ class _SignInScreenState extends State<SignInScreen> {
                   child: Column(
                     children: [
                       AuthTextField(
-                        controller: emailController,
-                        hintText: LK.authEmail.tr(),
-                        validator: validateEmail,
-                      )
+                            controller: emailController,
+                            hintText: LK.authEmail.tr(),
+                            validator: validateEmail,
+                          )
                           .animate(delay: 200.ms)
                           .fadeIn(duration: 400.ms)
                           .slide(begin: const Offset(1, 0), duration: 400.ms),
                       SizedBox(height: height(5)),
                       AuthTextField(
-                        controller: passwordController,
-                        hintText: LK.authPassword.tr(),
-                        isPassword: true,
-                        validator: validatePassword,
-                      )
+                            controller: passwordController,
+                            hintText: LK.authPassword.tr(),
+                            isPassword: true,
+                            validator: validatePassword,
+                          )
                           .animate(delay: 400.ms)
                           .fadeIn(duration: 400.ms)
                           .slide(begin: const Offset(1, 0), duration: 400.ms),
@@ -141,50 +141,50 @@ class _SignInScreenState extends State<SignInScreen> {
                     return state.loginStatus == LoginStatus.loading
                         ? LinearProgressIndicator(
                             minHeight: 2.5,
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.2),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.2),
                           )
                         : const SizedBox(height: 2.5);
                   },
                 ),
                 SizedBox(height: height(14)),
                 BlocBuilder<AuthBloc, AuthState>(
-                  buildWhen: (p, c) => p.loginStatus != c.loginStatus,
-                  builder: (context, state) {
-                    final loading = state.loginStatus == LoginStatus.loading;
-                    return AuthButton(
-                      text: loading
-                          ? LK.commonLoading.tr()
-                          : LK.authLogin.tr(),
-                      widthButton: double.infinity,
-                      onTap: loading
-                          ? null
-                          : () {
-                              if (loginFormKey.currentState?.validate() ??
-                                  false) {
-                                context.read<AuthBloc>().add(
-                                  LoginEvent(
-                                    email: emailController.text.trim(),
-                                    password: passwordController.text,
-                                  ),
-                                );
-                              }
-                            },
-                    );
-                  },
-                )
+                      buildWhen: (p, c) => p.loginStatus != c.loginStatus,
+                      builder: (context, state) {
+                        final loading =
+                            state.loginStatus == LoginStatus.loading;
+                        return AuthButton(
+                          text: loading
+                              ? LK.commonLoading.tr()
+                              : LK.authLogin.tr(),
+                          widthButton: double.infinity,
+                          onTap: loading
+                              ? null
+                              : () {
+                                  if (loginFormKey.currentState?.validate() ??
+                                      false) {
+                                    context.read<AuthBloc>().add(
+                                      LoginEvent(
+                                        email: emailController.text.trim(),
+                                        password: passwordController.text,
+                                      ),
+                                    );
+                                  }
+                                },
+                        );
+                      },
+                    )
                     .animate(delay: 600.ms)
                     .fadeIn(duration: 400.ms)
                     .slide(begin: const Offset(1, 0), duration: 400.ms),
                 SizedBox(height: height(10)),
                 AuthButton(
-                  text: LK.authContinueAsGuest.tr(),
-                  isWhiteBackground: true,
-                  widthButton: double.infinity,
-                  onTap: _continueAsGuest,
-                )
+                      text: LK.authContinueAsGuest.tr(),
+                      isWhiteBackground: true,
+                      widthButton: double.infinity,
+                      onTap: _continueAsGuest,
+                    )
                     .animate(delay: 700.ms)
                     .fadeIn(duration: 400.ms)
                     .slide(begin: const Offset(1, 0), duration: 400.ms),

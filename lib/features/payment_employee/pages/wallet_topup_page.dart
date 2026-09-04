@@ -27,7 +27,11 @@ class WalletTopUpPage extends StatefulWidget {
   final bool embedded;
   final bool isSuperAdmin;
 
-  const WalletTopUpPage({super.key, this.embedded = false, this.isSuperAdmin = false});
+  const WalletTopUpPage({
+    super.key,
+    this.embedded = false,
+    this.isSuperAdmin = false,
+  });
 
   @override
   State<WalletTopUpPage> createState() => _WalletTopUpPageState();
@@ -71,9 +75,9 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
             SizedBox(height: height(6)),
             Text(
               walletId,
-              style: Theme.of(dialogContext).textTheme.bodySmall!.copyWith(
-                color: Colors.grey,
-              ),
+              style: Theme.of(
+                dialogContext,
+              ).textTheme.bodySmall!.copyWith(color: Colors.grey),
             ),
           ],
         ),
@@ -107,84 +111,84 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
     }
 
     final content = BlocListener<WalletBloc, WalletState>(
-        listenWhen: (p, c) => p.addTransactionStatus != c.addTransactionStatus,
-        listener: (context, state) {
-          if (state.addTransactionStatus == AddTransactionStatus.success) {
-            showMessage(LK.paymentSuccess.tr(), hasError: false);
-            _walletIdController.clear();
-            _amountController.clear();
-            FocusScope.of(context).unfocus();
-          } else if (state.addTransactionStatus ==
-              AddTransactionStatus.failure) {
-            showMessage(state.errorMessage);
-          }
-        },
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(width(16)),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(width(12)),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        size: 18,
-                        color: Colors.green,
-                      ),
-                      SizedBox(width: width(8)),
-                      Expanded(
-                        child: Text(
-                          LK.paymentDepositOnlyNote.tr(),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                    ],
-                  ),
+      listenWhen: (p, c) => p.addTransactionStatus != c.addTransactionStatus,
+      listener: (context, state) {
+        if (state.addTransactionStatus == AddTransactionStatus.success) {
+          showMessage(LK.paymentSuccess.tr(), hasError: false);
+          _walletIdController.clear();
+          _amountController.clear();
+          FocusScope.of(context).unfocus();
+        } else if (state.addTransactionStatus == AddTransactionStatus.failure) {
+          showMessage(state.errorMessage);
+        }
+      },
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(width(16)),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: EdgeInsets.all(width(12)),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                SizedBox(height: height(20)),
-                AuthTextField(
-                  controller: _walletIdController,
-                  hintText: LK.paymentWalletIdHint.tr(),
-                  validator: validateWalletId,
-                ),
-                SizedBox(height: height(10)),
-                AuthTextField(
-                  controller: _amountController,
-                  hintText: LK.paymentAmount.tr(),
-                  // Digits and a single decimal separator only - no minus
-                  // sign, so a negative amount can't even be typed.
-                  formatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      size: 18,
+                      color: Colors.green,
+                    ),
+                    SizedBox(width: width(8)),
+                    Expanded(
+                      child: Text(
+                        LK.paymentDepositOnlyNote.tr(),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
                   ],
-                  validator: validatePositiveAmount,
                 ),
-                SizedBox(height: height(24)),
-                BlocBuilder<WalletBloc, WalletState>(
-                  builder: (context, state) {
-                    final loading = state.addTransactionStatus ==
-                        AddTransactionStatus.loading;
-                    return AuthButton(
-                      text: loading
-                          ? LK.commonLoading.tr()
-                          : LK.paymentSubmit.tr(),
-                      onTap: loading ? null : _submit,
-                      widthButton: double.infinity,
-                      heightButton: height(54),
-                    );
-                  },
-                ),
-              ],
-            ),
+              ),
+              SizedBox(height: height(20)),
+              AuthTextField(
+                controller: _walletIdController,
+                hintText: LK.paymentWalletIdHint.tr(),
+                validator: validateWalletId,
+              ),
+              SizedBox(height: height(10)),
+              AuthTextField(
+                controller: _amountController,
+                hintText: LK.paymentAmount.tr(),
+                // Digits and a single decimal separator only - no minus
+                // sign, so a negative amount can't even be typed.
+                formatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                validator: validatePositiveAmount,
+              ),
+              SizedBox(height: height(24)),
+              BlocBuilder<WalletBloc, WalletState>(
+                builder: (context, state) {
+                  final loading =
+                      state.addTransactionStatus ==
+                      AddTransactionStatus.loading;
+                  return AuthButton(
+                    text: loading
+                        ? LK.commonLoading.tr()
+                        : LK.paymentSubmit.tr(),
+                    onTap: loading ? null : _submit,
+                    widthButton: double.infinity,
+                    heightButton: height(54),
+                  );
+                },
+              ),
+            ],
           ),
         ),
+      ),
     );
 
     if (widget.embedded) return content;

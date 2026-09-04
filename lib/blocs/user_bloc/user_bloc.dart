@@ -25,6 +25,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<GetUserProfileEvent>(_onGetUserProfileEvent);
     on<UpdateProfilePhotoEvent>(_onUpdateProfilePhotoEvent);
     on<UpdateUserEvent>(_onUpdateUserEvent);
+    on<ClearUserEvent>((event, emit) => emit(UserState()));
   }
 
   FutureOr<void> _onGetUserProfileEvent(

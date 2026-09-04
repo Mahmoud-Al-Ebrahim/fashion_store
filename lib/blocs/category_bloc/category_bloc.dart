@@ -25,6 +25,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<GetAllStoreCategoryByAdminEvent>(_onGetAllStoreCategoryByAdminEvent);
     on<AddStoreCategoryEvent>(_onAddStoreCategoryEvent);
     on<DeleteStoreCategoryEvent>(_onDeleteStoreCategoryEvent);
+    on<ClearCategoryEvent>((event, emit) => emit(CategoryState()));
   }
 
   FutureOr<void> _onGetAllCategoriesEvent(

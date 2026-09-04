@@ -33,6 +33,7 @@ class SuperAdminBloc extends Bloc<SuperAdminEvent, SuperAdminState> {
     on<GetBannedUsersEvent>(_onGetBannedUsersEvent);
     on<DeleteUserEvent>(_onDeleteUserEvent);
     on<GetAllFilterOrdersEvent>(_onGetAllFilterOrdersEvent);
+    on<ClearSuperAdminEvent>((event, emit) => emit(SuperAdminState()));
   }
 
   FutureOr<void> _onRevokeUserTokenEvent(

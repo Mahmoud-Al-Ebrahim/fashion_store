@@ -16,12 +16,13 @@ class ProductListView extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: 10,
-          itemBuilder: (builder,index){
-        return Padding(
-          padding: const EdgeInsets.only(left: 20),
-          child: ProductCardShimmer(),
-        );
-      }),
+        itemBuilder: (builder, index) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: ProductCardShimmer(),
+          );
+        },
+      ),
     );
   }
 }

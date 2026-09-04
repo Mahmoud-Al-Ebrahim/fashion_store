@@ -17,3 +17,11 @@ class GetProductRatingByUserEvent extends RatingEvent {
 
   GetProductRatingByUserEvent({required this.productId});
 }
+
+/// Wipes this bloc back to its initial state.
+///
+/// Dispatched for every bloc on sign-out: the blocs live at the app
+/// root and outlive any single session, so without this the next
+/// account would open onto the previous one's cart, orders, wallet and
+/// profile until each screen happened to refetch.
+class ClearRatingEvent extends RatingEvent {}

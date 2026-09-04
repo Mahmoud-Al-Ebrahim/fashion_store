@@ -12,10 +12,10 @@ import '../../admin/admin_shell_screen.dart';
 import '../../admin/widgets/confirm_dialog.dart';
 import '../../auth/pages/sign_in_screen/sign_in_screen.dart';
 import '../../home/widgets/drawer/drawer_card.dart';
-import '../../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
 import '../../payment_employee/pages/wallet_topup_page.dart';
 import '../../../blocs/wallet_bloc/wallet_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' show BlocProvider;
+import '../../../core/utils/clear_session_blocs.dart';
 
 /// "More" tab for the platform admin. A super admin can do everything a
 /// store owner can, so the store dashboard is reachable from here, as is the
@@ -62,18 +62,6 @@ class SuperAdminMorePage extends StatelessWidget {
       body: ListView(
         padding: EdgeInsets.symmetric(vertical: height(10)),
         children: [
-          _tile(
-            context,
-            icon: Icons.storefront_outlined,
-            title: LK.superadminManageOwnStore.tr(),
-            onTap: () => context.pushPage(const AdminShellScreen()),
-          ),
-          _tile(
-            context,
-            icon: Icons.shopping_bag_outlined,
-            title: LK.storeStatusBrowseAsCustomer.tr(),
-            onTap: () => context.pushPage(const UserNavBar()),
-          ),
           // _tile(
           //   context,
           //   icon: Icons.account_balance_wallet_outlined,
@@ -85,6 +73,12 @@ class SuperAdminMorePage extends StatelessWidget {
           //     ),
           //   ),
           // ),
+          _tile(
+            context,
+            icon: Icons.storefront_outlined,
+            title: LK.superadminManageOwnStore.tr(),
+            onTap: () => context.pushPage(const AdminShellScreen()),
+          ),
           _tile(
             context,
             icon: Icons.language,
@@ -105,6 +99,10 @@ class SuperAdminMorePage extends StatelessWidget {
                 confirmText: LK.authLogout.tr(),
               );
               if (!confirmed || !context.mounted) return;
+              // Wipe every bloc first: they live at the app root and
+              // would otherwise carry this session's data into the
+              // next sign-in.
+              clearSessionBlocs(context);
               context.read<AuthBloc>().add(LogoutEvent());
               HelperFunctions.navigateToPageAndPopAll(
                 context,
@@ -126,7 +124,10 @@ class SuperAdminMorePage extends StatelessWidget {
     Color? color,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color ?? Theme.of(context).colorScheme.primary),
+      leading: Icon(
+        icon,
+        color: color ?? Theme.of(context).colorScheme.primary,
+      ),
       title: Text(title, style: TextStyle(color: color)),
       trailing: const Icon(Icons.chevron_left),
       onTap: onTap,

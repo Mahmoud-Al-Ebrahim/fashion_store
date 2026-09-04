@@ -45,7 +45,8 @@ class _SuggestedProductsSectionState extends State<SuggestedProductsSection> {
           p.getSuggestedProductsStatus != c.getSuggestedProductsStatus ||
           p.suggestedProducts != c.suggestedProducts,
       builder: (context, state) {
-        final loading = state.getSuggestedProductsStatus ==
+        final loading =
+            state.getSuggestedProductsStatus ==
             GetSuggestedProductsStatus.loading;
         final items = state.suggestedProducts;
 
@@ -103,9 +104,7 @@ class _SuggestionCard extends StatelessWidget {
     return GestureDetector(
       // Push a fresh details screen for the suggested product.
       onTap: () => context.pushPage(
-        ProductScreen(
-          product: ProductRef.fromSuggested(item),
-        ),
+        ProductScreen(product: ProductRef.fromSuggested(item)),
       ),
       child: SizedBox(
         width: width(140),
@@ -132,18 +131,17 @@ class _SuggestionCard extends StatelessWidget {
               item.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.w600),
             ),
             Text(
               localizedColorName(item.color),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                color: Colors.grey,
-                fontSize: 11,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(color: Colors.grey, fontSize: 11),
             ),
             SizedBox(height: height(2)),
             PriceTag(

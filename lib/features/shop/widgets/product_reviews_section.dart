@@ -52,13 +52,13 @@ class _ProductReviewsSectionState extends State<ProductReviewsSection> {
   }
 
   Future<bool> _ensureSignedIn() => requireAuth(
-        context,
-        onSignIn: () => HelperFunctions.navigateToPageAndPopAll(
-          context,
-          const SignInScreen(),
-          true,
-        ),
-      );
+    context,
+    onSignIn: () => HelperFunctions.navigateToPageAndPopAll(
+      context,
+      const SignInScreen(),
+      true,
+    ),
+  );
 
   Future<void> _rate(int value) async {
     if (!await _ensureSignedIn()) return;

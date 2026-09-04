@@ -44,10 +44,8 @@ class ImagePickBox extends StatelessWidget {
         child: CachedNetworkImage(
           imageUrl: existingImageUrl!,
           fit: BoxFit.cover,
-          errorWidget: (_, __, ___) => Icon(
-            Icons.broken_image_outlined,
-            color: Colors.grey.shade500,
-          ),
+          errorWidget: (_, __, ___) =>
+              Icon(Icons.broken_image_outlined, color: Colors.grey.shade500),
         ),
       );
     } else {
@@ -55,7 +53,11 @@ class ImagePickBox extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add_photo_alternate_outlined, color: Colors.grey.shade600, size: 32),
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              color: Colors.grey.shade600,
+              size: 32,
+            ),
             SizedBox(height: su.height(6)),
             Text(
               label,

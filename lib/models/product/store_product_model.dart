@@ -1,3 +1,4 @@
+import '../../core/utils/api_service.dart';
 import '../../core/utils/json_parse.dart';
 
 /// Product card shape returned by `GET Store/GetAllProductsByStore`.
@@ -40,7 +41,7 @@ class StoreProductModel {
       discountStartDate: asDateOrNull(json['discountStartDate']),
       discountEndDate: asDateOrNull(json['discountEndDate']),
       priceAfterDiscount: asDouble(json['priceAfterDiscount']),
-      image: asString(json['image']),
+      image: ApiService.resolveUrl(asString(json['image'])) ?? '',
     );
   }
 }

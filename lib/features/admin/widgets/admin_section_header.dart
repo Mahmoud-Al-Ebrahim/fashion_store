@@ -28,10 +28,7 @@ class AdminSectionHeader extends StatelessWidget {
             ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w700),
           ),
           if (actionText != null)
-            TextButton(
-              onPressed: onAction,
-              child: Text(actionText!),
-            ),
+            TextButton(onPressed: onAction, child: Text(actionText!)),
         ],
       ),
     );

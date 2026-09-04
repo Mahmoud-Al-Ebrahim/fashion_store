@@ -18,16 +18,30 @@ import '../../home/pages/product_screen.dart';
 ///
 /// Uses `pushReplacement` on success: the resolver is plumbing, and Back
 /// should return to the cart or order, not to a spinner.
-void openProductById(BuildContext context, int productId) {
+/// Set [allowPurchase] to false when the viewer owns the catalogue being
+/// inspected - see [ProductScreen.allowPurchase].
+void openProductById(
+  BuildContext context,
+  int productId, {
+  bool allowPurchase = true,
+}) {
   Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => ProductByIdPage(productId: productId)),
+    MaterialPageRoute(
+      builder: (_) =>
+          ProductByIdPage(productId: productId, allowPurchase: allowPurchase),
+    ),
   );
 }
 
 class ProductByIdPage extends StatefulWidget {
-  const ProductByIdPage({super.key, required this.productId});
+  const ProductByIdPage({
+    super.key,
+    required this.productId,
+    this.allowPurchase = true,
+  });
 
   final int productId;
+  final bool allowPurchase;
 
   @override
   State<ProductByIdPage> createState() => _ProductByIdPageState();
@@ -41,8 +55,8 @@ class _ProductByIdPageState extends State<ProductByIdPage> {
   }
 
   void _load() => context.read<ProductBloc>().add(
-        LookupProductEvent(productId: widget.productId),
-      );
+    LookupProductEvent(productId: widget.productId),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +75,7 @@ class _ProductByIdPageState extends State<ProductByIdPage> {
             MaterialPageRoute(
               builder: (_) => ProductScreen(
                 product: ProductRef.fromCatalog(product),
+                allowPurchase: widget.allowPurchase,
               ),
             ),
           );
@@ -117,10 +132,7 @@ class _Message extends StatelessWidget {
             ),
             if (onRetry != null) ...[
               SizedBox(height: height(12)),
-              TextButton(
-                onPressed: onRetry,
-                child: Text(LK.commonRetry.tr()),
-              ),
+              TextButton(onPressed: onRetry, child: Text(LK.commonRetry.tr())),
             ],
           ],
         ),

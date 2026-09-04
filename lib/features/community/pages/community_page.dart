@@ -57,10 +57,13 @@ class _CommunityPageState extends State<CommunityPage> {
               onRefresh: () async => _loadFeed(),
               child: AsyncView(
                 isLoading:
-                    state.getCommunityFeedStatus == GetCommunityFeedStatus.loading,
+                    state.getCommunityFeedStatus ==
+                    GetCommunityFeedStatus.loading,
                 isFailure:
-                    state.getCommunityFeedStatus == GetCommunityFeedStatus.failure,
-                isEmpty: state.getCommunityFeedStatus ==
+                    state.getCommunityFeedStatus ==
+                    GetCommunityFeedStatus.failure,
+                isEmpty:
+                    state.getCommunityFeedStatus ==
                         GetCommunityFeedStatus.success &&
                     state.communityFeed.isEmpty,
                 errorMessage: state.errorMessage,

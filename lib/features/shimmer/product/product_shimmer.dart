@@ -94,32 +94,56 @@ class ProductShimmer extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: height(30),),
-                OneItemShimmer(itemHeight: 150, itemWidth: double.infinity, radius: 10,
+                SizedBox(height: height(30)),
+                OneItemShimmer(
+                  itemHeight: 150,
+                  itemWidth: double.infinity,
+                  radius: 10,
                   borderWidth: 2,
                   child: Column(
-                  children: [
-                    SizedBox(height: height(30),),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        children: [
-                          OneItemShimmer(itemHeight: 20, itemWidth: 20,radius: 20,),
-                          SizedBox(width: width(5),),
-                          OneItemShimmer(itemHeight: 15, itemWidth: 55,radius: 20,),
-                          SizedBox(width: width(5),),
-                          OneItemShimmer(itemHeight: 20, itemWidth: 20,radius: 20,),
-                          SizedBox(width: width(5),),
-                          Spacer(),
-                          OneItemShimmer(itemHeight: 15, itemWidth: 100,radius: 20,),
-                        ],
+                    children: [
+                      SizedBox(height: height(30)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          children: [
+                            OneItemShimmer(
+                              itemHeight: 20,
+                              itemWidth: 20,
+                              radius: 20,
+                            ),
+                            SizedBox(width: width(5)),
+                            OneItemShimmer(
+                              itemHeight: 15,
+                              itemWidth: 55,
+                              radius: 20,
+                            ),
+                            SizedBox(width: width(5)),
+                            OneItemShimmer(
+                              itemHeight: 20,
+                              itemWidth: 20,
+                              radius: 20,
+                            ),
+                            SizedBox(width: width(5)),
+                            Spacer(),
+                            OneItemShimmer(
+                              itemHeight: 15,
+                              itemWidth: 100,
+                              radius: 20,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(height: height(30),),
+                      SizedBox(height: height(30)),
 
-                    OneItemShimmer(itemHeight: 30, itemWidth: 320, radius: 20,),
-                  ],
-                ),),
+                      OneItemShimmer(
+                        itemHeight: 30,
+                        itemWidth: 320,
+                        radius: 20,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

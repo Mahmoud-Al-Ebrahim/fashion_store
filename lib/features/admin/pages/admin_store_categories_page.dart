@@ -14,7 +14,8 @@ class AdminStoreCategoriesPage extends StatefulWidget {
   const AdminStoreCategoriesPage({super.key});
 
   @override
-  State<AdminStoreCategoriesPage> createState() => _AdminStoreCategoriesPageState();
+  State<AdminStoreCategoriesPage> createState() =>
+      _AdminStoreCategoriesPageState();
 }
 
 class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
@@ -36,7 +37,8 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
       ),
       body: BlocConsumer<CategoryBloc, CategoryState>(
         listenWhen: (p, c) =>
-            p.storeCategoryTransactionStatus != c.storeCategoryTransactionStatus,
+            p.storeCategoryTransactionStatus !=
+            c.storeCategoryTransactionStatus,
         listener: (context, state) {
           if (state.storeCategoryTransactionStatus ==
               StoreCategoryTransactionStatus.failure) {
@@ -44,7 +46,9 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
           }
         },
         builder: (context, state) {
-          final assignedCategoryIds = state.storeCategories.map((sc) => sc.categoryId).toSet();
+          final assignedCategoryIds = state.storeCategories
+              .map((sc) => sc.categoryId)
+              .toSet();
           final availableCategories = state.categories
               .where((c) => !assignedCategoryIds.contains(c.id))
               .toList();
@@ -69,11 +73,14 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
                 SizedBox(height: height(16)),
                 Expanded(
                   child: AdminAsyncView(
-                    isLoading: state.getAllStoreCategoryStatus ==
+                    isLoading:
+                        state.getAllStoreCategoryStatus ==
                         GetAllStoreCategoryStatus.loading,
-                    isFailure: state.getAllStoreCategoryStatus ==
+                    isFailure:
+                        state.getAllStoreCategoryStatus ==
                         GetAllStoreCategoryStatus.failure,
-                    isEmpty: state.getAllStoreCategoryStatus ==
+                    isEmpty:
+                        state.getAllStoreCategoryStatus ==
                             GetAllStoreCategoryStatus.success &&
                         state.storeCategories.isEmpty,
                     errorMessage: state.errorMessage,
@@ -82,17 +89,20 @@ class _AdminStoreCategoriesPageState extends State<AdminStoreCategoriesPage> {
                       spacing: width(10),
                       runSpacing: height(10),
                       children: state.storeCategories.map((sc) {
-                        final category = state.categories
-                            .where((c) => c.id == sc.categoryId);
-                        final name =
-                            category.isNotEmpty ? category.first.name : '${LK.adminCategory.tr()} #${sc.categoryId}';
+                        final category = state.categories.where(
+                          (c) => c.id == sc.categoryId,
+                        );
+                        final name = category.isNotEmpty
+                            ? category.first.name
+                            : '${LK.adminCategory.tr()} #${sc.categoryId}';
                         return Chip(
                           label: Text(name),
                           onDeleted: () async {
                             final confirmed = await confirmDialog(
                               context,
                               title: LK.commonDelete.tr(),
-                              message: '${LK.adminRemoveCategoryConfirm.tr()}\n$name',
+                              message:
+                                  '${LK.adminRemoveCategoryConfirm.tr()}\n$name',
                             );
                             if (!confirmed || !context.mounted) return;
                             context.read<CategoryBloc>().add(

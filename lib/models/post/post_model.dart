@@ -1,3 +1,5 @@
+import '../../core/utils/api_service.dart';
+
 /// Nested media entry inside [PostModel.postMedias].
 class PostMediaModel {
   final int postMediaId;
@@ -15,7 +17,11 @@ class PostMediaModel {
   factory PostMediaModel.fromJson(Map<String, dynamic> json) {
     return PostMediaModel(
       postMediaId: json['postMediaId'] as int,
-      mediaUrl: json['mediaUrl']?.toString() ?? '',
+      mediaUrl:
+          ApiService.resolveUrl(
+            ApiService.resolveUrl(json['mediaUrl']?.toString()),
+          ) ??
+          '',
       mediaType: json['mediaType']?.toString() ?? '',
       duration: json['duration'] as int?,
     );

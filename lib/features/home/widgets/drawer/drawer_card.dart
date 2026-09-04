@@ -22,12 +22,7 @@ class DrawerCard extends StatelessWidget {
     return ListTile(
       leading: GestureDetector(
         onTap: onTap,
-        child: SvgPicture.asset(
-          icon,
-          width: 20,
-          height: 20,
-          color: color,
-        ),
+        child: SvgPicture.asset(icon, width: 20, height: 20, color: color),
       ),
       title: GestureDetector(
         onTap: onTap,
@@ -41,13 +36,13 @@ class DrawerCard extends StatelessWidget {
       ),
       trailing: showArrow
           ? IconButton(
-        onPressed: onTap,
-        icon: Icon(
-          Icons.arrow_forward_ios_outlined,
-          color: color,
-          size: 15,
-        ),
-      )
+              onPressed: onTap,
+              icon: Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: color,
+                size: 15,
+              ),
+            )
           : null, // ✅ ما يعرض السهم إذا false
     );
   }

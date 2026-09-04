@@ -100,7 +100,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 SizedBox(height: height(30)),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
-                    final loading = state.forgotPasswordStatus ==
+                    final loading =
+                        state.forgotPasswordStatus ==
                         ForgotPasswordStatus.loading;
                     return AuthButton(
                       text: loading

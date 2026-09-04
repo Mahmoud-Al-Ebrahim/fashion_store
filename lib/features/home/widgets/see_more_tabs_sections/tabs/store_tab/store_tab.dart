@@ -23,13 +23,13 @@ class StoreTab extends StatelessWidget {
         final stores = normalized.isEmpty
             ? state.stores
             : state.stores
-                .where(
-                  (s) =>
-                      s.storeName.toLowerCase().contains(normalized) ||
-                      s.description.toLowerCase().contains(normalized) ||
-                      s.address.toLowerCase().contains(normalized),
-                )
-                .toList();
+                  .where(
+                    (s) =>
+                        s.storeName.toLowerCase().contains(normalized) ||
+                        s.description.toLowerCase().contains(normalized) ||
+                        s.address.toLowerCase().contains(normalized),
+                  )
+                  .toList();
 
         return AsyncView(
           isLoading: state.getAllStoresStatus == GetAllStoresStatus.loading,

@@ -6,6 +6,7 @@ import '../../../../../core/localization/translation_keys.dart';
 import '../../../../../core/screen_util.dart';
 import '../../../../../core/utils/api_service.dart';
 import '../../../../../models/store/store_model.dart';
+import '../../../../shop/pages/image_viewer_page.dart';
 
 /// "About" tab - featured image plus the store's description and contact
 /// details, all straight off the store record.
@@ -23,25 +24,43 @@ class WhoAmITab extends StatelessWidget {
       ),
       children: [
         if ((store.featuredImage ?? '').isNotEmpty)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: CachedNetworkImage(
-              imageUrl: ApiService.resolveUrl(store.featuredImage)!,
-              height: height(170),
-              width: double.infinity,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: const Color(0xFFEAEAF2)),
-              errorWidget: (_, __, ___) => Container(
-                color: const Color(0xFFEAEAF2),
-                child: const Icon(Icons.storefront, color: Colors.grey),
-              ),
-            ),
+          Builder(
+            builder: (context) {
+              final url = ApiService.resolveUrl(store.featuredImage)!;
+              final tag = 'store-featured-${store.id}';
+              return GestureDetector(
+                // Same full-screen zoom as everywhere else in the app - the
+                // storefront photo is the one image a shopper wants to look
+                // at properly before following or buying.
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ImageViewerPage(imageUrl: url, heroTag: tag),
+                  ),
+                ),
+                child: Hero(
+                  tag: tag,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: CachedNetworkImage(
+                      imageUrl: url,
+                      height: height(170),
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) =>
+                          Container(color: const Color(0xFFEAEAF2)),
+                      errorWidget: (_, __, ___) => Container(
+                        color: const Color(0xFFEAEAF2),
+                        child: const Icon(Icons.storefront, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         SizedBox(height: height(16)),
-        Text(
-          store.description,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        Text(store.description, style: Theme.of(context).textTheme.bodyMedium),
         SizedBox(height: height(20)),
         _InfoRow(
           icon: Icons.location_on_outlined,
@@ -95,9 +114,9 @@ class _InfoRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: Colors.grey,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall!.copyWith(color: Colors.grey),
                 ),
                 Text(value, style: Theme.of(context).textTheme.bodyMedium),
               ],

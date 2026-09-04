@@ -18,7 +18,6 @@ import '../../../models/admin/product_dashboard_model.dart';
 import 'admin_product_detail_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/utils/api_service.dart';
-import '../../shop/pages/product_by_id_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -245,7 +244,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   }
                   return Column(
                     children: state.ordersDetail
-                        .map((row) => _SalesBreakdownRow(row: row))
+                        .map(
+                          (row) => _SalesBreakdownRow(
+                            row: row,
+                            onOpen: _openAlertProduct,
+                          ),
+                        )
                         .toList(),
                   );
                 },
@@ -347,9 +351,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 /// One (product, colour, size) line of the sales breakdown: how many units
 /// moved in the selected window, what they earned, and what is left.
 class _SalesBreakdownRow extends StatelessWidget {
-  const _SalesBreakdownRow({required this.row});
+  const _SalesBreakdownRow({required this.row, required this.onOpen});
 
   final AdminOrderDetailStatModel row;
+
+  /// Opens the product's management screen by id.
+  final void Function(int productId) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -358,7 +365,9 @@ class _SalesBreakdownRow extends StatelessWidget {
     final image = ApiService.resolveUrl(row.image) ?? '';
     return InkWell(
       borderRadius: BorderRadius.circular(14),
-      onTap: () => openProductById(context, row.productId),
+      // The store's own catalogue: an owner tapping a product wants to
+      // manage it - colours, sizes, stock, discount - not shop for it.
+      onTap: () => onOpen(row.productId),
       child: Container(
         margin: EdgeInsets.only(bottom: height(8)),
         padding: EdgeInsets.symmetric(

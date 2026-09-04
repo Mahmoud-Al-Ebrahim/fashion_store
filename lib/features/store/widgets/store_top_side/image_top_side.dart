@@ -6,7 +6,11 @@ import '../../../../core/screen_util.dart';
 class ImageTopSide extends StatelessWidget {
   final double heightWidth;
   final String imageUrl; // بدل AssetImage نستخدم رابط الشبكة
-  const ImageTopSide({super.key, required this.heightWidth, required this.imageUrl});
+  const ImageTopSide({
+    super.key,
+    required this.heightWidth,
+    required this.imageUrl,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -52,12 +52,15 @@ class _WhoIFollowingScreenState extends State<WhoIFollowingScreen> {
           final busy =
               state.toggleStoreFollowStatus == ToggleStoreFollowStatus.loading;
           return AsyncView(
-            isLoading: state.getFollowedStoresStatus ==
+            isLoading:
+                state.getFollowedStoresStatus ==
                     GetFollowedStoresStatus.loading &&
                 state.followedStores.isEmpty,
             isFailure:
-                state.getFollowedStoresStatus == GetFollowedStoresStatus.failure,
-            isEmpty: state.getFollowedStoresStatus ==
+                state.getFollowedStoresStatus ==
+                GetFollowedStoresStatus.failure,
+            isEmpty:
+                state.getFollowedStoresStatus ==
                     GetFollowedStoresStatus.success &&
                 state.followedStores.isEmpty,
             errorMessage: state.errorMessage,
@@ -106,8 +109,9 @@ class _FollowedStoreTile extends StatelessWidget {
             CircleAvatar(
               radius: 26,
               backgroundColor: const Color(0xFFEAEAF2),
-              backgroundImage:
-                  logo != null ? CachedNetworkImageProvider(logo) : null,
+              backgroundImage: logo != null
+                  ? CachedNetworkImageProvider(logo)
+                  : null,
               child: logo == null ? const Icon(Icons.storefront) : null,
             ),
             SizedBox(width: width(12)),
@@ -126,9 +130,9 @@ class _FollowedStoreTile extends StatelessWidget {
                     store.address,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: Colors.grey,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall!.copyWith(color: Colors.grey),
                   ),
                 ],
               ),

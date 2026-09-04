@@ -15,6 +15,7 @@ import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/store/store_detail_model.dart';
+import '../../shop/pages/image_viewer_page.dart';
 import '../widgets/image_pick_box.dart';
 import '../../../core/localization/translation_keys.dart';
 
@@ -224,12 +225,14 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _nameController,
+                  labelText: LK.sellerStoreName.tr(),
                   hintText: LK.sellerStoreName.tr(),
                   validator: (_) => null,
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _descriptionController,
+                  labelText: LK.sellerDescription.tr(),
                   hintText: LK.sellerDescription.tr(),
                   maxLines: 3,
                   validator: (_) => null,
@@ -237,12 +240,14 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _addressController,
+                  labelText: LK.storeAddress.tr(),
                   hintText: LK.sellerAddress.tr(),
                   validator: (_) => null,
                 ),
                 SizedBox(height: height(10)),
                 AuthTextField(
                   controller: _phoneController,
+                  labelText: LK.authPhone.tr(),
                   hintText: LK.sellerPhone.tr(),
                   validator: (_) => null,
                 ),
@@ -255,7 +260,8 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                         child: Text(
                           _start == null
                               ? LK.sellerWorkingHoursStart.tr()
-                              : _start!.format(context),
+                              : '${LK.sellerWorkingHoursStart.tr()}: '
+                                    '${_start!.format(context)}',
                         ),
                       ),
                     ),
@@ -266,7 +272,8 @@ class _AdminStoreProfilePageState extends State<AdminStoreProfilePage> {
                         child: Text(
                           _end == null
                               ? LK.sellerWorkingHoursEnd.tr()
-                              : _end!.format(context),
+                              : '${LK.sellerWorkingHoursEnd.tr()}: '
+                                    '${_end!.format(context)}',
                         ),
                       ),
                     ),
@@ -413,17 +420,35 @@ class _Document extends StatelessWidget {
         children: [
           Text(label, style: Theme.of(context).textTheme.bodySmall),
           SizedBox(height: height(6)),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: CachedNetworkImage(
-              imageUrl: resolved,
-              height: height(160),
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorWidget: (_, __, ___) => Container(
-                height: height(160),
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.image_not_supported_outlined),
+          GestureDetector(
+            // An ID card and a trade licence are documents - the numbers and
+            // small print on them are unreadable at strip height, so tapping
+            // opens the same zoomable viewer the product photos use.
+            onTap: resolved.isEmpty
+                ? null
+                : () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ImageViewerPage(
+                        imageUrl: resolved,
+                        heroTag: 'store-document-$resolved',
+                      ),
+                    ),
+                  ),
+            child: Hero(
+              tag: 'store-document-$resolved',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: CachedNetworkImage(
+                  imageUrl: resolved,
+                  height: height(160),
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => Container(
+                    height: height(160),
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.image_not_supported_outlined),
+                  ),
+                ),
               ),
             ),
           ),

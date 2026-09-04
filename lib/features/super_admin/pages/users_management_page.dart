@@ -52,14 +52,15 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
               SizedBox(height: height(12)),
               OptionPickerField(
                 hintText: LK.superadminAddRole.tr(),
+                // Only promotion to payment staff is offered. Becoming a
+                // store owner goes through the store-request flow so the
+                // account gets an actual store, and SuperAdmin is not
+                // grantable from here.
                 options: [
-                  const PickerOption(ApiRoles.storeOwner, 'Admin'),
-                  // const PickerOption(ApiRoles.superAdmin, 'SuperAdmin'),
                   PickerOption(
                     ApiRoles.paymentEmployee,
                     LK.paymentEmployeeRole.tr(),
                   ),
-                  const PickerOption(ApiRoles.user, 'User'),
                 ],
                 selectedValue: role,
                 onSelected: (o) => setDialogState(() => role = o.value),
@@ -87,11 +88,20 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
 
   /// Strips a role from [user] via `SuperAdmin/RemoveRole`.
   ///
+  /// Only the payment-employee role can be revoked, mirroring the fact that
+  /// it is the only one this screen can grant. The others are deliberately
+  /// absent:
+  ///
+  ///  * `Admin` (store owner) is tied to an approved store - revoking it
+  ///    here would leave a live store with an owner who can no longer reach
+  ///    it, and the store-request flow is what grants it in the first place.
+  ///  * `SuperAdmin` is not manageable from the app at all.
+  ///  * `User` is the base role - stripping it leaves an account that can
+  ///    sign in and reach nothing.
+  ///
   /// `ActiveUsers` does not report which roles an account already holds, so
-  /// every removable role is offered and the server decides: it answers
-  /// "المستخدم لا يملك هذا الدور" when the user never had it, which is
-  /// surfaced as-is. `User` is deliberately absent - stripping the base role
-  /// would leave an account that can sign in but reach nothing.
+  /// the server is what decides: it answers "المستخدم لا يملك هذا
+  /// الدور" when the user never had it, and that is surfaced as-is.
   Future<void> _revokeRole(UserProfileModel user) async {
     String? role;
     final confirmed = await showDialog<bool>(
@@ -107,8 +117,6 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
               OptionPickerField(
                 hintText: LK.superadminRemoveRole.tr(),
                 options: [
-                  const PickerOption(ApiRoles.storeOwner, 'Admin'),
-                  // const PickerOption(ApiRoles.superAdmin, 'SuperAdmin'),
                   PickerOption(
                     ApiRoles.paymentEmployee,
                     LK.paymentEmployeeRole.tr(),
@@ -141,7 +149,7 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           scrolledUnderElevation: 0,
@@ -153,8 +161,12 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
             indicatorColor: Theme.of(context).colorScheme.primary,
             labelColor: Theme.of(context).colorScheme.primary,
             unselectedLabelColor: const Color(0xff666A7A),
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             tabs: [
-              Tab(text: LK.superadminActiveUsers.tr()),
+              Tab(text: LK.superadminTabCustomers.tr()),
+              Tab(text: LK.superadminTabStoreOwners.tr()),
+              Tab(text: LK.superadminTabPaymentStaff.tr()),
               Tab(text: LK.superadminBannedUsers.tr()),
             ],
           ),
@@ -189,19 +201,67 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
             }
           },
           builder: (context, state) {
+            final activeLoading =
+                state.getActiveUsersStatus == GetActiveUsersStatus.loading;
+            final activeFailed =
+                state.getActiveUsersStatus == GetActiveUsersStatus.failure;
+
+            // A super admin is never listed - the screen is for managing
+            // other people's accounts, not the platform's own operators.
+            final visible = state.activeUsers
+                .where((u) => !u.roles.contains(ApiRoles.superAdmin))
+                .toList();
+
+            List<UserProfileModel> withRole(String role) =>
+                visible.where((u) => u.roles.contains(role)).toList();
+
+            // With no roles from the server every account looks like a
+            // plain customer; the note below explains the empty tabs.
+            final rolesKnown = visible.any((u) => u.roles.isNotEmpty);
+            final owners = withRole(ApiRoles.storeOwner);
+            final staff = withRole(ApiRoles.paymentEmployee);
+            final customers = visible
+                .where(
+                  (u) =>
+                      !u.roles.contains(ApiRoles.storeOwner) &&
+                      !u.roles.contains(ApiRoles.paymentEmployee),
+                )
+                .toList();
+
             return TabBarView(
               children: [
                 _UserList(
-                  users: state.activeUsers,
-                  isLoading:
-                      state.getActiveUsersStatus ==
-                      GetActiveUsersStatus.loading,
-                  isFailure:
-                      state.getActiveUsersStatus ==
-                      GetActiveUsersStatus.failure,
+                  users: customers,
+                  isLoading: activeLoading,
+                  isFailure: activeFailed,
                   errorMessage: state.errorMessage,
                   onRetry: _load,
                   banned: false,
+                  // Only a plain customer can be promoted.
+                  canAssignRole: true,
+                  note: rolesKnown ? null : LK.superadminRolesUnavailable.tr(),
+                  onAssignRole: _assignRole,
+                  onRevokeRole: _revokeRole,
+                ),
+                _UserList(
+                  users: owners,
+                  isLoading: activeLoading,
+                  isFailure: activeFailed,
+                  errorMessage: state.errorMessage,
+                  onRetry: _load,
+                  banned: false,
+                  canAssignRole: false,
+                  onAssignRole: _assignRole,
+                  onRevokeRole: _revokeRole,
+                ),
+                _UserList(
+                  users: staff,
+                  isLoading: activeLoading,
+                  isFailure: activeFailed,
+                  errorMessage: state.errorMessage,
+                  onRetry: _load,
+                  banned: false,
+                  canAssignRole: false,
                   onAssignRole: _assignRole,
                   onRevokeRole: _revokeRole,
                 ),
@@ -216,6 +276,7 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
                   errorMessage: state.errorMessage,
                   onRetry: _load,
                   banned: true,
+                  canAssignRole: false,
                   onAssignRole: _assignRole,
                   onRevokeRole: _revokeRole,
                 ),
@@ -238,6 +299,12 @@ class _UserList extends StatelessWidget {
   final ValueChanged<UserProfileModel> onAssignRole;
   final ValueChanged<UserProfileModel> onRevokeRole;
 
+  /// Whether "assign role" belongs in this tab at all.
+  final bool canAssignRole;
+
+  /// Optional banner explaining why a tab looks the way it does.
+  final String? note;
+
   const _UserList({
     required this.users,
     required this.isLoading,
@@ -247,11 +314,13 @@ class _UserList extends StatelessWidget {
     required this.banned,
     required this.onAssignRole,
     required this.onRevokeRole,
+    this.canAssignRole = false,
+    this.note,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AsyncView(
+    final list = AsyncView(
       isLoading: isLoading,
       isFailure: isFailure,
       isEmpty: !isLoading && users.isEmpty,
@@ -351,30 +420,35 @@ class _UserList extends StatelessWidget {
                       }
                     },
                     itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'role',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.badge_outlined, size: 18),
-                            SizedBox(width: width(8)),
-                            Text(LK.superadminAddRole.tr()),
-                          ],
+                      // A banned account cannot be granted or stripped of
+                      // a role, and cannot be banned again - only unbanned
+                      // or deleted.
+                      if (!banned)
+                        PopupMenuItem(
+                          value: 'role',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.badge_outlined, size: 18),
+                              SizedBox(width: width(8)),
+                              Text(LK.superadminAddRole.tr()),
+                            ],
+                          ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: 'revoke_role',
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.badge_outlined,
-                              size: 18,
-                              color: Colors.orange,
-                            ),
-                            SizedBox(width: width(8)),
-                            Text(LK.superadminRemoveRole.tr()),
-                          ],
+                      if (!banned)
+                        PopupMenuItem(
+                          value: 'revoke_role',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.badge_outlined,
+                                size: 18,
+                                color: Colors.orange,
+                              ),
+                              SizedBox(width: width(8)),
+                              Text(LK.superadminRemoveRole.tr()),
+                            ],
+                          ),
                         ),
-                      ),
                       if (banned)
                         PopupMenuItem(
                           value: 'unban',
@@ -386,20 +460,21 @@ class _UserList extends StatelessWidget {
                             ],
                           ),
                         ),
-                      PopupMenuItem(
-                        value: 'ban',
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.block,
-                              size: 18,
-                              color: Colors.red,
-                            ),
-                            SizedBox(width: width(8)),
-                            Text(LK.superadminBanUser.tr()),
-                          ],
+                      if (!banned)
+                        PopupMenuItem(
+                          value: 'ban',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.block,
+                                size: 18,
+                                color: Colors.red,
+                              ),
+                              SizedBox(width: width(8)),
+                              Text(LK.superadminBanUser.tr()),
+                            ],
+                          ),
                         ),
-                      ),
                       PopupMenuItem(
                         value: 'delete',
                         child: Row(
@@ -425,6 +500,37 @@ class _UserList extends StatelessWidget {
           },
         ),
       ),
+    );
+
+    if (note == null) return list;
+    // Explains an otherwise puzzling empty tab.
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          margin: EdgeInsets.fromLTRB(width(16), height(10), width(16), 0),
+          padding: EdgeInsets.all(width(10)),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Colors.orange.shade800),
+              SizedBox(width: width(8)),
+              Expanded(
+                child: Text(
+                  note!,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: Colors.orange.shade900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: list),
+      ],
     );
   }
 }

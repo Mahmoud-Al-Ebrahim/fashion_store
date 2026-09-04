@@ -1,6 +1,7 @@
 part of 'post_bloc.dart';
 
-/// One media item to attach when creating a post via [AddPostEvent].
+/// One media item to attach to a post - by [AddPostEvent] on creation, or
+/// by [UpdatePostEvent] when new media is added to an existing post.
 class PostMediaInput {
   final File file;
   final String mediaType; // enMediaType: Image | Video
@@ -59,7 +60,11 @@ class UpdatePostEvent extends PostEvent {
   final int storeId;
   final String? content;
   final String? visibility;
-  final List<File> newMedias;
+
+  /// Media being added. Carries the type and duration alongside the file
+  /// because `NewMedias` binds as a list of `RequestAddPostMediaDto`, not a
+  /// list of bare files - see the note in `PostBloc._onUpdatePostEvent`.
+  final List<PostMediaInput> newMedias;
   final List<int> deletedMediaIds;
 
   UpdatePostEvent({
@@ -84,3 +89,11 @@ class TogglePostReactionEvent extends PostEvent {
     required this.storeId,
   });
 }
+
+/// Wipes this bloc back to its initial state.
+///
+/// Dispatched for every bloc on sign-out: the blocs live at the app
+/// root and outlive any single session, so without this the next
+/// account would open onto the previous one's cart, orders, wallet and
+/// profile until each screen happened to refetch.
+class ClearPostEvent extends PostEvent {}

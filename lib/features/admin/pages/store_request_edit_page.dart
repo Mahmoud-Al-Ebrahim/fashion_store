@@ -126,12 +126,14 @@ class _StoreRequestEditPageState extends State<StoreRequestEditPage> {
               children: [
                 AuthTextField(
                   controller: _name,
+                  labelText: LK.sellerStoreName.tr(),
                   hintText: LK.sellerStoreName.tr(),
                   validator: validateRequired,
                 ),
                 SizedBox(height: height(12)),
                 AuthTextField(
                   controller: _description,
+                  labelText: LK.sellerDescription.tr(),
                   hintText: LK.sellerDescription.tr(),
                   validator: validateRequired,
                   maxLines: 4,
@@ -140,6 +142,7 @@ class _StoreRequestEditPageState extends State<StoreRequestEditPage> {
                 SizedBox(height: height(12)),
                 AuthTextField(
                   controller: _address,
+                  labelText: LK.storeAddress.tr(),
                   hintText: LK.storeAddress.tr(),
                   validator: validateRequired,
                 ),

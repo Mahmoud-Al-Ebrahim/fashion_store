@@ -104,7 +104,10 @@ class _PlatformOrdersPageState extends State<PlatformOrdersPage> {
                           // can, so the same detail screen is reused rather
                           // than duplicated - it only needs an order id.
                           onTap: () => context.pushPage(
-                            AdminOrderDetailPage(orderId: order.id),
+                            AdminOrderDetailPage(
+                              orderId: order.id,
+                              orderStatus: order.status,
+                            ),
                           ),
                           child: Container(
                             padding: EdgeInsets.all(width(14)),

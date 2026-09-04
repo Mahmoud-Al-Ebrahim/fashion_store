@@ -24,6 +24,7 @@ class StoreFollowerBloc extends Bloc<StoreFollowerEvent, StoreFollowerState> {
     on<GetProductsByFollowerStoresEvent>(_onGetProductsByFollowerStoresEvent);
     on<GetStoreFollowersCountEvent>(_onGetStoreFollowersCountEvent);
     on<GetFollowedStoresEvent>(_onGetFollowedStoresEvent);
+    on<ClearStoreFollowerEvent>((event, emit) => emit(StoreFollowerState()));
   }
 
   FutureOr<void> _onToggleStoreFollowEvent(

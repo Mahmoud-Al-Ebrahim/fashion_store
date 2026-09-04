@@ -89,9 +89,11 @@ class _TopUpHistoryPageState extends State<TopUpHistoryPage> {
                     itemBuilder: (context, index) {
                       final t = state.transactions[index];
                       final isDeposit = t.transactionType == 'Deposit';
+                      // Wallet top-ups carry no `paymentId` and have no
+                      // order behind them, so they offer no details. Same
+                      // rule as the customer's wallet.
                       return InkWell(
                         borderRadius: BorderRadius.circular(14),
-                        // Resolves the order this payment settled.
                         onTap: () => showTransactionDetailsSheet(context, t),
                         child: Container(
                           padding: EdgeInsets.all(width(12)),

@@ -50,13 +50,18 @@ class AdminAsyncView extends StatelessWidget {
               ),
               SizedBox(height: height(10)),
               Text(
-                errorMessage.isEmpty ? LK.commonErrorGeneric.tr() : errorMessage,
+                errorMessage.isEmpty
+                    ? LK.commonErrorGeneric.tr()
+                    : errorMessage,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               if (onRetry != null) ...[
                 SizedBox(height: height(14)),
-                TextButton(onPressed: onRetry, child: Text(LK.commonRetry.tr())),
+                TextButton(
+                  onPressed: onRetry,
+                  child: Text(LK.commonRetry.tr()),
+                ),
               ],
             ],
           ),

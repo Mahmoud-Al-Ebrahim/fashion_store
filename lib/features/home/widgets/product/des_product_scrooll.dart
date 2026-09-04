@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/screen_util.dart';
 
-
 class ContentProductScrollable extends StatefulWidget {
   final String title;
   final double heightScroll;
-  const ContentProductScrollable({super.key, required this.title, required this.heightScroll});
+  const ContentProductScrollable({
+    super.key,
+    required this.title,
+    required this.heightScroll,
+  });
 
   @override
-  State<ContentProductScrollable> createState() => _ContentProductScrollableState();
+  State<ContentProductScrollable> createState() =>
+      _ContentProductScrollableState();
 }
 
 class _ContentProductScrollableState extends State<ContentProductScrollable> {
@@ -19,8 +23,8 @@ class _ContentProductScrollableState extends State<ContentProductScrollable> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-         double containerHeight = widget.heightScroll;
-         double greenLineMaxHeight = containerHeight;
+        double containerHeight = widget.heightScroll;
+        double greenLineMaxHeight = containerHeight;
         return SizedBox(
           height: containerHeight,
           child: Stack(
@@ -32,21 +36,21 @@ class _ContentProductScrollableState extends State<ContentProductScrollable> {
                       setState(() {
                         _scrollPercent =
                             scrollNotification.metrics.pixels /
-                                scrollNotification.metrics.maxScrollExtent;
+                            scrollNotification.metrics.maxScrollExtent;
                       });
                     }
                     return true;
                   },
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding:  EdgeInsets.only(right: width(12)),
+                      padding: EdgeInsets.only(right: width(12)),
                       child: Text(
-                        widget.title ,
+                        widget.title,
                         textAlign: TextAlign.justify,
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           height: height(2.5),
                           color: Color(0xff666A7A),
-                          fontWeight: FontWeight.w400
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),

@@ -67,10 +67,8 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
       // Password reset verifies the code together with the new password.
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => ResetPasswordPage(
-            email: widget.email,
-            code: code.text,
-          ),
+          builder: (_) =>
+              ResetPasswordPage(email: widget.email, code: code.text),
         ),
       );
     }

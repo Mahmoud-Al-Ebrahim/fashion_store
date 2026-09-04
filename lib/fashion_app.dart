@@ -62,6 +62,16 @@ class FashionApp extends StatelessWidget {
           child: Builder(
             builder: (context) {
               return MaterialApp(
+                // Rebuilds the whole navigator when the language changes.
+                //
+                // `'key'.tr()` reads a *static* translation table - it never
+                // becomes a dependent of any InheritedWidget. Changing the
+                // locale rebuilds MaterialApp, but routes already on the
+                // Navigator keep the widgets they built, so their `.tr()`
+                // results are never re-evaluated: the home page stayed in
+                // Arabic ("عروض وخصومات") after switching to English. Keying
+                // on the locale forces the routes to be built again.
+                key: ValueKey(context.locale.toString()),
                 debugShowCheckedModeBanner: false,
                 supportedLocales: context.supportedLocales,
                 localizationsDelegates: context.localizationDelegates,

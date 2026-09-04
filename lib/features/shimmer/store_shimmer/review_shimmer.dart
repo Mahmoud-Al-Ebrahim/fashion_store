@@ -96,7 +96,11 @@ class ReviewShimmer extends StatelessWidget {
                           ],
                         ),
                         Spacer(),
-                        OneItemShimmer(itemHeight: 30, itemWidth: 80, radius: 20),
+                        OneItemShimmer(
+                          itemHeight: 30,
+                          itemWidth: 80,
+                          radius: 20,
+                        ),
                       ],
                     ),
                     SizedBox(height: height(20)),
@@ -111,7 +115,7 @@ class ReviewShimmer extends StatelessWidget {
                     OneItemShimmer(itemHeight: 100, itemWidth: 340, radius: 20),
                     SizedBox(height: height(15)),
 
-                    OneItemShimmer(itemHeight: 1.5, itemWidth: 350)
+                    OneItemShimmer(itemHeight: 1.5, itemWidth: 350),
                   ],
                 ),
               ),

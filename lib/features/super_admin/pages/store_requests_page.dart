@@ -15,6 +15,7 @@ import '../../../core/utils/api_service.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/store/store_detail_model.dart';
 import '../../admin/widgets/admin_status_badge.dart';
+import '../../shop/pages/image_viewer_page.dart';
 import '../../../core/extensions/build_context.dart';
 import '../../../core/utils/whatsapp.dart';
 import '../../admin/widgets/confirm_dialog.dart';
@@ -162,42 +163,9 @@ class _StoreRequestsPageState extends State<StoreRequestsPage> {
                         const Center(child: CircularProgressIndicator())
                       else
                         ...urls.entries.map(
-                          (entry) => Padding(
-                            padding: EdgeInsets.only(bottom: height(16)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(entry.key),
-                                SizedBox(height: height(6)),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: entry.value == null
-                                      ? Container(
-                                          height: height(140),
-                                          color: const Color(0xFFEAEAF2),
-                                          child: const Icon(
-                                            Icons.image_not_supported_outlined,
-                                          ),
-                                        )
-                                      : CachedNetworkImage(
-                                          imageUrl: ApiService.resolveUrl(
-                                            entry.value,
-                                          )!,
-                                          height: height(180),
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                          errorWidget: (_, __, ___) =>
-                                              Container(
-                                                height: height(140),
-                                                color: const Color(0xFFEAEAF2),
-                                                child: const Icon(
-                                                  Icons.broken_image_outlined,
-                                                ),
-                                              ),
-                                        ),
-                                ),
-                              ],
-                            ),
+                          (entry) => _DocumentPreview(
+                            label: entry.key,
+                            url: entry.value,
                           ),
                         ),
                     ],
@@ -222,7 +190,7 @@ class _StoreRequestsPageState extends State<StoreRequestsPage> {
         listenWhen: (p, c) => p.deleteStoreStatus != c.deleteStoreStatus,
         listener: (context, state) {
           if (state.deleteStoreStatus == DeleteStoreStatus.success) {
-            showMessage(LK.adminProductDeleted.tr(), hasError: false);
+            showMessage(LK.superadminStoreDeleted.tr(), hasError: false);
             _load();
           } else if (state.deleteStoreStatus == DeleteStoreStatus.failure) {
             showMessage(state.errorMessage);
@@ -448,12 +416,18 @@ class _RequestCard extends StatelessWidget {
               TextButton.icon(
                 onPressed: onDetails,
                 icon: const Icon(Icons.info_outline, size: 18),
-                label: Text(LK.superadminRequestDetails.tr() , style: TextStyle(fontSize: 12),),
+                label: Text(
+                  LK.superadminRequestDetails.tr(),
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
               TextButton.icon(
                 onPressed: onDocuments,
                 icon: const Icon(Icons.description_outlined, size: 18),
-                label: Text(LK.superadminViewDocuments.tr() , style: TextStyle(fontSize: 12),),
+                label: Text(
+                  LK.superadminViewDocuments.tr(),
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
               const Spacer(),
               if (request.storeStatus == 'Approved')
@@ -493,6 +467,71 @@ class _RequestCard extends StatelessWidget {
               ],
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// One KYC document in the review sheet.
+///
+/// Approving or rejecting an application means actually *reading* the ID and
+/// the trade licence - the licence number and the name on the card are
+/// unreadable at strip height - so the image opens into the same zoomable
+/// viewer the rest of the app uses.
+class _DocumentPreview extends StatelessWidget {
+  const _DocumentPreview({required this.label, required this.url});
+
+  final String label;
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = ApiService.resolveUrl(url);
+    return Padding(
+      padding: EdgeInsets.only(bottom: height(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label),
+          SizedBox(height: height(6)),
+          if (resolved == null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                height: height(140),
+                color: const Color(0xFFEAEAF2),
+                child: const Icon(Icons.image_not_supported_outlined),
+              ),
+            )
+          else
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ImageViewerPage(
+                    imageUrl: resolved,
+                    heroTag: 'request-document-$resolved',
+                  ),
+                ),
+              ),
+              child: Hero(
+                tag: 'request-document-$resolved',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: CachedNetworkImage(
+                    imageUrl: resolved,
+                    height: height(180),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) => Container(
+                      height: height(140),
+                      color: const Color(0xFFEAEAF2),
+                      child: const Icon(Icons.broken_image_outlined),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

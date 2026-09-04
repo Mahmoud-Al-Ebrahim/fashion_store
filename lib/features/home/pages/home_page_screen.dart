@@ -14,6 +14,8 @@ import '../../nav_bar/user_nav_bar/user_nav_bar_bloc.dart';
 import '../widgets/product_card/store_card_list_view.dart';
 import '../widgets/store_card/store_list_view.dart';
 import '../widgets/title_and_see_more.dart';
+import 'discounted_products_page.dart';
+import '../../../core/extensions/build_context.dart';
 
 /// Customer home. Sections are driven by real endpoints:
 ///  - discounted products  -> `Product/GetAllDiscountProduct`
@@ -47,8 +49,15 @@ class _HomePageScreenState extends State<HomePageScreen> {
     context.read<StoreFollowerBloc>().add(GetProductsByFollowerStoresEvent());
   }
 
-  void _goToExplore() =>
-      context.read<NavBarBloc>().add(ChangeNavBar(index: 2));
+  /// "See more" on the offers strip opens the discounts list itself, not
+  /// Explore - Explore searches and filters the *whole* catalog, which drops
+  /// the discount context the shopper just tapped.
+  void _goToDiscounts() => context.pushPage(const DiscountedProductsPage());
+
+  /// Explore, on the tab that matches the strip that was tapped: products
+  /// for the followed-stores feed, stores for the store strip.
+  void _goToExplore({int tab = 0}) =>
+      context.read<NavBarBloc>().add(ChangeNavBar(index: 2, exploreTab: tab));
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +73,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
               children: [
                 // ----- discounted products -----
                 TitleAndSeeMore(
-                      onSeeMore: _goToExplore,
+                      onSeeMore: _goToDiscounts,
                       title: LK.homeDiscounted.tr(),
                     )
                     .animate(delay: 200.ms)
@@ -72,40 +81,43 @@ class _HomePageScreenState extends State<HomePageScreen> {
                     .slide(begin: const Offset(-1, 0), duration: 500.ms),
 
                 BlocBuilder<ProductBloc, ProductState>(
-                  buildWhen: (p, c) =>
-                      p.getAllDiscountProductStatus !=
-                          c.getAllDiscountProductStatus ||
-                      p.discountedProducts != c.discountedProducts,
-                  builder: (context, state) {
-                    return SizedBox(
-                      height: height(200),
-                      child: AsyncView(
-                        isLoading: state.getAllDiscountProductStatus ==
-                            GetAllDiscountProductStatus.loading,
-                        isFailure: state.getAllDiscountProductStatus ==
-                            GetAllDiscountProductStatus.failure,
-                        isEmpty: state.discountedProducts.isEmpty,
-                        errorMessage: state.errorMessage,
-                        emptyText: LK.commonNoData.tr(),
-                        emptyImageHeight: height(90),
-                        onRetry: _load,
-                        child: ProductCardListView(
-                          favouriteProducts: state.discountedProducts
-                              .map(ProductRef.fromCatalog)
-                              .toList(),
-                          isHomePage: true,
-                        ),
-                      ),
-                    );
-                  },
-                )
+                      buildWhen: (p, c) =>
+                          p.getAllDiscountProductStatus !=
+                              c.getAllDiscountProductStatus ||
+                          p.discountedProducts != c.discountedProducts,
+                      builder: (context, state) {
+                        return SizedBox(
+                          height: height(200),
+                          child: AsyncView(
+                            isLoading:
+                                state.getAllDiscountProductStatus ==
+                                GetAllDiscountProductStatus.loading,
+                            isFailure:
+                                state.getAllDiscountProductStatus ==
+                                GetAllDiscountProductStatus.failure,
+                            isEmpty: state.discountedProducts.isEmpty,
+                            errorMessage: state.errorMessage,
+                            emptyText: LK.commonNoData.tr(),
+                            emptyImageHeight: height(90),
+                            onRetry: _load,
+                            child: ProductCardListView(
+                              favouriteProducts: state.discountedProducts
+                                  .map(ProductRef.fromCatalog)
+                                  .toList(),
+                              isHomePage: true,
+                            ),
+                          ),
+                        );
+                      },
+                    )
                     .animate(delay: 400.ms)
                     .fadeIn(duration: 400.ms)
                     .slide(begin: const Offset(1, 0), duration: 500.ms),
 
                 // ----- stores -----
                 TitleAndSeeMore(
-                      onSeeMore: _goToExplore,
+                      // Stores strip -> Explore's stores tab, not products.
+                      onSeeMore: () => _goToExplore(tab: 1),
                       title: LK.homeRecommendedStores.tr(),
                     )
                     .animate(delay: 600.ms)
@@ -113,55 +125,57 @@ class _HomePageScreenState extends State<HomePageScreen> {
                     .slide(begin: const Offset(-1, 0), duration: 500.ms),
 
                 BlocBuilder<StoreBloc, StoreState>(
-                  buildWhen: (p, c) =>
-                      p.getAllStoresStatus != c.getAllStoresStatus ||
-                      p.stores != c.stores,
-                  builder: (context, state) {
-                    return SizedBox(
-                      height: height(200),
-                      child: AsyncView(
-                        isLoading: state.getAllStoresStatus ==
-                            GetAllStoresStatus.loading,
-                        isFailure: state.getAllStoresStatus ==
-                            GetAllStoresStatus.failure,
-                        isEmpty: state.stores.isEmpty,
-                        errorMessage: state.errorMessage,
-                        emptyImageHeight: height(90),
-                        onRetry: _load,
-                        child: StoreListView(stores: state.stores),
-                      ),
-                    );
-                  },
-                )
+                      buildWhen: (p, c) =>
+                          p.getAllStoresStatus != c.getAllStoresStatus ||
+                          p.stores != c.stores,
+                      builder: (context, state) {
+                        return SizedBox(
+                          height: height(200),
+                          child: AsyncView(
+                            isLoading:
+                                state.getAllStoresStatus ==
+                                GetAllStoresStatus.loading,
+                            isFailure:
+                                state.getAllStoresStatus ==
+                                GetAllStoresStatus.failure,
+                            isEmpty: state.stores.isEmpty,
+                            errorMessage: state.errorMessage,
+                            emptyImageHeight: height(90),
+                            onRetry: _load,
+                            child: StoreListView(stores: state.stores),
+                          ),
+                        );
+                      },
+                    )
                     .animate(delay: 800.ms)
                     .fadeIn(duration: 400.ms)
                     .slide(begin: const Offset(1, 0), duration: 500.ms),
 
                 // ----- products from stores the user follows -----
                 BlocBuilder<StoreFollowerBloc, StoreFollowerState>(
-                  buildWhen: (p, c) =>
-                      p.followedStoresProducts != c.followedStoresProducts,
-                  builder: (context, state) {
-                    if (state.followedStoresProducts.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return Column(
-                      spacing: height(22),
-                      children: [
-                        TitleAndSeeMore(
-                          onSeeMore: _goToExplore,
-                          title: LK.homeFollowedProducts.tr(),
-                        ),
-                        ProductCardListView(
-                          favouriteProducts: state.followedStoresProducts
-                              .map(ProductRef.fromCatalog)
-                              .toList(),
-                          isHomePage: true,
-                        ),
-                      ],
-                    );
-                  },
-                )
+                      buildWhen: (p, c) =>
+                          p.followedStoresProducts != c.followedStoresProducts,
+                      builder: (context, state) {
+                        if (state.followedStoresProducts.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return Column(
+                          spacing: height(22),
+                          children: [
+                            TitleAndSeeMore(
+                              onSeeMore: () => _goToExplore(),
+                              title: LK.homeFollowedProducts.tr(),
+                            ),
+                            ProductCardListView(
+                              favouriteProducts: state.followedStoresProducts
+                                  .map(ProductRef.fromCatalog)
+                                  .toList(),
+                              isHomePage: true,
+                            ),
+                          ],
+                        );
+                      },
+                    )
                     .animate(delay: 1000.ms)
                     .fadeIn(duration: 400.ms)
                     .slide(begin: const Offset(1, 0), duration: 500.ms),

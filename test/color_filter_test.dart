@@ -88,10 +88,31 @@ void main() {
 
     test('excludes the shade-only colours', () {
       final keys = mainColorSwatches().map((s) => s.key);
-      expect(keys, isNot(contains('silver')));
       expect(keys, isNot(contains('navy')));
       expect(keys, isNot(contains('beige')));
       expect(keys, isNot(contains('gold')));
+    });
+
+    test('grey and silver are offered separately, each under its own name', () {
+      // They used to be conflated - the filter carried one light-grey chip
+      // labelled رمادي, so a shopper after silver picked something
+      // named grey. Two chips, two names, two visibly different hexes.
+      final keys = mainColorSwatches().map((s) => s.key);
+      expect(keys, contains('gray'));
+      expect(keys, contains('silver'));
+
+      final gray = swatchForColorName('gray')!;
+      final silver = swatchForColorName('silver')!;
+      expect(gray.queryName, 'رمادي');
+      expect(silver.queryName, 'فضي');
+      expect(gray.hex, isNot(silver.hex));
+    });
+
+    test('every main colour writes a hamza-free name to the API', () {
+      for (final swatch in mainColorSwatches()) {
+        expect(swatch.apiName, isNot(contains('أ')));
+        expect(swatch.apiName, normalizeColorName(swatch.apiName));
+      }
     });
 
     test('includes the primaries', () {

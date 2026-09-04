@@ -40,10 +40,27 @@ class _AdminComplaintsPageState extends State<AdminComplaintsPage> {
         onRefresh: () async => _load(),
         child: BlocBuilder<ComplaintBloc, ComplaintState>(
           builder: (context, state) {
+            // Newest conversation on top.
+            // Most recently active first - see the note on the customer
+            // list: unread threads bubble up, then newest.
+            final sorted = [...state.storeComplaints]
+              ..sort((a, b) {
+                final unread = b.numberOfUnReadMessage.compareTo(
+                  a.numberOfUnReadMessage,
+                );
+                if (unread != 0) return unread;
+                return b.createdAt.compareTo(a.createdAt);
+              });
             return AdminAsyncView(
-              isLoading: state.getAllComplaintsStatus == GetAllComplaintsStatus.loading,
-              isFailure: state.getAllComplaintsStatus == GetAllComplaintsStatus.failure,
-              isEmpty: state.getAllComplaintsStatus == GetAllComplaintsStatus.success &&
+              isLoading:
+                  state.getAllComplaintsStatus ==
+                  GetAllComplaintsStatus.loading,
+              isFailure:
+                  state.getAllComplaintsStatus ==
+                  GetAllComplaintsStatus.failure,
+              isEmpty:
+                  state.getAllComplaintsStatus ==
+                      GetAllComplaintsStatus.success &&
                   state.storeComplaints.isEmpty,
               errorMessage: state.errorMessage,
               emptyText: LK.adminNoComplaints.tr(),
@@ -51,10 +68,10 @@ class _AdminComplaintsPageState extends State<AdminComplaintsPage> {
               child: ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.all(width(16)),
-                itemCount: state.storeComplaints.length,
+                itemCount: sorted.length,
                 separatorBuilder: (_, __) => SizedBox(height: height(10)),
                 itemBuilder: (context, index) {
-                  final complaint = state.storeComplaints[index];
+                  final complaint = sorted[index];
                   return Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
@@ -81,9 +98,7 @@ class _AdminComplaintsPageState extends State<AdminComplaintsPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Unread messages waiting in this thread.
-                          UnreadBadge(
-                            count: complaint.numberOfUnReadMessage,
-                          ),
+                          UnreadBadge(count: complaint.numberOfUnReadMessage),
                           if (complaint.numberOfUnReadMessage > 0)
                             SizedBox(width: width(6)),
                           AdminStatusBadge(status: complaint.status),

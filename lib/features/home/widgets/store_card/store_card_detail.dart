@@ -25,7 +25,9 @@ class StoreCardDetail extends StatelessWidget {
           borderRadius: BorderRadius.circular(35),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.11),
+              color: Theme.of(
+                context,
+              ).colorScheme.shadow.withValues(alpha: 0.11),
               blurRadius: 1,
               offset: const Offset(0.5, 0.5),
             ),

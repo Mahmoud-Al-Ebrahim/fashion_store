@@ -98,7 +98,8 @@
     "followed_products": "من المتاجر التي تتابعها",
     "categories": "التصنيفات",
     "see_more": "المزيد",
-    "welcome": "أهلاً بك"
+    "welcome": "أهلاً بك",
+    "discounts_title": "العروض والخصومات"
   },
   "explore": {
     "title": "استكشف",
@@ -137,10 +138,12 @@
     "add_comment": "أضف تعليقاً...",
     "comment_added": "تم إضافة تعليقك",
     "no_comments": "لا توجد تعليقات بعد، كن أول من يعلّق",
-    "suggested": "منتجات مشابهة",
+    "suggested": "منتجات مقترحة",
     "discount": "خصم",
     "price": "السعر",
-    "unavailable": "هذا المنتج لم يعد متوفراً"
+    "unavailable": "هذا المنتج لم يعد متوفراً",
+    "view_image": "عرض الصورة",
+    "about_store": "عن المتجر"
   },
   "store": {
     "title": "المتجر",
@@ -171,7 +174,11 @@
     "remove_confirm": "هل تريد إزالة هذا المنتج من السلة؟",
     "item_removed": "تمت إزالة المنتج",
     "quantity_updated": "تم تحديث الكمية",
-    "order_placed": "تم إنشاء طلبك بنجاح"
+    "order_placed": "تم إنشاء طلبك بنجاح",
+    "subtotal": "إجمالي المنتجات",
+    "delivery": "كلفة التوصيل",
+    "delivery_free": "مجاني",
+    "order_summary": "ملخص الطلب"
   },
   "orders": {
     "title": "طلباتي",
@@ -199,7 +206,8 @@
     "status_updated": "تم تحديث حالة الطلب",
     "guest_title": "أنت تتصفح كزائر",
     "guest_body": "سجّل الدخول لعرض طلباتك",
-    "cannot_cancel": "لا يمكن إلغاء هذا الطلب"
+    "cannot_cancel": "لا يمكن إلغاء هذا الطلب",
+    "status_final": "هذا الطلب مغلق ولا يمكن تغيير حالته"
   },
   "profile": {
     "title": "حسابي",
@@ -211,12 +219,12 @@
     "no_transactions": "لا توجد معاملات بعد",
     "deposit": "إيداع",
     "withdraw": "سحب",
-    "complaints": "شكاوي",
+    "complaints": "الشكاوي",
     "new_complaint": "شكوى جديدة",
     "complaint_title": "عنوان الشكوى",
     "complaint_description": "تفاصيل الشكوى",
     "complaint_sent": "تم إرسال الشكوى",
-    "no_complaints": "لا توجد شكاوى",
+    "no_complaints": "لا توجد شكاوي",
     "language": "اللغة",
     "arabic": "العربية",
     "english": "الإنجليزية",
@@ -226,7 +234,8 @@
     "seller_requests": "طلبات فتح المتجر",
     "edit": "تعديل الملف الشخصي",
     "edit_saved": "تم تحديث الملف الشخصي",
-    "pick_birthdate": "اختر تاريخ الميلاد"
+    "pick_birthdate": "اختر تاريخ الميلاد",
+    "review_store_request": "مراجعة طلب متجري"
   },
   "community": {
     "title": "المجتمع",
@@ -242,7 +251,7 @@
     "address": "العنوان",
     "phone": "رقم هاتف المتجر",
     "email": "بريد المتجر",
-    "working_hours_start": "وقت الفتح",
+    "working_hours_start": "وقت الافتتاح",
     "working_hours_end": "وقت الإغلاق",
     "logo": "شعار المتجر",
     "featured_image": "الصورة الرئيسية",
@@ -335,8 +344,8 @@
     "no_categories": "لم يتم إضافة تصنيفات بعد",
     "remove_category_confirm": "إزالة هذا التصنيف من تصنيفات المتجر؟",
     "wallet_transactions": "المحفظة والمعاملات",
-    "complaints": "الشكاوى",
-    "no_complaints": "لا توجد شكاوى",
+    "complaints": "الشكاوي",
+    "no_complaints": "لا توجد شكاوي",
     "conversation": "المحادثة",
     "no_messages": "لا توجد رسائل بعد",
     "logout_store_confirm": "هل تريد تسجيل الخروج من حساب المتجر؟",
@@ -359,7 +368,8 @@
     "delete_size_confirm": "هل تريد حذف هذا القياس من هذا اللون؟",
     "size_deleted": "تم حذف القياس",
     "manage_sizes": "إدارة القياسات",
-    "name_not_editable": "الاسم والوصف ثابتان بعد الإنشاء"
+    "name_not_editable": "الاسم والوصف ثابتان بعد الإنشاء",
+    "occasion": "المناسبة"
   },
   "enums": {
     "gender": {
@@ -383,21 +393,27 @@
       "SportSet": "طقم رياضي"
     },
     "color": {
-      "white": "أبيض",
-      "black": "أسود",
-      "red": "أحمر",
-      "blue": "أزرق",
-      "green": "أخضر",
-      "yellow": "أصفر",
+      "white": "ابيض",
+      "black": "اسود",
+      "red": "احمر",
+      "blue": "ازرق",
+      "green": "اخضر",
+      "yellow": "اصفر",
       "gray": "رمادي",
+      "silver": "فضي",
       "brown": "بني",
-      "pink": "وردي",
+      "pink": "زهري",
       "purple": "بنفسجي",
       "orange": "برتقالي",
-      "silver": "فضي",
       "gold": "ذهبي",
       "navy": "كحلي",
       "beige": "بيج"
+    },
+    "occasion": {
+      "Formal": "رسمي",
+      "Casual": "كاجوال",
+      "Party": "سهرة",
+      "Sport": "رياضي"
     }
   },
   "onboarding": {
@@ -494,7 +510,13 @@
     "no_roles": "لا يوجد دور يمكن إلغاؤه لهذا المستخدم",
     "order_details": "تفاصيل الطلب",
     "store_categories": "أقسام المتجر",
-    "no_categories": "لا توجد أقسام لهذا المتجر"
+    "no_categories": "لا توجد أقسام لهذا المتجر",
+    "store_deleted": "تم حذف المتجر",
+    "tab_customers": "زبائن",
+    "tab_store_owners": "أصحاب متاجر",
+    "tab_payment_staff": "موظفو الشحن",
+    "roles_unavailable": "الخادم لا يرجع أدوار المستخدمين بعد، لذلك يظهر الجميع كزبائن",
+    "make_payment_staff": "تعيين كموظف شحن"
   },
   "payment": {
     "title": "شحن المحافظ",
@@ -523,7 +545,8 @@
     "tx_type": "النوع",
     "tx_date": "التاريخ",
     "tx_wallet": "المحفظة",
-    "tx_qty": "الكمية"
+    "tx_qty": "الكمية",
+    "from_balance_transfer": "ناتجة عن تحويل رصيد"
   },
   "chat": {
     "title": "المحادثة",
@@ -546,7 +569,14 @@
     "edit_failed": "تعذر تعديل الرسالة",
     "delete_failed": "تعذر حذف الرسالة",
     "message_deleted": "تم حذف الرسالة",
-    "message_edited": "تم تعديل الرسالة"
+    "message_edited": "تم تعديل الرسالة",
+    "offline_no_actions": "أنت غير متصل - لا يمكن تعديل أو حذف الرسائل حتى عودة الاتصال",
+    "sent": "تم الإرسال",
+    "seen": "مقروءة",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "am": "ص",
+    "pm": "م"
   },
   "wallet": {
     "id_label": "رقم المحفظة",
@@ -567,7 +597,8 @@
     "empty": "لا تتابع أي متجر بعد، تصفّح المتاجر وابدأ بمتابعتها"
   },
   "complaints": {
-    "unread_count": "{} غير مقروءة"
+    "unread_count": "{} غير مقروءة",
+    "existing_thread": "لديك محادثة سابقة مع هذا المتجر، تم فتحها"
   },
   "store_profile": {
     "title": "ملف المتجر",

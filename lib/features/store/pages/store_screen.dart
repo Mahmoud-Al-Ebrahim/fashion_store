@@ -39,6 +39,9 @@ class _StoreScreenState extends State<StoreScreen> {
       GetAllProductsByStoreEvent(storeId: widget.store.id),
     );
     context.read<PostBloc>().add(GetAllPostsEvent(storeId: widget.store.id));
+    // Which stores this account follows, so the button can open in the
+    // right state instead of always claiming "not following".
+    context.read<StoreFollowerBloc>().add(GetFollowedStoresEvent());
     context.read<StoreFollowerBloc>().add(
       GetStoreFollowersCountEvent(storeId: widget.store.id),
     );

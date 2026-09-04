@@ -102,9 +102,16 @@ class _WalletPageState extends State<WalletPage> {
                 child: Column(
                   children: state.transactions.map((t) {
                     final isDeposit = t.transactionType == 'Deposit';
+                    // A top-up has no order behind it - `paymentId` is
+                    // null and GetOrderDetailsByPayment answers 404 - so it
+                    // gets no details affordance. Note the gate is the
+                    // payment link, not the type: a Deposit that carries a
+                    // paymentId is money arriving from a sale and does have
+                    // an order worth showing.
                     return InkWell(
                       borderRadius: BorderRadius.circular(14),
-                      // Shows what this payment actually bought.
+                      // Every operation opens its details; a top-up simply
+                      // explains itself instead of offering a retry.
                       onTap: () => showTransactionDetailsSheet(context, t),
                       child: Container(
                         margin: EdgeInsets.only(bottom: height(8)),

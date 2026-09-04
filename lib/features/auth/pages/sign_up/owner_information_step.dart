@@ -31,19 +31,19 @@ class OwnerInformationStep extends StatelessWidget {
           children: [
             SizedBox(height: height(35)),
             AuthTextField(
-              controller: firstNameController,
-              hintText: LK.authFirstName.tr(),
-              validator: validateName,
-            )
+                  controller: firstNameController,
+                  hintText: LK.authFirstName.tr(),
+                  validator: validateName,
+                )
                 .animate()
                 .fadeIn(duration: 400.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),
             SizedBox(height: height(5)),
             AuthTextField(
-              controller: lastNameController,
-              hintText: LK.authLastName.tr(),
-              validator: validateName,
-            )
+                  controller: lastNameController,
+                  hintText: LK.authLastName.tr(),
+                  validator: validateName,
+                )
                 .animate()
                 .fadeIn(duration: 400.ms, delay: 150.ms)
                 .slide(begin: const Offset(1, 0), duration: 400.ms),

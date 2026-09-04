@@ -16,7 +16,21 @@ import '../widgets/option_picker_field.dart';
 class AdminOrderDetailPage extends StatefulWidget {
   final int orderId;
 
-  const AdminOrderDetailPage({super.key, required this.orderId});
+  /// The order's own status - `Processing`, `Delivered` or `Cancelled`.
+  ///
+  /// The detail endpoints return the order's items and its *payment*, and
+  /// the payment reads `Paid` even for cancelled orders, so nothing on this
+  /// screen could tell whether the order is still open. Without it the
+  /// status editor was always offered, and the server answered every
+  /// attempt with "لا يمكن تعديل الطلب لأنه في حالة Cancelled بالفعل" -
+  /// which is why changing an order's status looked broken.
+  final String? orderStatus;
+
+  const AdminOrderDetailPage({
+    super.key,
+    required this.orderId,
+    this.orderStatus,
+  });
 
   @override
   State<AdminOrderDetailPage> createState() => _AdminOrderDetailPageState();
@@ -24,6 +38,14 @@ class AdminOrderDetailPage extends StatefulWidget {
 
 class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
   String? _selectedStatus;
+
+  /// True when nothing about this order's status can still be changed.
+  ///
+  /// Only a `Processing` order is actionable: `Delivered` and `Cancelled`
+  /// are terminal, and the server rejects any move out of them. An order
+  /// opened without a known status is treated as locked too - guessing
+  /// would just produce a rejected request.
+  bool get _statusIsFinal => !orderStatusIsEditable(widget.orderStatus);
 
   @override
   void initState() {
@@ -83,39 +105,74 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                           ),
                         ],
                       ),
-                      AdminStatusBadge(status: state.payment!.status),
+                      if (widget.orderStatus != 'Cancelled')
+                        AdminStatusBadge(status: state.payment!.status),
                     ],
                   ),
                 ),
                 SizedBox(height: height(16)),
               ],
-              Text(
-                LK.ordersUpdateStatus.tr(),
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              SizedBox(height: height(8)),
-              OptionPickerField(
-                hintText: LK.ordersStatus.tr(),
-                options: orderStatusOptions(),
-                selectedValue: _selectedStatus,
-                onSelected: (o) => setState(() => _selectedStatus = o.value),
-              ),
-              SizedBox(height: height(10)),
-              AuthButton(
-                text: LK.commonSave.tr(),
-                widthButton: double.infinity,
-                heightButton: height(50),
-                onTap: _selectedStatus == null
-                    ? null
-                    : () {
-                        context.read<OrderBloc>().add(
-                          UpdateOrderStatusEvent(
-                            orderId: widget.orderId,
-                            status: _selectedStatus!,
-                          ),
-                        );
-                      },
-              ),
+              // `Delivered` and `Cancelled` are terminal: the server refuses
+              // any further change, so the editor is hidden rather than
+              // shown and rejected.
+              if (_statusIsFinal) ...[
+                Row(
+                  children: [
+                    Icon(
+                      Icons.lock_outline,
+                      size: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                    SizedBox(width: width(6)),
+                    Expanded(
+                      child: Text(
+                        LK.ordersStatusFinal.tr(),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall!.copyWith(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Text(
+                  LK.ordersUpdateStatus.tr(),
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                SizedBox(height: height(8)),
+                OptionPickerField(
+                  hintText: LK.ordersStatus.tr(),
+                  // One move, one option: mark it delivered.
+                  options: orderStatusUpdateOptions(),
+                  selectedValue: _selectedStatus,
+                  onSelected: (o) => setState(() => _selectedStatus = o.value),
+                ),
+                SizedBox(height: height(10)),
+                AuthButton(
+                  // The call takes a moment; without this the button looked
+                  // inert and invited a second tap.
+                  text:
+                      state.updateOrderStatusStatus ==
+                          UpdateOrderStatusStatus.loading
+                      ? LK.commonSaving.tr()
+                      : LK.commonSave.tr(),
+                  widthButton: double.infinity,
+                  heightButton: height(50),
+                  onTap:
+                      state.updateOrderStatusStatus ==
+                              UpdateOrderStatusStatus.loading ||
+                          _selectedStatus == null
+                      ? null
+                      : () {
+                          context.read<OrderBloc>().add(
+                            UpdateOrderStatusEvent(
+                              orderId: widget.orderId,
+                              status: _selectedStatus!,
+                            ),
+                          );
+                        },
+                ),
+              ],
               SizedBox(height: height(20)),
               Text(
                 '${LK.ordersItems.tr()} (${state.orderItems.length})',
@@ -128,7 +185,14 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                   // Reached by the store owner and by the super admin from
                   // the platform order history - both land on the same
                   // product screen a customer would see.
-                  onTap: () => openProductById(context, item.productId),
+                  // Store owner and super admin both reach this screen to
+                  // administrate an order - neither is shopping, so the
+                  // product opens without a buy affordance.
+                  onTap: () => openProductById(
+                    context,
+                    item.productId,
+                    allowPurchase: false,
+                  ),
                   child: Container(
                     margin: EdgeInsets.only(bottom: height(10)),
                     padding: EdgeInsets.all(width(10)),

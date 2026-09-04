@@ -13,6 +13,7 @@ import '../../../core/utils/session.dart';
 import '../../../core/utils/show_message.dart';
 import '../../../models/complaint/message_model.dart';
 import '../../admin/widgets/confirm_dialog.dart';
+import 'dart:ui' as ui;
 
 /// Text conversation attached to a complaint, shared by the customer and the
 /// store owner.
@@ -47,11 +48,9 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
   StreamSubscription<HubMessage>? _messageSub;
   StreamSubscription<ChatConnectionState>? _stateSub;
   StreamSubscription<int>? _deleteSub;
+  StreamSubscription<int>? _readSub;
   StreamSubscription<HubMessage>? _editSub;
 
-  /// Set once the thread has been marked read, so leaving the page can
-  /// refresh the list that shows the unread badge.
-  bool _markedRead = false;
   ChatConnectionState _connection = ChatConnectionState.disconnected;
   bool _sending = false;
 
@@ -92,6 +91,24 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
         );
       });
       _scrollToEnd();
+      // The push shows instantly, but REST is what carries the real id and
+      // read state - and it is scoped to this complaint, so anything that
+      // leaked in from another thread's group drops back out.
+      _reloadHistory();
+      // A message that arrives while the thread is open has been seen -
+      // but only the peer's. The hub echoes our own sends back to us too,
+      // and marking those read would be reporting on ourselves.
+      if (!Session.owns(message.senderId)) {
+        _hub.markAsRead(widget.complaintId);
+      }
+    });
+
+    // The peer opened the thread: our own bubbles move from "sent" to
+    // "read". Nothing consumed this stream before, so the tick never
+    // updated until the screen was reopened.
+    _readSub = _hub.readReceipts.listen((complaintId) {
+      if (!mounted || complaintId != widget.complaintId) return;
+      _reloadHistory();
     });
 
     // A peer edit or delete rewrites history, so re-read it rather than
@@ -118,7 +135,6 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
       // `MessagesMarkedAsRead` back to the group so the peer's view updates
       // too.
       await _hub.markAsRead(widget.complaintId);
-      _markedRead = true;
     } catch (_) {
       // The state stream already reported the failure; history still shows.
     }
@@ -141,6 +157,13 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
   /// else's message - so this menu is a convenience, not the control.
   Future<void> _messageActions(MessageModel message) async {
     if (!Session.owns(message.senderId)) return;
+    // Editing and deleting both go over the hub, so they are impossible
+    // while the connection is down - say so rather than opening a menu
+    // whose actions would silently fail.
+    if (_connection != ChatConnectionState.connected) {
+      showMessage(LK.chatOfflineNoActions.tr());
+      return;
+    }
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -271,7 +294,11 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
     _messageSub?.cancel();
     _stateSub?.cancel();
     _deleteSub?.cancel();
+    _readSub?.cancel();
     _editSub?.cancel();
+    // Stop receiving this thread's broadcasts; the next thread opened on the
+    // same connection would otherwise still be in this group.
+    _hub.leaveComplaint(widget.complaintId);
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -282,25 +309,12 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
   /// caller's role, so both events are dispatched - each bloc ignores the
   /// one that isn't its own view.
   void _refreshComplaintLists() {
-    if (!_markedRead) return;
+    // Unconditional: the REST read fires on entry whether or not the hub
+    // connected, so the badge must be refreshed either way.
     final bloc = context.read<ComplaintBloc>();
     bloc.add(GetAllComplaintsByUserEvent());
     if (Session.canManageStore) bloc.add(GetAllComplaintsEvent());
   }
-
-  String get _statusLabel => switch (_connection) {
-    ChatConnectionState.connected => LK.chatConnected.tr(),
-    ChatConnectionState.connecting => LK.chatConnecting.tr(),
-    ChatConnectionState.reconnecting => LK.chatReconnecting.tr(),
-    ChatConnectionState.disconnected => LK.chatDisconnected.tr(),
-  };
-
-  Color get _statusColor => switch (_connection) {
-    ChatConnectionState.connected => Colors.green,
-    ChatConnectionState.connecting ||
-    ChatConnectionState.reconnecting => Colors.orange,
-    ChatConnectionState.disconnected => Colors.red,
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -315,92 +329,60 @@ class _ComplaintChatPageState extends State<ComplaintChatPage> {
           scrolledUnderElevation: 0,
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
-          title: Column(
+          // Just the counterpart. The connected/disconnected line that used
+          // to sit under it was noise: the connection is an implementation
+          // detail, and the two places it actually matters - sending, and
+          // editing or deleting - report it themselves.
+          title: Text(
+            widget.counterpartName,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        body: Directionality(
+          textDirection: ui.TextDirection.ltr,
+          child: Column(
             children: [
-              Text(
-                widget.counterpartName,
-                style: Theme.of(context).textTheme.titleMedium,
+              Expanded(
+                child: BlocBuilder<ComplaintBloc, ComplaintState>(
+                  builder: (context, state) {
+                    // History from REST, then anything that arrived live and
+                    // isn't already in it.
+                    final stored = state.messages;
+                    final storedIds = stored.map((m) => m.id).toSet();
+                    final merged = [
+                      ...stored,
+                      ..._live.where((m) => !storedIds.contains(m.id)),
+                    ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+                    return AsyncView(
+                      isLoading:
+                          state.getComplaintMessagesStatus ==
+                              GetComplaintMessagesStatus.loading &&
+                          merged.isEmpty,
+                      isFailure: false,
+                      isEmpty: merged.isEmpty,
+                      emptyText: LK.chatEmpty.tr(),
+                      emptyImageHeight: height(120),
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(width(16)),
+                        itemCount: merged.length,
+                        itemBuilder: (context, index) => _Bubble(
+                          message: merged[index],
+                          onLongPress: () => _messageActions(merged[index]),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: _statusColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(width: width(5)),
-                  Text(
-                    _statusLabel,
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: Colors.grey,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
+              _Composer(
+                controller: _controller,
+                sending: _sending,
+                onSend: _send,
               ),
             ],
           ),
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: BlocBuilder<ComplaintBloc, ComplaintState>(
-                builder: (context, state) {
-                  // History from REST, then anything that arrived live and
-                  // isn't already in it.
-                  final stored = state.messages;
-                  final storedIds = stored.map((m) => m.id).toSet();
-                  final merged = [
-                    ...stored,
-                    ..._live.where((m) => !storedIds.contains(m.id)),
-                  ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-
-                  return AsyncView(
-                    isLoading:
-                        state.getComplaintMessagesStatus ==
-                            GetComplaintMessagesStatus.loading &&
-                        merged.isEmpty,
-                    isFailure: false,
-                    isEmpty: merged.isEmpty,
-                    emptyText: LK.chatEmpty.tr(),
-                    emptyImageHeight: height(120),
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: EdgeInsets.all(width(16)),
-                      itemCount: merged.length,
-                      itemBuilder: (context, index) => _Bubble(
-                        message: merged[index],
-                        onLongPress: () => _messageActions(merged[index]),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            if (_connection == ChatConnectionState.disconnected)
-              Container(
-                width: double.infinity,
-                color: Colors.orange.withValues(alpha: 0.12),
-                padding: EdgeInsets.symmetric(
-                  horizontal: width(16),
-                  vertical: height(8),
-                ),
-                child: Text(
-                  LK.chatOfflineNote.tr(),
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-            _Composer(
-              controller: _controller,
-              sending: _sending,
-              onSend: _send,
-            ),
-          ],
         ),
       ),
     );
@@ -418,9 +400,12 @@ class _Bubble extends StatelessWidget {
     final mine = Session.owns(message.senderId);
     final primary = Theme.of(context).colorScheme.primary;
     return Align(
-      alignment: mine
-          ? AlignmentDirectional.centerEnd
-          : AlignmentDirectional.centerStart,
+      // Deliberately NOT AlignmentDirectional: under RTL "end" resolves to
+      // the left, so in Arabic the sender's own messages were drawn on the
+      // left and read as if they had been received. Chat convention is
+      // absolute - mine on the right, theirs on the left - in every
+      // language.
+      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
         // Only your own messages can be edited or removed.
         onLongPress: mine ? onLongPress : null,
@@ -463,7 +448,7 @@ class _Bubble extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${message.createdAt.hour.toString().padLeft(2, '0')}:${message.createdAt.minute.toString().padLeft(2, '0')}',
+                    formatMessageTimestamp(message.createdAt),
                     style: TextStyle(
                       fontSize: 9,
                       color: mine ? Colors.white70 : Colors.grey,
@@ -477,6 +462,29 @@ class _Bubble extends StatelessWidget {
                         fontSize: 9,
                         fontStyle: FontStyle.italic,
                         color: mine ? Colors.white70 : Colors.grey,
+                      ),
+                    ),
+                  ],
+                  // Delivery state belongs to the sender only - telling
+                  // someone their own incoming message is "read" is
+                  // meaningless.
+                  if (mine) ...[
+                    SizedBox(width: width(5)),
+                    Icon(
+                      message.isRead ? Icons.done_all : Icons.done,
+                      size: 11,
+                      color: message.isRead
+                          ? const Color(0xFF9BE7FF)
+                          : Colors.white70,
+                    ),
+                    SizedBox(width: width(3)),
+                    Text(
+                      message.isRead ? LK.chatSeen.tr() : LK.chatSent.tr(),
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: message.isRead
+                            ? const Color(0xFF9BE7FF)
+                            : Colors.white70,
                       ),
                     ),
                   ],
@@ -562,4 +570,34 @@ class _Composer extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "اليوم 4:30 م" for today, "أمس 4:30 م" for yesterday, and
+/// "2026-09-01 4:30 م" for anything older.
+///
+/// Deliberately hand-rolled rather than `DateFormat.jm()`: the 12-hour
+/// marker has to come from the language files so that the Arabic build says
+/// ص/م and the English one AM/PM, whatever locale data is bundled.
+String formatMessageTimestamp(DateTime when) {
+  final now = DateTime.now();
+  final day = DateTime(when.year, when.month, when.day);
+  final today = DateTime(now.year, now.month, now.day);
+  final difference = today.difference(day).inDays;
+
+  final String datePart;
+  if (difference == 0) {
+    datePart = LK.chatToday.tr();
+  } else if (difference == 1) {
+    datePart = LK.chatYesterday.tr();
+  } else {
+    datePart =
+        '${when.year}-${when.month.toString().padLeft(2, '0')}-'
+        '${when.day.toString().padLeft(2, '0')}';
+  }
+
+  final marker = when.hour < 12 ? LK.chatAm.tr() : LK.chatPm.tr();
+  final hour12 = when.hour % 12 == 0 ? 12 : when.hour % 12;
+  final minute = when.minute.toString().padLeft(2, '0');
+
+  return '$datePart $hour12:$minute $marker';
 }

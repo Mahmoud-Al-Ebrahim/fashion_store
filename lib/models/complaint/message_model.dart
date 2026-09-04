@@ -56,7 +56,9 @@ class MessageModel {
       text: asString(json['messageText'] ?? json['text'] ?? json['content']),
       isRead: asBool(json['isRead']),
       isEdited: asBool(json['isEdited']),
-      createdAt: asDate(json['sentAt'] ?? json['createdAt']).toLocal(),
+      // Bare server timestamps are UTC; `asDate(...).toLocal()` treated
+      // them as local and showed every message three hours early.
+      createdAt: asServerDate(json['sentAt'] ?? json['createdAt']),
     );
   }
 }
