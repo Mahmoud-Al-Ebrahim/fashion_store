@@ -11,6 +11,8 @@ import '../../../core/screen_util.dart';
 import '../../admin/admin_shell_screen.dart';
 import '../../admin/widgets/confirm_dialog.dart';
 import '../../auth/pages/sign_in_screen/sign_in_screen.dart';
+import '../../../core/utils/app_website.dart';
+import '../../common/support_sheet.dart';
 import '../../home/widgets/drawer/drawer_card.dart';
 import '../../payment_employee/pages/wallet_topup_page.dart';
 import '../../../blocs/wallet_bloc/wallet_bloc.dart';
@@ -84,6 +86,18 @@ class SuperAdminMorePage extends StatelessWidget {
             icon: Icons.language,
             title: LK.profileLanguage.tr(),
             onTap: () => _switchLanguage(context),
+          ),
+          _tile(
+            context,
+            icon: Icons.headset_mic_outlined,
+            title: LK.supportTitle.tr(),
+            onTap: () => showSupportSheet(context),
+          ),
+          _tile(
+            context,
+            icon: Icons.language,
+            title: LK.supportWebsite.tr(),
+            onTap: openAppWebsite,
           ),
           const Divider(),
           _tile(

@@ -7,7 +7,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../../app/widgets/button.dart';
 import '../../../../core/screen_util.dart';
+import '../../../../core/utils/api_service.dart';
+import '../../../../core/utils/clear_session_blocs.dart';
+import '../../../../core/utils/my_shared_pref.dart';
 import '../../../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
+
+/// Enters read-only browsing from onboarding.
+///
+/// Onboarding is normally the very first screen, but it is reachable again
+/// after a reinstall-less sign-out, so it clears the session the same way
+/// the sign-in screen's guest button does rather than assuming there is
+/// nothing to clear.
+Future<void> _continueAsGuest(BuildContext context) async {
+  await ApiService.clearAuth();
+  await MySharedPref.clearAuthData();
+  if (!context.mounted) return;
+  clearSessionBlocs(context, includeAuth: true);
+  HelperFunctions.navigateToPageAndPopAll(context, const UserNavBar(), true);
+}
 
 class ColumnLayer extends StatelessWidget {
   const ColumnLayer({super.key});
@@ -112,12 +129,7 @@ class ColumnLayer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 InkWell(
-                  onTap: () async {
-                    HelperFunctions.navigateToPageAndPopAll(
-                      context,
-                      UserNavBar(),
-                    );
-                  },
+                  onTap: () => _continueAsGuest(context),
                   child: Text(
                     LK.onboardingContinueGuest.tr(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -126,12 +138,7 @@ class ColumnLayer extends StatelessWidget {
                   ),
                 ),
                 InkWell(
-                  onTap: () {
-                    HelperFunctions.navigateToPageAndPopAll(
-                      context,
-                      UserNavBar(),
-                    );
-                  },
+                  onTap: () => _continueAsGuest(context),
                   child: SvgPicture.asset("assets/svg/next.svg", height: 30),
                 ),
               ],

@@ -591,6 +591,22 @@ class LK {
   static const complaintsExistingThread = 'complaints.existing_thread';
   static const drawerReviewStoreRequest = 'profile.review_store_request';
 
+  // ---------- support ----------
+  static const supportTitle = 'support.title';
+  static const supportSubtitle = 'support.subtitle';
+  static const supportEmail = 'support.email';
+  static const supportPhone = 'support.phone';
+  static const supportCopied = 'support.copied';
+  static const supportUnavailable = 'support.unavailable';
+
+  static const walletIdHintBalance = 'wallet.id_hint_balance';
+  static const communityMediaCounter = 'community.media_counter';
+  static const communityReact = 'community.react';
+  static const communityAllReactions = 'community.all_reactions';
+  static const communityNoReactions = 'community.no_reactions';
+  static const supportWebsite = 'support.website';
+  static const storeReportHint = 'store.report_hint';
+
   // ---------- enums ----------
   static String genderKey(String value) => 'enums.gender.$value';
 
@@ -601,4 +617,6 @@ class LK {
   static String colorKey(String value) => 'enums.color.$value';
 
   static String occasionKey(String value) => 'enums.occasion.$value';
+
+  static String reactionKey(String value) => 'enums.reaction.$value';
 }

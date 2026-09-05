@@ -9,6 +9,7 @@ import '../../core/localization/language_service.dart';
 import '../../core/localization/translation_keys.dart';
 import '../admin/widgets/confirm_dialog.dart';
 import '../auth/pages/sign_in_screen/sign_in_screen.dart';
+import '../common/support_sheet.dart';
 import 'pages/wallet_topup_page.dart';
 import '../../core/utils/clear_session_blocs.dart';
 
@@ -99,6 +100,13 @@ class _PaymentEmployeeShellScreenState
             },
           ),
         ],
+      ),
+      // No drawer and no "more" list on this shell, so support gets a
+      // floating button rather than being unreachable for this role.
+      floatingActionButton: FloatingActionButton.small(
+        tooltip: LK.supportTitle.tr(),
+        onPressed: () => showSupportSheet(context),
+        child: const Icon(Icons.headset_mic_outlined),
       ),
       // The top-up history tab was removed on request, leaving crediting a
       // wallet as the only screen. The app bar still carries language and

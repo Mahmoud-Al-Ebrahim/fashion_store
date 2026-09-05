@@ -8,12 +8,18 @@ import '../../../core/utils/show_message.dart';
 
 /// Shows the wallet identifier with a copy button.
 ///
-/// The top-up desk credits a wallet by id, so the owner needs to be able to
+/// The top-up desk credits a wallet by id, so the holder needs to be able to
 /// read and hand over this value.
 class WalletIdCard extends StatelessWidget {
   final String? walletId;
 
-  const WalletIdCard({super.key, required this.walletId});
+  /// Line under the id. Defaults to the customer's wording, which is about
+  /// handing the id to the payment desk. A store owner's wallet is credited
+  /// by sales rather than topped up, so that screen passes its own line -
+  /// see [LK.walletIdHintBalance].
+  final String? hint;
+
+  const WalletIdCard({super.key, required this.walletId, this.hint});
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +80,7 @@ class WalletIdCard extends StatelessWidget {
             ),
             SizedBox(height: height(4)),
             Text(
-              LK.walletIdHint.tr(),
+              hint ?? LK.walletIdHint.tr(),
               style: Theme.of(
                 context,
               ).textTheme.bodySmall!.copyWith(color: Colors.grey, fontSize: 11),

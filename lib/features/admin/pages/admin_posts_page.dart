@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,9 +6,8 @@ import '../../../blocs/post_bloc/post_bloc.dart';
 import '../../../blocs/store_bloc/store_bloc.dart';
 import '../../../core/extensions/build_context.dart';
 import '../../../core/screen_util.dart';
-import '../../../core/utils/api_service.dart';
 import '../../../core/utils/show_message.dart';
-import '../../shop/pages/image_viewer_page.dart';
+import '../../community/widgets/post_media_carousel.dart';
 import '../widgets/admin_async_view.dart';
 import '../widgets/confirm_dialog.dart';
 import 'admin_post_form_page.dart';
@@ -109,38 +107,16 @@ class _AdminPostsPageState extends State<AdminPostsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Every photo, not just the first: an owner
+                            // reviewing a post needs to see what they
+                            // actually published.
                             if (post.postMedias.isNotEmpty)
-                              ClipRRect(
+                              PostMediaCarousel(
+                                postId: post.id,
+                                media: post.postMedias,
+                                height: height(160),
                                 borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(16),
-                                ),
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => ImageViewerPage(
-                                          imageUrl:
-                                              post.postMedias.first.mediaUrl,
-                                          heroTag:
-                                              'post-media-${post.postMedias.first.mediaUrl}',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Hero(
-                                    tag:
-                                        'post-media-${post.postMedias.first.mediaUrl}',
-                                    child: CachedNetworkImage(
-                                      imageUrl:
-                                          ApiService.resolveUrl(
-                                            post.postMedias.first.mediaUrl,
-                                          ) ??
-                                          '',
-                                      height: height(160),
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
                                 ),
                               ),
                             Padding(

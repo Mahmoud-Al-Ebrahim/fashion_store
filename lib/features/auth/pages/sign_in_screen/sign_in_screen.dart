@@ -10,6 +10,8 @@ import '../../../../core/helper/helper_functions.dart';
 import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../core/utils/api_service.dart';
+import '../../../../core/utils/clear_session_blocs.dart';
 import '../../../../core/utils/my_shared_pref.dart';
 import '../../../../core/utils/show_message.dart';
 import '../../../../core/utils/validators.dart';
@@ -42,10 +44,21 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
+  /// Drops into read-only browsing with nothing of the previous account
+  /// left behind.
+  ///
+  /// Clearing the stored token was not enough: the blocs live at the app
+  /// root and outlive any single session, so a guest arriving here after
+  /// somebody signed out still saw that person's cart, orders, wallet,
+  /// profile and complaints - each screen only corrects itself once its own
+  /// fetch returns, and as a guest those fetches 401 and leave the stale
+  /// data on screen. AuthBloc is included because it still holds the login
+  /// response, tokens and all.
   Future<void> _continueAsGuest() async {
-    // Guests must not carry a stale session around.
+    await ApiService.clearAuth();
     await MySharedPref.clearAuthData();
     if (!mounted) return;
+    clearSessionBlocs(context, includeAuth: true);
     RoleRouter.goHome(context);
   }
 
@@ -56,6 +69,11 @@ class _SignInScreenState extends State<SignInScreen> {
         listenWhen: (p, c) => p.loginStatus != c.loginStatus,
         listener: (context, state) {
           if (state.loginStatus == LoginStatus.success) {
+            // Belt and braces for account switching: whatever the previous
+            // session left in the root blocs is dropped before the new one
+            // starts fetching. AuthBloc is left alone - it is holding the
+            // login that just succeeded.
+            clearSessionBlocs(context);
             RoleRouter.goHome(context);
           } else if (state.loginStatus == LoginStatus.failure) {
             showMessage(state.errorMessage);

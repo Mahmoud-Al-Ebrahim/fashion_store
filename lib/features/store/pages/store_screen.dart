@@ -8,6 +8,7 @@ import '../../../core/extensions/build_context.dart';
 import '../../../core/screen_util.dart';
 import '../../../models/store/store_model.dart';
 import '../widgets/store_app_bar.dart';
+import '../widgets/store_complaint_button.dart';
 import '../widgets/store_top_side/store_top_side.dart';
 import '../widgets/tab_bar/categories_tab/categories_tab.dart';
 import '../widgets/tab_bar/posts_tab/posts_tab.dart';
@@ -56,6 +57,14 @@ class _StoreScreenState extends State<StoreScreen> {
         body: Column(
           children: [
             StoreTopSide(store: widget.store),
+            SizedBox(height: height(10)),
+            // Raise a problem with *this* store without hunting for it in
+            // the platform-wide complaints list, or jump straight back into
+            // the conversation if one is already open.
+            StoreComplaintButton(
+              storeId: widget.store.id,
+              storeName: widget.store.storeName,
+            ),
             SizedBox(height: height(10)),
             const TabBarsName(),
             Expanded(

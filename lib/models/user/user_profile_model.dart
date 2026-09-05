@@ -63,6 +63,9 @@ List<String> _rolesFromJson(dynamic value) {
     } else if (entry is Map && entry['name'] != null) {
       out.add(entry['name'].toString());
     }
+    else if (entry is Map && entry['roleName'] != null) {
+      out.add(entry['roleName'].toString());
+    }
   }
   return out;
 }

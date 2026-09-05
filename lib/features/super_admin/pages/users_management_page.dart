@@ -239,7 +239,6 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
                   banned: false,
                   // Only a plain customer can be promoted.
                   canAssignRole: true,
-                  note: rolesKnown ? null : LK.superadminRolesUnavailable.tr(),
                   onAssignRole: _assignRole,
                   onRevokeRole: _revokeRole,
                 ),

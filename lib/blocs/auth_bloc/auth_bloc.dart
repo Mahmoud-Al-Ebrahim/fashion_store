@@ -246,13 +246,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           log(response.data.toString());
           await ApiService.clearAuth();
           await MySharedPref.clearAuthData();
-          emit(
-            state.copyWith(
-              logoutStatus: LogoutStatus.success,
-              isLoggedIn: false,
-              roles: [],
-            ),
-          );
+          // A fresh state, not copyWith: `loginResponse` still holds the
+          // access and refresh tokens of the account signing out, and
+          // copyWith's `??` can never null a field back out.
+          emit(AuthState(logoutStatus: LogoutStatus.success));
         })
         .catchError((error) async {
           log(error.toString());
@@ -260,25 +257,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           // server side still means the user is effectively logged out locally.
           await ApiService.clearAuth();
           await MySharedPref.clearAuthData();
-          emit(
-            state.copyWith(
-              logoutStatus: LogoutStatus.success,
-              isLoggedIn: false,
-              roles: [],
-            ),
-          );
+          // A fresh state, not copyWith: `loginResponse` still holds the
+          // access and refresh tokens of the account signing out, and
+          // copyWith's `??` can never null a field back out.
+          emit(AuthState(logoutStatus: LogoutStatus.success));
         })
         .onError((error, stackTrace) async {
           log(error.toString());
           await ApiService.clearAuth();
           await MySharedPref.clearAuthData();
-          emit(
-            state.copyWith(
-              logoutStatus: LogoutStatus.success,
-              isLoggedIn: false,
-              roles: [],
-            ),
-          );
+          // A fresh state, not copyWith: `loginResponse` still holds the
+          // access and refresh tokens of the account signing out, and
+          // copyWith's `??` can never null a field back out.
+          emit(AuthState(logoutStatus: LogoutStatus.success));
         });
   }
 

@@ -27,13 +27,9 @@ class MySharedPref {
   static const String _userIdKey = 'user_id';
   static const String _wantsStoreKey = 'wants_store';
 
-
-
   /// init get storage services
   static Future<void> init() async {
     _sharedPreferences = await SharedPreferences.getInstance();
-
-
   }
 
   static setStorage(SharedPreferences sharedPreferences) {
@@ -48,7 +44,6 @@ class MySharedPref {
   static bool getThemeIsLight() =>
       _sharedPreferences.getBool(_lightThemeKey) ?? true;
 
-
   static Future<void> setOnBoardingSeen() =>
       _sharedPreferences.setBool(_onBoarding, true);
 
@@ -60,20 +55,17 @@ class MySharedPref {
       _sharedPreferences.setString(_fcmTokenKey, token);
 
   /// get generated fcm token
-  static String? getFcmToken() =>
-      _sharedPreferences.getString(_fcmTokenKey);
+  static String? getFcmToken() => _sharedPreferences.getString(_fcmTokenKey);
 
   /// save generated token
   static Future<void> saveToken(String token) =>
       _sharedPreferences.setString(_tokenKey, token);
 
   /// get generated fcm token
-  static String? getToken() =>
-      _sharedPreferences.getString(_tokenKey);
+  static String? getToken() => _sharedPreferences.getString(_tokenKey);
 
   /// clear the saved access token
-  static Future<void> clearToken() =>
-      _sharedPreferences.remove(_tokenKey);
+  static Future<void> clearToken() => _sharedPreferences.remove(_tokenKey);
 
   /// save refresh token string (used to obtain a new access token)
   static Future<void> saveRefreshToken(String refreshToken) =>
@@ -92,8 +84,7 @@ class MySharedPref {
       _sharedPreferences.setString(_userIdKey, userId);
 
   /// get the logged in user's id
-  static String? getUserId() =>
-      _sharedPreferences.getString(_userIdKey);
+  static String? getUserId() => _sharedPreferences.getString(_userIdKey);
 
   /// save the logged in user's roles (e.g. ["User", "Admin"])
   static Future<void> saveRoles(List<String> roles) =>
@@ -120,12 +111,29 @@ class MySharedPref {
   static Future<void> clearWantsStore() =>
       _sharedPreferences.remove(_wantsStoreKey);
 
-  /// clear all auth related data (token, refresh token, roles, user id)
+  /// Clears every trace of the signed-in account.
+  ///
+  /// Not just the credentials: the profile fields cached at login are the
+  /// previous user's personal data and must not survive into the next
+  /// session - or into guest mode - on a shared device. `wants_store` goes
+  /// too, or the next account to sign in gets routed to the store-request
+  /// form because somebody else once asked for it.
+  ///
+  /// Device preferences (language, theme, onboarding-seen, FCM token) are
+  /// deliberately kept: they belong to the phone, not to the account.
   static Future<void> clearAuthData() async {
     await clearToken();
     await clearRefreshToken();
     await _sharedPreferences.remove(_rolesKey);
     await _sharedPreferences.remove(_userIdKey);
+    await _sharedPreferences.remove(fullName);
+    await _sharedPreferences.remove(email);
+    await _sharedPreferences.remove(phone);
+    await _sharedPreferences.remove(userName);
+    await _sharedPreferences.remove('image');
+    await _sharedPreferences.remove(_isAdmin);
+    await _sharedPreferences.remove(_isVerified);
+    await _sharedPreferences.remove(_wantsStoreKey);
   }
 
   /// save is admin
@@ -133,8 +141,7 @@ class MySharedPref {
       _sharedPreferences.setBool(_isAdmin, isAdmin);
 
   /// get generated is Admin
-  static bool? getIsAdmin() =>
-      _sharedPreferences.getBool(_isAdmin);
+  static bool? getIsAdmin() => _sharedPreferences.getBool(_isAdmin);
 
   /// clear all data from shared pref
   static Future<void> clear() async => await _sharedPreferences.clear();
@@ -152,38 +159,32 @@ class MySharedPref {
       _sharedPreferences.setBool(_isVerified, true);
 
   /// get generated IsVerified
-  static bool? getIsVerified() =>
-      _sharedPreferences.getBool(_isVerified);
+  static bool? getIsVerified() => _sharedPreferences.getBool(_isVerified);
 
-  static String? getFullName() =>
-      _sharedPreferences.getString(fullName);
+  static String? getFullName() => _sharedPreferences.getString(fullName);
 
   static Future<void> saveFullName(String value) =>
       _sharedPreferences.setString(fullName, value);
 
-  static String? getEmail() =>
-      _sharedPreferences.getString(email);
+  static String? getEmail() => _sharedPreferences.getString(email);
 
   static Future<void> saveEmail(String value) =>
       _sharedPreferences.setString(email, value);
 
-  static String? getUserName() =>
-      _sharedPreferences.getString(userName);
+  static String? getUserName() => _sharedPreferences.getString(userName);
 
   static Future<void> saveUserName(String value) =>
       _sharedPreferences.setString(userName, value);
 
-  static String? getPhone() =>
-      _sharedPreferences.getString(phone);
+  static String? getPhone() => _sharedPreferences.getString(phone);
 
   static Future<void> savePhone(String value) =>
       _sharedPreferences.setString(phone, value);
 
   static Future<bool>? setImage(String url) =>
-      _sharedPreferences.setString('image' , url);
+      _sharedPreferences.setString('image', url);
 
-  static String? getImage() =>
-      _sharedPreferences.getString('image');
+  static String? getImage() => _sharedPreferences.getString('image');
 
   // ---------------- FAVORITES ---------------- //
   //
@@ -266,5 +267,4 @@ class MySharedPref {
   //     await addFavorite(product);
   //   }
   // }
-
 }

@@ -159,7 +159,8 @@
     "email": "Email",
     "no_products": "This store has no products",
     "no_posts": "No posts yet",
-    "report": "Report an issue"
+    "report": "Report an issue",
+    "report_hint": "Describe the problem to open a conversation with the store"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -242,7 +243,11 @@
     "no_posts": "No posts yet",
     "reactions": "reactions",
     "public": "Public",
-    "followers_only": "Followers only"
+    "followers_only": "Followers only",
+    "media_counter": "{current} / {total}",
+    "react": "React",
+    "all_reactions": "All reactions",
+    "no_reactions": "No reactions yet"
   },
   "seller": {
     "request_title": "Store Request",
@@ -414,6 +419,14 @@
       "Casual": "Casual",
       "Party": "Party",
       "Sport": "Sport"
+    },
+    "reaction": {
+      "Like": "Like",
+      "Love": "Love",
+      "Haha": "Haha",
+      "Wow": "Wow",
+      "Sad": "Sad",
+      "Angry": "Angry"
     }
   },
   "onboarding": {
@@ -586,7 +599,8 @@
     "none": "No wallet linked to your account yet",
     "contact_agent": "Top up via WhatsApp",
     "contact_agent_hint": "Message the top-up desk to credit your wallet",
-    "contact_agent_message": "Hello, I would like to top up my wallet. My wallet ID is: {}"
+    "contact_agent_message": "Hello, I would like to top up my wallet. My wallet ID is: {}",
+    "id_hint_balance": "Use this ID to check your balance"
   },
   "suggestions": {
     "title": "Suggested Products",
@@ -609,5 +623,14 @@
     "no_documents": "No documents on file",
     "readonly_note": "These fields were set when the store was created and cannot be changed here",
     "editable_note": "Editable"
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Get in touch with the app administrators",
+    "email": "Email",
+    "phone": "Phone",
+    "copied": "Copied",
+    "unavailable": "No app available to open this - you can copy it instead",
+    "website": "Website"
   }
 }

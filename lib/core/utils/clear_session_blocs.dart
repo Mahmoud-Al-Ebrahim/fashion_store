@@ -29,10 +29,13 @@ import '../services/chat_hub_service.dart';
 /// screen only corrects itself once its own fetch returns, and some screens
 /// never refetch at all.
 ///
-/// [AuthBloc] is deliberately excluded: it owns the sign-out itself and
-/// clearing it here would discard the very state that reports the sign-out
-/// succeeded.
-void clearSessionBlocs(BuildContext context) {
+/// [AuthBloc] is excluded by default: it owns the sign-out itself, and
+/// clearing it mid-flight would discard the very state that reports the
+/// sign-out succeeded. Pass [includeAuth] on the paths that are *not* a
+/// sign-out - dropping into guest mode, most importantly, where AuthBloc
+/// still holds the previous account's login response (tokens included).
+void clearSessionBlocs(BuildContext context, {bool includeAuth = false}) {
+  if (includeAuth) context.read<AuthBloc>().add(ClearAuthEvent());
   context.read<AdminBloc>().add(ClearAdminEvent());
   context.read<CartBloc>().add(ClearCartEvent());
   context.read<CategoryBloc>().add(ClearCategoryEvent());

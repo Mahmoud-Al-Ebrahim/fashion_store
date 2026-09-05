@@ -18,9 +18,11 @@ void main() {
         .listSync(recursive: true)
         .whereType<File>()
         .where((f) => f.path.endsWith('_bloc.dart'))
-        .map((f) => RegExp(r'class (\w+Bloc) extends Bloc<')
-            .firstMatch(f.readAsStringSync())
-            ?.group(1))
+        .map(
+          (f) => RegExp(
+            r'class (\w+Bloc) extends Bloc<',
+          ).firstMatch(f.readAsStringSync())?.group(1),
+        )
         .whereType<String>()
         .toList();
     helper = File('lib/core/utils/clear_session_blocs.dart').readAsStringSync();
@@ -60,11 +62,13 @@ void main() {
     final notCleared = <String>[];
     for (final bloc in blocNames) {
       if (bloc == 'AuthBloc') {
-        // It owns the sign-out; clearing it would discard the result.
+        // It owns the sign-out, so clearing it there would discard the
+        // result - it may only be reset behind the `includeAuth` flag, which
+        // the guest-mode paths pass and sign-out does not.
         expect(
-          helper.contains('context.read<AuthBloc>()'),
-          isFalse,
-          reason: 'AuthBloc must not be reset by the helper',
+          helper.contains('if (includeAuth) context.read<AuthBloc>()'),
+          isTrue,
+          reason: 'AuthBloc must only be reset when includeAuth is set',
         );
         continue;
       }
@@ -79,12 +83,83 @@ void main() {
     );
   });
 
+  /// Dropping into guest mode is the other way a session ends, and it used
+  /// to clear only the stored token. The blocs outlive the session, so the
+  /// guest saw the previous account's cart, orders, wallet and profile -
+  /// each screen only corrects itself once its own fetch returns, and as a
+  /// guest those fetches 401 and leave the stale data on screen.
+  ///
+  /// So: anywhere in the UI that drops the stored session must drop the
+  /// in-memory one in the same breath.
+  test('every screen that clears stored auth also clears the blocs', () {
+    final offenders = <String>[];
+    for (final file
+        in Directory('lib/features')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'))) {
+      final src = file.readAsStringSync();
+      if (!src.contains('MySharedPref.clearAuthData()')) continue;
+      final path = file.path.split(Platform.pathSeparator).join('/');
+      if (!src.contains('clearSessionBlocs(context')) {
+        offenders.add('$path drops the stored session but not the blocs');
+      }
+    }
+    expect(offenders, isEmpty, reason: offenders.join('\n'));
+  });
+
+  test('guest mode also resets AuthBloc, which still holds the tokens', () {
+    for (final path in const [
+      'lib/features/auth/pages/sign_in_screen/sign_in_screen.dart',
+      'lib/features/auth/widgets/on_boarding/column_layer.dart',
+    ]) {
+      final src = File(path).readAsStringSync();
+      expect(
+        src.contains('clearSessionBlocs(context, includeAuth: true)'),
+        isTrue,
+        reason: '$path enters guest mode without resetting AuthBloc',
+      );
+    }
+  });
+
+  /// The profile fields cached at login are personal data; leaving them in
+  /// SharedPreferences means the next person to use the phone still has the
+  /// previous account's name, email and photo on disk.
+  test('clearing stored auth clears the cached profile too', () {
+    final src = File('lib/core/utils/my_shared_pref.dart').readAsStringSync();
+    final body = src.substring(src.indexOf('clearAuthData'));
+    for (final key in const [
+      'fullName',
+      'email',
+      'phone',
+      'userName',
+      "'image'",
+      '_isAdmin',
+      '_wantsStoreKey',
+    ]) {
+      expect(
+        body.contains('remove($key)'),
+        isTrue,
+        reason: 'clearAuthData leaves $key behind',
+      );
+    }
+    // Device preferences are not the account's, and must survive.
+    for (final key in const ['_language', '_lightThemeKey', '_onBoarding']) {
+      expect(
+        body.contains('remove($key)'),
+        isFalse,
+        reason: '$key belongs to the device, not the session',
+      );
+    }
+  });
+
   test('every sign-out call site clears the blocs first', () {
     final offenders = <String>[];
-    for (final file in Directory('lib/features')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.dart'))) {
+    for (final file
+        in Directory('lib/features')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'))) {
       final src = file.readAsStringSync();
       if (!src.contains('LogoutEvent()')) continue;
       final path = file.path.split(Platform.pathSeparator).join('/');

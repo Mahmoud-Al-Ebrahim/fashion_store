@@ -66,7 +66,13 @@ class _AdminWalletPageState extends State<AdminWalletPage> {
                 ),
               ),
               SizedBox(height: height(14)),
-              WalletIdCard(walletId: state.wallet?.id),
+              // A store owner does not top this wallet up - it fills from
+              // their sales - so the id is there to look the balance up,
+              // not to hand to the payment desk.
+              WalletIdCard(
+                walletId: state.wallet?.id,
+                hint: LK.walletIdHintBalance.tr(),
+              ),
               SizedBox(height: height(20)),
               Text(
                 LK.profileTransactions.tr(),

@@ -12,6 +12,8 @@ import '../../../../core/localization/translation_keys.dart';
 import '../../../../core/screen_util.dart';
 import '../../../../core/utils/session.dart';
 import '../../../admin/pages/store_pending_page.dart';
+import '../../../../core/utils/app_website.dart';
+import '../../../common/support_sheet.dart';
 import '../../../auth/pages/sign_in_screen/sign_in_screen.dart';
 import '../../../shop/pages/complaints_page.dart';
 import '../../../shop/pages/profile_page.dart';
@@ -118,6 +120,20 @@ class CustomDrawer extends StatelessWidget {
                   icon: "assets/svg/lock.svg",
                   title: LK.profileLanguage.tr(),
                   onTap: () => _switchLanguage(context),
+                ),
+                SizedBox(height: height(4)),
+                // Open to guests too - somebody who cannot sign in is
+                // exactly who needs to reach support.
+                DrawerCard(
+                  iconData: Icons.headset_mic_outlined,
+                  title: LK.supportTitle.tr(),
+                  onTap: () => showSupportSheet(context),
+                ),
+                SizedBox(height: height(4)),
+                DrawerCard(
+                  iconData: Icons.language,
+                  title: LK.supportWebsite.tr(),
+                  onTap: openAppWebsite,
                 ),
                 SizedBox(height: height(60)),
                 Divider(thickness: 0.5, color: onPrimary, endIndent: width(40)),

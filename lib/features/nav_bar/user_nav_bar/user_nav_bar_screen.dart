@@ -37,6 +37,11 @@ class _UserNavBarState extends State<UserNavBar> {
     super.initState();
     // Blocs are provided app-wide (see FashionApp); the shell only kicks off
     // the data it needs on entry.
+    //
+    // Neither call means anything for a guest - both 401 - and firing them
+    // only risks a late response landing in a bloc that was just wiped on
+    // the way into guest mode.
+    if (Session.isGuest) return;
     context.read<UserBloc>().add(GetUserProfileEvent());
     context.read<CartBloc>().add(GetCartItemsEvent());
   }

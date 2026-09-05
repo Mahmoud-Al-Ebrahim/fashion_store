@@ -14,6 +14,7 @@ import '../../shop/pages/seller_request_page.dart';
 import '../widgets/confirm_dialog.dart';
 import 'store_request_edit_page.dart';
 import 'store_request_history_page.dart';
+import '../../common/support_sheet.dart';
 import '../../../core/utils/clear_session_blocs.dart';
 
 /// Shown to an account that holds the store-owner role but has no approved
@@ -77,6 +78,13 @@ class _StorePendingPageState extends State<StorePendingPage> {
                   },
                 ),
               ],
+      ),
+      // No drawer and no "more" list on this shell, so support gets a
+      // floating button rather than being unreachable for this role.
+      floatingActionButton: FloatingActionButton.small(
+        tooltip: LK.supportTitle.tr(),
+        onPressed: () => showSupportSheet(context),
+        child: const Icon(Icons.headset_mic_outlined),
       ),
       body: BlocConsumer<StoreRequestBloc, StoreRequestState>(
         listenWhen: (p, c) =>

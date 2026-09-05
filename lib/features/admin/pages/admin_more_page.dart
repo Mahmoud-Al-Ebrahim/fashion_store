@@ -6,9 +6,12 @@ import '../../../blocs/auth_bloc/auth_bloc.dart';
 import '../../../blocs/store_bloc/store_bloc.dart';
 import '../../../core/extensions/build_context.dart';
 import '../../../core/helper/helper_functions.dart';
+import '../../../core/localization/language_service.dart';
 import '../../../core/screen_util.dart';
 import '../../../core/utils/api_service.dart';
 import '../../auth/pages/sign_in_screen/sign_in_screen.dart';
+import '../../../core/utils/app_website.dart';
+import '../../common/support_sheet.dart';
 import '../../nav_bar/user_nav_bar/user_nav_bar_screen.dart';
 import '../../shop/pages/profile_page.dart';
 import '../../../blocs/user_bloc/user_bloc.dart';
@@ -22,6 +25,33 @@ import '../../../core/utils/clear_session_blocs.dart';
 
 class AdminMorePage extends StatelessWidget {
   const AdminMorePage({super.key});
+
+  Future<void> _switchLanguage(BuildContext context) async {
+    final current = context.locale.languageCode;
+    final picked = await showModalBottomSheet<LangCode>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: LangCode.values.map((code) {
+            return ListTile(
+              title: Text(languageNameAndLanguageCode[code.name]!),
+              trailing: current == code.name
+                  ? Icon(
+                      Icons.check_circle,
+                      color: Theme.of(sheetContext).colorScheme.primary,
+                    )
+                  : null,
+              onTap: () => Navigator.of(sheetContext).pop(code),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    if (picked != null && context.mounted) {
+      await LanguageService.switchTo(context, picked);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +132,24 @@ class AdminMorePage extends StatelessWidget {
             icon: Icons.support_agent_outlined,
             title: LK.adminComplaints.tr(),
             onTap: () => context.pushPage(const AdminComplaintsPage()),
+          ),
+          _tile(
+            context,
+            icon: Icons.headset_mic_outlined,
+            title: LK.supportTitle.tr(),
+            onTap: () => showSupportSheet(context),
+          ),
+          _tile(
+            context,
+            icon: Icons.language,
+            title: LK.supportWebsite.tr(),
+            onTap: openAppWebsite,
+          ),
+          _tile(
+            context,
+            icon: Icons.language,
+            title: LK.profileLanguage.tr(),
+            onTap: () => _switchLanguage(context),
           ),
           const Divider(),
           _tile(
